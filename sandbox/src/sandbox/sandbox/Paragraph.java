@@ -1,10 +1,6 @@
-package sandbox;
+package sandbox.sandbox;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by jpanzer on 21.01.14.

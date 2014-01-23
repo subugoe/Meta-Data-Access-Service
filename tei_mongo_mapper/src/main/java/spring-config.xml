@@ -3,9 +3,6 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="mongoImporter" scope="prototype" class="de.unigoettingen.sub.tei.mongomapper.process.Analyser">
-        <constructor-arg name="db_name" value="${mongo.dbName}"/>
-        <constructor-arg name="coll_name" value="${mongo.collName}"/>
-    </bean>
+
 
 </beans>

@@ -1,4 +1,4 @@
-package sandbox;
+package sandbox.sandbox;
 
 import com.mongodb.BasicDBObject;
 

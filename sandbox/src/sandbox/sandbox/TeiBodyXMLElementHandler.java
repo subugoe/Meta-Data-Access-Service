@@ -1,4 +1,4 @@
-package de.unigoettingen.sub.tei.mongomapper.helper;
+package sandbox.sandbox;
 
 import com.mongodb.BasicDBObject;
 
@@ -13,14 +13,17 @@ import java.util.List;
  */
 public class TeiBodyXMLElementHandler extends XMLElementHandler {
 
+    //private StringBuffer words = new StringBuffer();
     private List<BasicDBObject> pageParagraphBasicDBObjectList = new ArrayList<BasicDBObject>();
+    //private Map<int, List<String>> page = new HashMap<int, List<String>>();
 
+    //private BasicDBObject basicDBObject = null;
     private BasicDBObject pageBasicDBObject = new BasicDBObject();
     private BasicDBObject milestoneBasicDBObject = null;
     private BasicDBObject paragraphBasicDBObject = null;
 
     private List<BasicDBObject> pageBasicDBObjectList = new ArrayList<BasicDBObject>();
-
+    //private List<BasicDBObject> paragraphsBasicDBObjectList = new ArrayList<BasicDBObject>();
 
     private Paragraph paragraph = null;
 
