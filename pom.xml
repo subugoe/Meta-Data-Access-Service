@@ -12,8 +12,15 @@
         <module>rest_interface</module>
         <module>mets_mongo_mapper</module>
         <module>tei_mongo_mapper</module>
-    </modules>
+        </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>2.11.3</version>
+        </dependency>
+    </dependencies>
 
 
 </project>

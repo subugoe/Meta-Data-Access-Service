@@ -63,7 +63,7 @@ public class MyMain {
     private void processWithStaxCursorLike(FileInputStream fileInputStream) throws XMLStreamException {
         MyStaxHandler sh = null;
         try {
-            sh = new MyStaxHandler(filePath);
+            sh = new MyStaxHandler(fileInputStream);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -76,10 +76,10 @@ public class MyMain {
      * like a cursor
      * is more memory-efficient
      */
-    private void processWithStaxIteratorLike() throws XMLStreamException {
+    private void processWithStaxIteratorLike(FileInputStream fileInputStream) throws XMLStreamException {
         MyStaxHandler sh = null;
         try {
-            sh = new MyStaxHandler(filePath);
+            sh = new MyStaxHandler(fileInputStream);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

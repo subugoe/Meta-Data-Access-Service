@@ -1,0 +1,57 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="de.unigoettingen.sub"/>
+    <context:property-placeholder location="classpath*:mapper.properties"/>
+
+
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+
+    <bean id="mongoImporter" scope="prototype" class="de.unigoettingen.sub.mongomapper.ingest.MongoImporter">
+        <constructor-arg name="db_name" value="${mongo.dbName}"/>
+        <constructor-arg name="mets_coll_name" value="${mongo.mets.collName}"/>
+        <constructor-arg name="tei_coll_name" value="${mongo.tei.collName}"/>
+    </bean>
+
+
+    <bean id="mongoExporer" scope="prototype" class="de.unigoettingen.sub.mongomapper.access.MongoExporter">
+        <constructor-arg name="db_name" value="${mongo.dbName}"/>
+        <constructor-arg name="mets_coll_name" value="${mongo.mets.collName}"/>
+        <constructor-arg name="tei_coll_name" value="${mongo.tei.collName}"/>
+    </bean>
+
+
+
+    <!--    already instanciated via the @Controller annotation
+    <bean id="accesscontroller" class="de.unigoettingen.sub.mets.mongomapper.gatewayAccessController">
+
+        <constructor-arg name="db_name" value="${mongo.dbName}"/>
+        <constructor-arg name="coll_name" value="${mongo.collName}"/>
+    </bean>
+        -->
+
+    <!--
+    <bean id="mongoclient" class="com.mongodb.MongoClient">
+    </bean>
+    -->
+
+    <bean id="mongoDataSource" class="de.unigoettingen.sub.mongomapper.helper.MongoDataSource">
+        <constructor-arg name="server" value="${mongo.server}"/>
+        <constructor-arg name="port" value="${mongo.port}"/>
+        <constructor-arg name="dbName" value="${mongo.dbName}"/>
+        <constructor-arg name="userName" value="${mongo.userName}"/>
+        <constructor-arg name="password" value="${mongo.password}"/>
+    </bean>
+
+
+</beans>

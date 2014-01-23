@@ -1,8 +1,11 @@
-package sandbox;
+package de.unigoettingen.sub.mongomapper.helper.tei;
 
 import com.mongodb.BasicDBObject;
 
-import javax.xml.stream.*;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -11,27 +14,20 @@ import java.util.List;
 /**
  * Created by jpanzer on 20.01.14.
  */
-public class MyStaxHandler {
+public class StaxHandler {
 
-
-    //private final String filePath;
-    //private final FileInputStream fileReader;
     private final XMLInputFactory factory;
     //private final XMLEventReader xmlEventReader;
     private final XMLStreamReader xmlStreamReader;
     private XMLElementHandler xmlElementHandler;
 
 
-    public MyStaxHandler(InputStream fileInputStream) throws FileNotFoundException, XMLStreamException {
-        //this.filePath = filePath;
-
-        //this.fileReader = new FileInputStream(filePath);
+    public StaxHandler(InputStream inputStream) throws FileNotFoundException, XMLStreamException {
 
         this.factory = XMLInputFactory.newFactory();
-        //this.xmlEventReader = factory.createXMLEventReader(fileReader);
-        this.xmlStreamReader = factory.createXMLStreamReader(fileInputStream);
-
+        this.xmlStreamReader = factory.createXMLStreamReader(inputStream);
     }
+
 
     public BasicDBObject processXMLFile() throws XMLStreamException {
 
@@ -39,7 +35,7 @@ public class MyStaxHandler {
 
         List<BasicDBObject> hdrBasicDBObjectLst = new ArrayList<BasicDBObject>();
         List<BasicDBObject> bodyBasicDBObjectLst = new ArrayList<BasicDBObject>();
-        BasicDBObject basicDBObject = null;
+        BasicDBObject basicDBObject = new BasicDBObject();
         XMLElementHandler xmlElementHandler = null;
 
         int count = 0;
@@ -61,14 +57,14 @@ public class MyStaxHandler {
 
                     if (this.xmlStreamReader.getLocalName().equalsIgnoreCase("teiHeader")) {
                         this.xmlElementHandler = new TeiHeaderXMLElementHandler(hdrBasicDBObjectLst);
-                        //basicDBObject = new BasicDBObject();
-                        this.xmlElementHandler.hanldeXMLElement(this.xmlStreamReader);
+
+                        basicDBObject.append("teiHeader", this.xmlElementHandler.hanldeXMLElement(this.xmlStreamReader));
                         break;
                     }
                     if (this.xmlStreamReader.getLocalName().equalsIgnoreCase("body")) {
                         this.xmlElementHandler = new TeiBodyXMLElementHandler(bodyBasicDBObjectLst);
-                        //basicDBObject = new BasicDBObject();
-                        this.xmlElementHandler.hanldeXMLElement(this.xmlStreamReader);
+
+                        basicDBObject.append("body", this.xmlElementHandler.hanldeXMLElement(this.xmlStreamReader));
                         break;
                     }
 
@@ -89,24 +85,7 @@ public class MyStaxHandler {
 
         this.xmlStreamReader.close();
 
-        return null;
+        return basicDBObject;
     }
 
-
-    /**
-     * Determine if this is an XHTML heading element or not
-     *
-     * @param name tag name
-     * @return boolean true if this is h1, h2, h3, h4, h5, or h6;
-     * false otherwise
-     */
-    private static boolean isHeader(String name) {
-        if (name.equals("h1")) return true;
-        if (name.equals("h2")) return true;
-        if (name.equals("h3")) return true;
-        if (name.equals("h4")) return true;
-        if (name.equals("h5")) return true;
-        if (name.equals("h6")) return true;
-        return false;
-    }
 }

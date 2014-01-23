@@ -1,7 +1,7 @@
 package de.unigoettingen.sub.mongomapper;
 
 import com.mongodb.MongoClient;
-import de.unigoettingen.sub.mets.mongomapper.access.MongoExporter;
+import de.unigoettingen.sub.mongomapper.access.MongoExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +42,13 @@ public class AccessController {
 
     }
 
+//    @RequestMapping(value = "/", method = RequestMethod.GET)
+//    public
+//    @ResponseBody
+//    String rootTest( Model model) {
+//
+//        return getDocuments("xml", model);
+//    }
 
     /**
      * Collects information about the documents in the repository.
@@ -76,8 +83,6 @@ public class AccessController {
     public
     @ResponseBody
     String getDocuments(@RequestParam(value = "format", defaultValue = "xml") String format, Model model) {     // or (ModelMap model)
-
-        System.out.println("ups");
 
         if (format.equalsIgnoreCase("xml")) {
             return mongoExporter.getDocumentsAsXML();
