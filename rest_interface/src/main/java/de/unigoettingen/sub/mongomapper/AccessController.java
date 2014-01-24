@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.UnknownHostException;
 
 /**
@@ -45,9 +46,9 @@ public class AccessController {
 //    @RequestMapping(value = "/", method = RequestMethod.GET)
 //    public
 //    @ResponseBody
-//    String rootTest( Model model) {
+//    String supportedFunctions(Model model) {
 //
-//        return getDocuments("xml", model);
+//        return null;
 //    }
 
     /**
@@ -176,7 +177,7 @@ public class AccessController {
     public
     @ResponseBody
     String getDBSearchResults(@RequestParam(value = "query", defaultValue = "") String query,
-                            Model model) {
+                              Model model) {
 
         // TODO with higlightning or code snipped ?
 
@@ -308,9 +309,9 @@ public class AccessController {
     /**
      * Retrieves a list of values for a special tag used on a page, e.g. tei:persName, tei:placeName
      *
-     * @param docid The MongoDB id of the related mongoDB object, or any PID.
+     * @param docid      The MongoDB id of the related mongoDB object, or any PID.
      * @param pageNumber The page number of the for which to get the tags.
-     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
+     * @param model      The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A document with special tag info.
      */
     @RequestMapping(value = "/documents/{docid}/tags/{pageNumber}", method = RequestMethod.GET)

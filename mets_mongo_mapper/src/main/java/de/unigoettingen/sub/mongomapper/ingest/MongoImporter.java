@@ -147,18 +147,13 @@ public class MongoImporter {
 
         this.teiType = teiType;
         this.appUrlString = appUrlString;
+        this.docid = docid;
         InputStream inputStream = null;
         StaxHandler staxHandler = null;
 
         BasicDBObject teiBasicDBObject = null;
 
-//        this.alreadyInDB = this.process();
-//
-//        if (this.alreadyInDB && handling.equalsIgnoreCase("reject")) {
-//            logger.info("Request rejected, because the METS file " +
-//                    this.filename + " is already in the db with mongo id " + this.docid);
-//            return;
-//        }
+//        this.alreadyInDB = this.isTeiFileAlreadyInDB(docid);
 
         try {
             inputStream = teiFile.getInputStream();
@@ -193,12 +188,13 @@ public class MongoImporter {
 
     private void addOrChangeDocInfoField(String docid, String field, String content) {
 
+        System.out.println(docid);
         DBObject dbObject = this.coll.find(this.getQueryBasicDBObject(docid)).toArray().get(0);
 
         DBObject docinfo = (DBObject) dbObject.get("docinfo");
         docinfo.put(field, content);
 
-        dbObject.put(field, content);
+//        dbObject.put(field, content);
 
         this.coll.findAndModify(this.getQueryBasicDBObject(docid), dbObject);
     }
@@ -323,6 +319,8 @@ public class MongoImporter {
                     append("type", type).
                     append("teiType", teiType));
         }
+
+        System.out.println(query);
 
         gridFs.remove(query);
     }
@@ -449,7 +447,7 @@ public class MongoImporter {
 
         // checks if the doc is already in the db. If the request contains
         // the flag "reject" the controll gets back to the caller.
-        if (alreadyInDB = isAlreadyInDB()) {
+        if (alreadyInDB = isMetsFileAlreadyInDB()) {
             if (handling.equalsIgnoreCase("reject"))
                 return true;
 
@@ -568,7 +566,25 @@ public class MongoImporter {
      * @return If any of the contained pids can be found in the db it returns true,
      * otherwise false.
      */
-    private boolean isAlreadyInDB() {
+    private boolean isMetsFileAlreadyInDB() {
+
+
+        IdHelper idHelper = new IdHelper();
+        Map<String, String> idsFromDB = idHelper.getPidsFromDB(db, mets_coll_name);
+
+
+        String pid = idHelper.aleadyInDB(idMap, idsFromDB);
+
+        if (pid != null) {
+            this.alreadyInDB = true;
+            List<String> keyValuePair = idHelper.getKeyValuePairFor(this.idMap, pid);
+            this.docid = idHelper.findDocid(keyValuePair, db, mets_coll_name);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isTeiFileAlreadyInDB(String docid) {
 
 
         IdHelper idHelper = new IdHelper();
