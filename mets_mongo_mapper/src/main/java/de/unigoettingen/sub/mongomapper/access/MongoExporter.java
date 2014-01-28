@@ -5,7 +5,7 @@ import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mycila.xmltool.XMLDoc;
 import com.mycila.xmltool.XMLTag;
-import de.unigoettingen.sub.mongomapper.helper.mets.DocInfo;
+import de.unigoettingen.sub.mongomapper.helper.DocInfo;
 import de.unigoettingen.sub.mongomapper.helper.IdHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,11 +90,12 @@ public class MongoExporter {
      * },
      * ...
      * }]}
+     * @param props
      */
-    public BasicDBObject getDocumentsAsJSON() {
+    public BasicDBObject getDocumentsAsJSON(List<String> props) {
 
         BasicDBObject docs = new BasicDBObject();
-        List<BasicDBObject> docList = new ArrayList<BasicDBObject>();
+        BasicDBList docList = new BasicDBList();
 
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
@@ -105,7 +106,7 @@ public class MongoExporter {
 
             DBObject dbObject = dbCursor.next();
 
-            DocInfo docInfo = new DocInfo();
+            DocInfo docInfo = new DocInfo(props);
             docInfo.setFromJSON(dbObject);
             docList.add(docInfo.getAsJSON());
 
@@ -136,8 +137,10 @@ public class MongoExporter {
      * </doc>
      * ...
      * </docs>
+     * @param props
      */
-    public String getDocumentsAsXML() {
+    public String getDocumentsAsXML(List<String> props) {
+
 
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
@@ -149,7 +152,7 @@ public class MongoExporter {
         while (dbCursor.hasNext()) {
 
             DBObject dbObject = dbCursor.next();
-            DocInfo docInfo = new DocInfo();
+            DocInfo docInfo = new DocInfo(props);
             docInfo.setFromJSON(dbObject);
 
             XMLTag t = docInfo.getAsXML();

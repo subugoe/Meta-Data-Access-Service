@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by jpanzer.
@@ -51,44 +54,37 @@ public class AccessController {
 //        return null;
 //    }
 
+
+
     /**
      * Collects information about the documents in the repository.
      * <p/>
-     * request: /documents?format={xml | json}
+     * request: /documents ? format={xml | json} & *{props=...}
      *
      * @param format The requested document format (xml or json).
+     * @param props  Reduce the docinfo to a required infoset. Possible values for
+     *               props are:
+     *               {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     *
      * @param model  The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information.
-     * <p/>
-     * <p/>
-     * Format:
-     * <docs>
-     * <doc>
-     * <id> string </id>
-     * <title> string </title>
-     * <titleShort> string </titleShort>
-     * <mets> url </mets>
-     * <preview> </preview>
-     * <tei> url </tei>
-     * <teiEnriched> url </teiEnriched>
-     * <pageCount> int </pageCount>
-     * <fulltext> boolean </fulltext>
-     * </doc>
-     * <doc>
-     * ...
-     * </doc>
-     * ...
-     * </docs>
+     *
      */
     @RequestMapping(value = "/documents", method = RequestMethod.GET)
     public
     @ResponseBody
-    String getDocuments(@RequestParam(value = "format", defaultValue = "xml") String format, Model model) {     // or (ModelMap model)
+    String getDocuments(@RequestParam(value = "format", defaultValue = "xml") String format,
+                        @RequestParam(value = "props", required = false) List<String> props,
+                        Model model) {     // or (ModelMap model)
+
+        if (props == null) {
+           props = new ArrayList<>();
+        }
 
         if (format.equalsIgnoreCase("xml")) {
-            return mongoExporter.getDocumentsAsXML();
+            return mongoExporter.getDocumentsAsXML(props);
         } else if (format.equalsIgnoreCase("json")) {
-            return mongoExporter.getDocumentsAsJSON().toString();
+            return mongoExporter.getDocumentsAsJSON(props).toString();
         }
 
         return null;

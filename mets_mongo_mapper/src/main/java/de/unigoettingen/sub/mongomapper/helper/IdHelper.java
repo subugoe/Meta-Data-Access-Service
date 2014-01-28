@@ -121,12 +121,14 @@ public class IdHelper {
 
         DBCollection coll = db.getCollection(coll_name);
 
-
         BasicDBObject keys = new BasicDBObject();
-        keys.put("ids" + keyValuePair.get(0), keyValuePair.get(1));
+        keys.put(keyValuePair.get(0), keyValuePair.get(1));
         DBCursor cursor = coll.find(new BasicDBObject(), keys);
-        if (cursor.size() > 0)
+
+        if (cursor.size() > 0) {
+
             return cursor.next().get("_id").toString();
+        }
 
         return null;
     }

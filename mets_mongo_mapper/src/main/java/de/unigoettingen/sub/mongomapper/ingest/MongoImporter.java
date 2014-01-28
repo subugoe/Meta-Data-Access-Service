@@ -9,6 +9,8 @@ import de.unigoettingen.sub.mongomapper.helper.BasicDBObjectHelper;
 import de.unigoettingen.sub.mongomapper.helper.IdHelper;
 import de.unigoettingen.sub.mongomapper.helper.mets.*;
 
+import de.unigoettingen.sub.mongomapper.helper.mods.Classifier;
+import de.unigoettingen.sub.mongomapper.helper.mods.RelatedItem;
 import de.unigoettingen.sub.mongomapper.helper.tei.StaxHandler;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -87,7 +89,10 @@ public class MongoImporter {
 
     private Map<String, String> idMap = null;
     private Map<String, String> nsMap = null;
+
+    private List<Classifier> classificationList = null;
     private List<String> titleList = null;
+    private List<RelatedItem> relatedItemList = null;
 
     private String filename;
     private boolean alreadyInDB = false;
@@ -95,6 +100,8 @@ public class MongoImporter {
     private String docid = null;
     private String teiType = null;
     private String appUrlString;
+
+    //private RelatedItem relatedItem = null;
 
 
     /**
@@ -153,8 +160,6 @@ public class MongoImporter {
 
         BasicDBObject teiBasicDBObject = null;
 
-//        this.alreadyInDB = this.isTeiFileAlreadyInDB(docid);
-
         try {
             inputStream = teiFile.getInputStream();
             staxHandler = new StaxHandler(inputStream);
@@ -172,7 +177,8 @@ public class MongoImporter {
         }
 
 
-        this.writeToMongo(teiBasicDBObject);
+        // saves the tei elements as fields in a mongo tei collection/document
+        //this.writeToMongo(teiBasicDBObject);
 
         storeFileInMongo(teiFile, docid, type);
 
@@ -188,13 +194,10 @@ public class MongoImporter {
 
     private void addOrChangeDocInfoField(String docid, String field, String content) {
 
-        System.out.println(docid);
         DBObject dbObject = this.coll.find(this.getQueryBasicDBObject(docid)).toArray().get(0);
 
         DBObject docinfo = (DBObject) dbObject.get("docinfo");
         docinfo.put(field, content);
-
-//        dbObject.put(field, content);
 
         this.coll.findAndModify(this.getQueryBasicDBObject(docid), dbObject);
     }
@@ -264,6 +267,10 @@ public class MongoImporter {
         this.writeToMongo(prepareForStorage(), metsFile);
 
         String content = String.format(this.appUrlString + "/documents/%s/mets", docid);
+
+//        System.out.println(content);
+//        System.out.println(docid);
+
         this.addOrChangeDocInfoField(docid, "mets", content);
     }
 
@@ -349,6 +356,30 @@ public class MongoImporter {
         return idMap;
     }
 
+    /**
+     * Retrieves the classifiers of the current METS file and stores these in the local
+     * Map classifiersMap.
+     */
+    private List<Classifier> retrieveClassifiers() {
+
+
+        List<Classifier> classificationList = new ArrayList<>();
+        String modsNsUri = NsHelper.getNs(getNsMap(), "mods");
+        NodeList classifiers = this.document.getElementsByTagNameNS(modsNsUri, "classification");
+
+
+        if (classifiers != null) {
+            for (int i = 0; i < classifiers.getLength(); i++) {
+                Node classifier = classifiers.item(i);
+                String authority = classifier.getAttributes().getNamedItem("authority").getNodeValue();
+                String value = classifier.getFirstChild().getNodeValue();
+
+                classificationList.add(new Classifier(authority, value));
+            }
+        }
+
+        return classificationList;
+    }
 
     /**
      * Retrieves the titles of the document.
@@ -370,6 +401,44 @@ public class MongoImporter {
         }
         return titleList;
     }
+
+
+    /**
+     * Retrieves the related items of the document.
+     *
+     * @return A list of titles, retrieved from the document.
+     */
+    private List<RelatedItem> retrieveRelatedItems() {
+
+        List<RelatedItem> relatedItemList = new ArrayList<RelatedItem>();
+        String modsNsUri = NsHelper.getNs(getNsMap(), "mods");
+
+        NodeList relatedItemNodeList = this.document.getElementsByTagNameNS(modsNsUri, "relatedItem");
+        if (relatedItemNodeList.getLength() > 0) {
+
+            for (int i = 0; i < relatedItemNodeList.getLength(); i++) {
+                Node node = relatedItemNodeList.item(i);
+
+                if (node.getParentNode().getNodeName().equalsIgnoreCase("mods:mods")) {
+
+                    NamedNodeMap attributes = node.getAttributes();
+                    String type = attributes.getNamedItem("type").getNodeValue();
+
+                    if (type != null && !type.equals("")) {
+
+                        // mods:recordIdentifier
+                        Node relatedItemIdNode = node.getFirstChild().getFirstChild();
+                        String source = relatedItemIdNode.getAttributes().getNamedItem("source").getNodeValue();
+                        String relatedItemRecordIdentifier = relatedItemIdNode.getFirstChild().getNodeValue();
+
+                        relatedItemList.add(new RelatedItem(type, relatedItemRecordIdentifier, source));
+                    }
+                }
+            }
+        }
+        return relatedItemList;
+    }
+
 
     /**
      * Helper for {@link #retrievePids() retrievePids}. Retrieves the type (PURL, PPN, ...) and the value of
@@ -444,16 +513,22 @@ public class MongoImporter {
 
         titleList = retrieveDocumentTitles();
 
+        classificationList = retrieveClassifiers();
+
+        relatedItemList = retrieveRelatedItems();
 
         // checks if the doc is already in the db. If the request contains
         // the flag "reject" the controll gets back to the caller.
         if (alreadyInDB = isMetsFileAlreadyInDB()) {
+
+
             if (handling.equalsIgnoreCase("reject"))
                 return true;
 
             if (handling.equalsIgnoreCase("replace"))
                 this.removeFileFromMongo("mets", this.docid);
-        }
+        } else
+            System.out.println(false);
 
         // process dmdSec
         DmdSecHelper dmdSecHelper = new DmdSecHelper(document, this);
@@ -523,7 +598,8 @@ public class MongoImporter {
      */
     private void writeToMongo_Initial(BasicDBObject doc, MultipartFile metsFile) {
 
-        WriteResult wr = coll.update(doc, doc, true, false);
+        System.out.println("in writeToMongo_Initial");
+        WriteResult wr = coll.update(doc, doc, true, false, WriteConcern.SAFE);
         if (wr.getField("upserted") != null) {
             this.docid = ((ObjectId) wr.getField("upserted")).toString();
             storeFileInMongo(metsFile, docid, "mets");
@@ -540,13 +616,17 @@ public class MongoImporter {
      */
     private void writeToMongo_Replace(BasicDBObject doc, MultipartFile metsFile) {
 
-        WriteResult wr = coll.update(getQueryBasicDBObject(this.docid), doc, true, false);
+        System.out.println("in writeToMongo_Replace");
+
+        WriteResult wr = coll.update(getQueryBasicDBObject(this.docid), doc, true, false, WriteConcern.SAFE);
         storeFileInMongo(metsFile, docid, "mets");
     }
 
     private void writeToMongo(BasicDBObject teiBasicDBObject) {
 
-        WriteResult wr = tei_coll.update(teiBasicDBObject, teiBasicDBObject, true, false);
+        System.out.println("in writeToMongo");
+
+        WriteResult wr = tei_coll.update(teiBasicDBObject, teiBasicDBObject, true, false, WriteConcern.SAFE);
         if (wr.getField("upserted") != null) {
             System.out.println((ObjectId) wr.getField("upserted"));
 
@@ -579,28 +659,29 @@ public class MongoImporter {
             this.alreadyInDB = true;
             List<String> keyValuePair = idHelper.getKeyValuePairFor(this.idMap, pid);
             this.docid = idHelper.findDocid(keyValuePair, db, mets_coll_name);
+            System.out.println(docid);
             return true;
         }
         return false;
     }
 
-    private boolean isTeiFileAlreadyInDB(String docid) {
-
-
-        IdHelper idHelper = new IdHelper();
-        Map<String, String> idsFromDB = idHelper.getPidsFromDB(db, mets_coll_name);
-
-
-        String pid = idHelper.aleadyInDB(idMap, idsFromDB);
-
-        if (pid != null) {
-            this.alreadyInDB = true;
-            List<String> keyValuePair = idHelper.getKeyValuePairFor(this.idMap, pid);
-            this.docid = idHelper.findDocid(keyValuePair, db, mets_coll_name);
-            return true;
-        }
-        return false;
-    }
+//    private boolean isTeiFileAlreadyInDB(String docid) {
+//
+//
+//        IdHelper idHelper = new IdHelper();
+//        Map<String, String> idsFromDB = idHelper.getPidsFromDB(db, mets_coll_name);
+//
+//
+//        String pid = idHelper.aleadyInDB(idMap, idsFromDB);
+//
+//        if (pid != null) {
+//            this.alreadyInDB = true;
+//            List<String> keyValuePair = idHelper.getKeyValuePairFor(this.idMap, pid);
+//            this.docid = idHelper.findDocid(keyValuePair, db, mets_coll_name);
+//            return true;
+//        }
+//        return false;
+//    }
 
 
     /**
@@ -670,9 +751,7 @@ public class MongoImporter {
 
         BasicDBObject doc = new BasicDBObject();
 
-        if (this.idMap.containsKey("recordIdentifier")) {
-            doc.append("id", this.idMap.get("recordIdentifier"));
-        } else if (this.idMap.containsKey("PPN")) {
+        if (this.idMap.containsKey("PPN")) {
             doc.append("id", this.idMap.get("PPN"));
         } else if (this.idMap.containsKey("PPNanalog")) {
             doc.append("id", this.idMap.get("PPNanalog"));
@@ -680,9 +759,32 @@ public class MongoImporter {
             doc.append("id", this.getFilename());
         }
 
+        if (this.idMap.containsKey("recordIdentifier")) {
+            doc.append("id", this.idMap.get("recordIdentifier"));
+        }
+
         if (!this.titleList.isEmpty())
             doc.append("title", this.titleList.get(0));
 
+        if (!this.relatedItemList.isEmpty()) {
+            BasicDBList list = new BasicDBList();
+            for (RelatedItem item : relatedItemList) {
+                list.add(item.getAsJSON());
+            }
+
+            doc.append("relatedItem", list);
+        }
+
+        if (!this.classificationList.isEmpty()) {
+            BasicDBList classifierList = new BasicDBList();
+            for (Classifier classifier : classificationList) {
+                BasicDBObject basicDBObject = new BasicDBObject();
+                basicDBObject.append("authority", classifier.getAuthority());
+                basicDBObject.append("value", classifier.getValue());
+                classifierList.add(basicDBObject);
+            }
+            doc.append("classification", classifierList);
+        }
 
         // TODO After TEI mapping
 //            if (this.docinfoMap.containsKey("preview"))

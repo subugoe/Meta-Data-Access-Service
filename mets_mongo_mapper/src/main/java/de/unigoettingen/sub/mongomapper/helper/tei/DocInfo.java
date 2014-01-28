@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mycila.xmltool.XMLDoc;
 import com.mycila.xmltool.XMLTag;
+import de.unigoettingen.sub.mongomapper.helper.mods.RelatedItem;
 import org.bson.types.ObjectId;
 
 /**
@@ -23,6 +24,10 @@ public class DocInfo {
     private String pageCount = "";
     private String fulltext = "";
 
+    // relatedItem
+    private RelatedItem relatedItem = null;
+
+
     public BasicDBObject getAsJSON() {
 
         BasicDBObject doc = new BasicDBObject();
@@ -38,6 +43,7 @@ public class DocInfo {
         doc.append("teiEnriched", this.getTeiEnriched());
         doc.append("pageCount", this.getPageCount());
         doc.append("fulltext", this.getFulltext());
+        doc.append("relatedItem", this.relatedItem.getAsJSON());
 
         return doc;
     }
@@ -84,6 +90,10 @@ public class DocInfo {
 
         if (docinfo.containsField("fulltext"))
             this.fulltext = docinfo.get("fulltext").toString();
+
+        if (docinfo.containsField("relatedItem")) {
+            this.relatedItem = new RelatedItem(docinfo);
+        }
     }
 
     /**
@@ -115,10 +125,15 @@ public class DocInfo {
                 .addTag("pageCount")
                 .addText(this.getPageCount())
                 .addTag("fulltext")
-                .addText(this.getFulltext());
+                .addText(this.getFulltext())
+
+                .addTag("relatedItem")
+                .addDocument(this.relatedItem.getAsXML());
+
 
         return tag;
     }
+
 
 
     public String getDocid() {
