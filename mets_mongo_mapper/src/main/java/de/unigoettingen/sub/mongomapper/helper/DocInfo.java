@@ -30,8 +30,8 @@ public class DocInfo {
     private String pageCount = "";
     private String fulltext = "";
 
-    private List<RelatedItem> relatedItemList = null;
-    private List<Classifier> classifierList = null;
+    private List<RelatedItem> relatedItemList = new ArrayList<>();
+    private List<Classifier> classifierList = new ArrayList<>();
 
     public DocInfo(List<String> props) {
         this.props = props;
@@ -84,7 +84,7 @@ public class DocInfo {
 
 
         if (docinfo.containsField("relatedItem")) {
-            this.relatedItemList = new ArrayList<>();
+
             BasicDBList list = (BasicDBList) docinfo.get("relatedItem");
             for (int i = 0; i < list.size(); i++) {
                 BasicDBObject obj = (BasicDBObject) list.get(i);
@@ -97,15 +97,12 @@ public class DocInfo {
 
 
         if (docinfo.containsField("classification")) {
-            this.classifierList = new ArrayList<>();
+
             BasicDBList list = (BasicDBList) docinfo.get("classification");
             for (int i = 0; i < list.size(); i++) {
                 BasicDBObject obj = (BasicDBObject) list.get(i);
                 String authority = obj.getString("authority");
                 String value = obj.getString("value");
-
-                System.out.println(authority + " " + value);
-
                 this.classifierList.add(new Classifier(authority, value));
             }
         }
@@ -356,17 +353,17 @@ public class DocInfo {
         String str = "";
 
         str = "docid: " + this.getDocid() + ", " +
-                    "id: " + this.getId() + ", " +
-                    "title: " + this.getTitle() + ", " +
-                    "titleShrot: " + this.getTitleShort() + ", " +
-                    "mets: " + this.getMets() + ", " +
-                    "preview: " + this.getPreview() + ", " +
-                    "tei: " + this.getTei() + ", " +
-                    "teiEnriched: " + this.getTeiEnriched() + ", " +
-                    "pageCount: " + this.getPageCount() + ", " +
-                    "fulltext" + this.getFulltext() + ", " +
-                    "relatedItems: " + this.getRelatedItemsAsString() + ", " +
-                    "classifications: " + this.getClassificationsAsString();
+                "id: " + this.getId() + ", " +
+                "title: " + this.getTitle() + ", " +
+                "titleShrot: " + this.getTitleShort() + ", " +
+                "mets: " + this.getMets() + ", " +
+                "preview: " + this.getPreview() + ", " +
+                "tei: " + this.getTei() + ", " +
+                "teiEnriched: " + this.getTeiEnriched() + ", " +
+                "pageCount: " + this.getPageCount() + ", " +
+                "fulltext" + this.getFulltext() + ", " +
+                "relatedItems: " + this.getRelatedItemsAsString() + ", " +
+                "classifications: " + this.getClassificationsAsString();
 
         return str;
     }
@@ -376,8 +373,10 @@ public class DocInfo {
         XMLTag tag = XMLDoc.newDocument()
                 .addRoot("relatedItems");
 
-        for (RelatedItem item : this.relatedItemList) {
-            tag.addTag(item.getAsXML());
+        if (!this.relatedItemList.isEmpty()) {
+            for (RelatedItem item : this.relatedItemList) {
+                tag.addTag(item.getAsXML());
+            }
         }
         return tag;
     }
@@ -386,8 +385,10 @@ public class DocInfo {
 
         BasicDBList list = new BasicDBList();
 
-        for (RelatedItem item : this.relatedItemList) {
-            list.add(item.getAsJSON());
+        if (!this.relatedItemList.isEmpty()) {
+            for (RelatedItem item : this.relatedItemList) {
+                list.add(item.getAsJSON());
+            }
         }
 
         return list;
@@ -395,12 +396,14 @@ public class DocInfo {
 
     public String getRelatedItemsAsString() {
 
-        StringBuffer strb = new StringBuffer();
+        StringBuilder strb = new StringBuilder();
         strb.append("relatedItems:\n");
 
-        for (RelatedItem item : this.relatedItemList) {
-            strb.append(item);
-            strb.append("\n");
+        if (!this.relatedItemList.isEmpty()) {
+            for (RelatedItem item : this.relatedItemList) {
+                strb.append(item);
+                strb.append("\n");
+            }
         }
 
         return strb.toString();
@@ -411,8 +414,10 @@ public class DocInfo {
 
         BasicDBList list = new BasicDBList();
 
-        for (Classifier item : this.classifierList) {
-            list.add(item.getAsJSON());
+        if (!this.classifierList.isEmpty()) {
+            for (Classifier item : this.classifierList) {
+                list.add(item.getAsJSON());
+            }
         }
 
         return list;
@@ -423,8 +428,10 @@ public class DocInfo {
         XMLTag tag = XMLDoc.newDocument()
                 .addRoot("classifications");
 
-        for (Classifier item : this.classifierList) {
-            tag.addTag(item.getAsXML());
+        if (!this.classifierList.isEmpty()) {
+            for (Classifier item : this.classifierList) {
+                tag.addTag(item.getAsXML());
+            }
         }
         return tag;
 
@@ -432,12 +439,14 @@ public class DocInfo {
 
     public String getClassificationsAsString() {
 
-        StringBuffer strb = new StringBuffer();
+        StringBuilder strb = new StringBuilder();
         strb.append("classifications:\n");
 
-        for (Classifier item : this.classifierList) {
-            strb.append(item);
-            strb.append("\n");
+        if (!this.classifierList.isEmpty()) {
+            for (Classifier item : this.classifierList) {
+                strb.append(item);
+                strb.append("\n");
+            }
         }
 
         return strb.toString();

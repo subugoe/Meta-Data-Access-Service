@@ -47,9 +47,9 @@ public class IngestController {
                        @RequestParam(value = "handling", defaultValue = "replace") String handling,
                        HttpServletRequest request) {
 
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         mongoImporter.processMetsAndStore(file, handling, this.getUrlString(request));
-        System.out.println(System.currentTimeMillis() - start + " millisec");
+        //System.out.println(System.currentTimeMillis() - start + " millisec");
 
     }
 

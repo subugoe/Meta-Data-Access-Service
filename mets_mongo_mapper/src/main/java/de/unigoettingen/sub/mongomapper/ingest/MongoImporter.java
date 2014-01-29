@@ -214,8 +214,12 @@ public class MongoImporter {
      */
     public void processMetsAndStore(MultipartFile metsFile, String handling, String appUrlString) {
 
+        this.docid = null;
+
         this.appUrlString = appUrlString;
         this.filename = metsFile.getOriginalFilename();
+
+        //System.out.println(filename);
 
         idMap = new HashMap<String, String>();
         nsMap = new HashMap<String, String>();
@@ -256,7 +260,11 @@ public class MongoImporter {
         mets = metswrapper.getMETSObject();
         document = metswrapper.getMETSDocument();
 
+
+        long start = System.currentTimeMillis();
         this.alreadyInDB = this.process();
+        System.out.println(System.currentTimeMillis() - start + " millisec");
+
 
         if (this.alreadyInDB && handling.equalsIgnoreCase("reject")) {
             logger.info("Request rejected, because the METS file " +
@@ -264,13 +272,13 @@ public class MongoImporter {
             return;
         }
 
+
+        start = System.currentTimeMillis();
         this.writeToMongo(prepareForStorage(), metsFile);
+        System.out.println(System.currentTimeMillis() - start + " millisec");
+
 
         String content = String.format(this.appUrlString + "/documents/%s/mets", docid);
-
-//        System.out.println(content);
-//        System.out.println(docid);
-
         this.addOrChangeDocInfoField(docid, "mets", content);
     }
 
@@ -326,8 +334,6 @@ public class MongoImporter {
                     append("type", type).
                     append("teiType", teiType));
         }
-
-        System.out.println(query);
 
         gridFs.remove(query);
     }
@@ -519,16 +525,16 @@ public class MongoImporter {
 
         // checks if the doc is already in the db. If the request contains
         // the flag "reject" the controll gets back to the caller.
-        if (alreadyInDB = isMetsFileAlreadyInDB()) {
 
+        if (alreadyInDB = isMetsFileAlreadyInDB()) {
 
             if (handling.equalsIgnoreCase("reject"))
                 return true;
 
             if (handling.equalsIgnoreCase("replace"))
                 this.removeFileFromMongo("mets", this.docid);
-        } else
-            System.out.println(false);
+        }
+
 
         // process dmdSec
         DmdSecHelper dmdSecHelper = new DmdSecHelper(document, this);
@@ -598,7 +604,6 @@ public class MongoImporter {
      */
     private void writeToMongo_Initial(BasicDBObject doc, MultipartFile metsFile) {
 
-        System.out.println("in writeToMongo_Initial");
         WriteResult wr = coll.update(doc, doc, true, false, WriteConcern.SAFE);
         if (wr.getField("upserted") != null) {
             this.docid = ((ObjectId) wr.getField("upserted")).toString();
@@ -616,21 +621,17 @@ public class MongoImporter {
      */
     private void writeToMongo_Replace(BasicDBObject doc, MultipartFile metsFile) {
 
-        System.out.println("in writeToMongo_Replace");
-
         WriteResult wr = coll.update(getQueryBasicDBObject(this.docid), doc, true, false, WriteConcern.SAFE);
         storeFileInMongo(metsFile, docid, "mets");
     }
 
     private void writeToMongo(BasicDBObject teiBasicDBObject) {
 
-        System.out.println("in writeToMongo");
-
         WriteResult wr = tei_coll.update(teiBasicDBObject, teiBasicDBObject, true, false, WriteConcern.SAFE);
-        if (wr.getField("upserted") != null) {
-            System.out.println((ObjectId) wr.getField("upserted"));
-
-        }
+//        if (wr.getField("upserted") != null) {
+//            System.out.println((ObjectId) wr.getField("upserted"));
+//
+//        }
     }
 
     private void removeFileFromMongo(String type, String docid) {
@@ -648,10 +649,8 @@ public class MongoImporter {
      */
     private boolean isMetsFileAlreadyInDB() {
 
-
         IdHelper idHelper = new IdHelper();
         Map<String, String> idsFromDB = idHelper.getPidsFromDB(db, mets_coll_name);
-
 
         String pid = idHelper.aleadyInDB(idMap, idsFromDB);
 
@@ -659,7 +658,7 @@ public class MongoImporter {
             this.alreadyInDB = true;
             List<String> keyValuePair = idHelper.getKeyValuePairFor(this.idMap, pid);
             this.docid = idHelper.findDocid(keyValuePair, db, mets_coll_name);
-            System.out.println(docid);
+
             return true;
         }
         return false;
@@ -765,6 +764,7 @@ public class MongoImporter {
 
         if (!this.titleList.isEmpty())
             doc.append("title", this.titleList.get(0));
+
 
         if (!this.relatedItemList.isEmpty()) {
             BasicDBList list = new BasicDBList();

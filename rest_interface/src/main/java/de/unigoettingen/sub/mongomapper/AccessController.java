@@ -59,7 +59,7 @@ public class AccessController {
     /**
      * Collects information about the documents in the repository.
      * <p/>
-     * request: /documents ? format={xml | json} & *{props=...}
+     * request: /documents ? format={xml | json} & props=id & props=...}
      *
      * @param format The requested document format (xml or json).
      * @param props  Reduce the docinfo to a required infoset. Possible values for
