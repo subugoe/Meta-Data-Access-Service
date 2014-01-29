@@ -5,6 +5,8 @@ import de.unigoettingen.sub.mongomapper.access.MongoExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
@@ -26,33 +28,14 @@ import java.util.List;
  * 12/2013
  */
 @Controller
+@Scope(value="request")
 public class AccessController {
 
     private final Logger logger = LoggerFactory.getLogger(AccessController.class);
 
-    private MongoClient mongoClient;
 
     @Autowired
     private MongoExporter mongoExporter;
-
-    public AccessController() {
-
-
-        try {
-            this.mongoClient = new MongoClient();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-//    @RequestMapping(value = "/", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String supportedFunctions(Model model) {
-//
-//        return null;
-//    }
 
 
 

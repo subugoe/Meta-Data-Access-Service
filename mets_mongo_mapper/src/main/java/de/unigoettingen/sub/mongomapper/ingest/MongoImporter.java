@@ -42,7 +42,6 @@ import java.util.Map;
  * <p/>
  * On ingest of a new embedded tei document, the docinfo needs to modified too.
  */
-@SuppressWarnings("ALL")
 public class MongoImporter {
 
     private final Logger logger = LoggerFactory.getLogger(MongoImporter.class);
@@ -100,8 +99,6 @@ public class MongoImporter {
     private String docid = null;
     private String teiType = null;
     private String appUrlString;
-
-    //private RelatedItem relatedItem = null;
 
 
     /**
@@ -214,12 +211,11 @@ public class MongoImporter {
      */
     public void processMetsAndStore(MultipartFile metsFile, String handling, String appUrlString) {
 
-        this.docid = null;
+        //this.docid = null;
 
         this.appUrlString = appUrlString;
         this.filename = metsFile.getOriginalFilename();
 
-        //System.out.println(filename);
 
         idMap = new HashMap<String, String>();
         nsMap = new HashMap<String, String>();

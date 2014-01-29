@@ -1,11 +1,12 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <context:component-scan base-package="de.unigoettingen.sub"/>
+    <context:component-scan base-package="de.unigoettingen.sub" />
     <context:property-placeholder location="classpath*:mapper.properties"/>
 
 
@@ -17,14 +18,14 @@
     </bean>
 
 
-    <bean id="mongoImporter" scope="request" class="de.unigoettingen.sub.mongomapper.ingest.MongoImporter">
+    <bean id="mongoImporter" scope="request"  class="de.unigoettingen.sub.mongomapper.ingest.MongoImporter">
         <constructor-arg name="db_name" value="${mongo.dbName}"/>
         <constructor-arg name="mets_coll_name" value="${mongo.mets.collName}"/>
         <constructor-arg name="tei_coll_name" value="${mongo.tei.collName}"/>
     </bean>
 
 
-    <bean id="mongoExporer" scope="request" class="de.unigoettingen.sub.mongomapper.access.MongoExporter">
+    <bean id="mongoExporer" scope="request"  class="de.unigoettingen.sub.mongomapper.access.MongoExporter">
         <constructor-arg name="db_name" value="${mongo.dbName}"/>
         <constructor-arg name="mets_coll_name" value="${mongo.mets.collName}"/>
         <constructor-arg name="tei_coll_name" value="${mongo.tei.collName}"/>
