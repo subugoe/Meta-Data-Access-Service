@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -29,8 +30,8 @@ public class MongoExporter {
     
     private final String db_name;
     private final String mets_coll_name;
-    private final String tei_coll_name;
-    
+    //private final String tei_coll_name;                                             #
+
     private DB db = null;
     private DBCollection coll = null;
     private MongoClient mongoClient = null;
@@ -42,10 +43,10 @@ public class MongoExporter {
      * @param db_name   The name of the mongoDB
      * @param mets_coll_name The name of the collection, to store the documents
      */
-    public MongoExporter(String db_name, String mets_coll_name, String tei_coll_name) {
+    public MongoExporter(String db_name, String mets_coll_name) {
         this.db_name = db_name;
         this.mets_coll_name = mets_coll_name;
-        this.tei_coll_name = tei_coll_name;
+        //this.tei_coll_name = tei_coll_name;
 
         init();
     }
@@ -213,29 +214,32 @@ public class MongoExporter {
 
         GridFSDBFile gridFSDBFile = getGridFsDbFile(docid, type, teiType);
 
-        if (gridFSDBFile != null) {
+        if (gridFSDBFile != null)
             return gridFSDBFile.getInputStream();
-        } else {
 
-            // search with alternative pid's
-
-            IdHelper idHelper = new IdHelper();
-            Map<String, String> idMap = idHelper.getPidsFromDB(db, mets_coll_name);
-
-
-            // TODO throw an exception if the file is not available
-            if (idHelper.aleadyInDB(idMap, docid)) {
-
-                List<String> keyValuePair = idHelper.getKeyValuePairFor(idMap, docid);
-                if (keyValuePair != null) {
-                    String objId = idHelper.findDocid(keyValuePair, db, mets_coll_name);
-                    gridFSDBFile = getGridFsDbFile(objId, type, teiType);
-                    if (gridFSDBFile != null)
-                        return gridFSDBFile.getInputStream();
-                }
-            }
-        }
         return null;
+//
+//        } else {
+//
+//            // search with alternative pid's
+//
+//            IdHelper idHelper = new IdHelper();
+//            Map<String, String> idMap = idHelper.getPidsFromDB(db, mets_coll_name);
+//
+//
+//
+//            if (idHelper.aleadyInDB(this.getM, docid)) {
+//
+//                List<String> keyValuePair = idHelper.getKeyValuePairFor(idMap, docid);
+//                if (keyValuePair != null) {
+//                    String objId = idHelper.findDocid(keyValuePair, db, mets_coll_name);
+//                    gridFSDBFile = getGridFsDbFile(objId, type, teiType);
+//                    if (gridFSDBFile != null)
+//                        return gridFSDBFile.getInputStream();
+//                }
+//            }
+//        }
+//        return null;
     }
 
     /**

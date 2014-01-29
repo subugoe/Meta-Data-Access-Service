@@ -6,6 +6,7 @@ import com.mongodb.*;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSInputFile;
 import de.unigoettingen.sub.mongomapper.helper.BasicDBObjectHelper;
+import de.unigoettingen.sub.mongomapper.helper.Id;
 import de.unigoettingen.sub.mongomapper.helper.IdHelper;
 import de.unigoettingen.sub.mongomapper.helper.mets.*;
 
@@ -69,14 +70,14 @@ public class MongoImporter {
 
     private String db_name = "";
     private String mets_coll_name = "";
-    private String tei_coll_name = "";
+    //private String tei_coll_name = "";
 
     private METS mets = null;
     private Document document;
 
     private BasicDBObject docinfo_json = null;
     private BasicDBObject mets_json = null;
-    private BasicDBObject id_json = null;
+    //private BasicDBObject id_json = null;
     private BasicDBObject hdr_json = null;
     private BasicDBObject namespace_json = null;
     private List<BasicDBObject> dmdsec_json_list = null;
@@ -86,7 +87,7 @@ public class MongoImporter {
     private BasicDBObject structlink_json = null;
     private List<BasicDBObject> behavior_json_list = null;
 
-    private Map<String, String> idMap = null;
+    private List<Id> idList = null;
     private Map<String, String> nsMap = null;
 
     private List<Classifier> classificationList = null;
@@ -107,10 +108,10 @@ public class MongoImporter {
      * @param db_name        The name of the mongoDB
      * @param mets_coll_name The name of the collection, to store the documents
      */
-    public MongoImporter(String db_name, String mets_coll_name, String tei_coll_name) {
+    public MongoImporter(String db_name, String mets_coll_name) {
         this.db_name = db_name;
         this.mets_coll_name = mets_coll_name;
-        this.tei_coll_name = tei_coll_name;
+        //this.tei_coll_name = tei_coll_name;
         init();
     }
 
@@ -133,7 +134,10 @@ public class MongoImporter {
         coll = db.getCollection(this.mets_coll_name);
         gridFs = new GridFS(db, mets_coll_name);
 
-        tei_coll = db.getCollection(this.tei_coll_name);
+        //tei_coll = db.getCollection(this.tei_coll_name);
+
+
+        coll.createIndex(new BasicDBObject("ids", 1));  // create index on "i", ascending
 
     }
 
@@ -173,7 +177,7 @@ public class MongoImporter {
             }
         }
 
-
+        // because of the priorisation on METS tei will no longer be mapped
         // saves the tei elements as fields in a mongo tei collection/document
         //this.writeToMongo(teiBasicDBObject);
 
@@ -217,7 +221,7 @@ public class MongoImporter {
         this.filename = metsFile.getOriginalFilename();
 
 
-        idMap = new HashMap<String, String>();
+        //idMap = new HashMap<String, String>();
         nsMap = new HashMap<String, String>();
 
         this.handling = handling;
@@ -257,9 +261,7 @@ public class MongoImporter {
         document = metswrapper.getMETSDocument();
 
 
-        long start = System.currentTimeMillis();
         this.alreadyInDB = this.process();
-        System.out.println(System.currentTimeMillis() - start + " millisec");
 
 
         if (this.alreadyInDB && handling.equalsIgnoreCase("reject")) {
@@ -269,9 +271,7 @@ public class MongoImporter {
         }
 
 
-        start = System.currentTimeMillis();
         this.writeToMongo(prepareForStorage(), metsFile);
-        System.out.println(System.currentTimeMillis() - start + " millisec");
 
 
         String content = String.format(this.appUrlString + "/documents/%s/mets", docid);
@@ -336,26 +336,29 @@ public class MongoImporter {
 
     /**
      * Retrieves the pids of the current METS file and stores these in the local
-     * Map idMap. See also {@link #idNodeListToMap(org.w3c.dom.NodeList, java.util.Map) idNodeListToMap}.
+     * Map idMap. See also {@link #idNodeListToMap(org.w3c.dom.NodeList, Boolean) idNodeListToMap}.
      */
-    private Map<String, String> retrievePids() {
+    private List<Id> retrievePids() {
 
-
-        Map<String, String> idMap = new HashMap<String, String>();
         String modsNsUri = NsHelper.getNs(getNsMap(), "mods");
-        NodeList identifier = this.document.getElementsByTagNameNS(modsNsUri, "identifier");
-        NodeList recordIdentifier = this.document.getElementsByTagNameNS(modsNsUri, "recordIdentifier");
 
-        if (identifier != null)
-            idNodeListToMap(identifier, idMap);
+        NodeList recordIdentifier = this.document.getElementsByTagNameNS(modsNsUri, "recordIdentifier");
         if (recordIdentifier != null) {
-            idNodeListToMap(recordIdentifier, idMap);
+            return idNodeListToMap(recordIdentifier, true);
         }
 
-        if (idMap.isEmpty())
-            idMap.put("filename", this.getFilename());
+        NodeList identifier = this.document.getElementsByTagNameNS(modsNsUri, "identifier");
+        if (identifier != null) {
+            return idNodeListToMap(identifier, false);
+        }
 
-        return idMap;
+        List<Id> idList = new ArrayList<Id>();
+        Id filenameBasedId = new Id(false);
+        filenameBasedId.setValue(this.getFilename());
+        filenameBasedId.setType("fileNameBased");
+        idList.add(filenameBasedId);
+
+        return idList;
     }
 
     /**
@@ -448,9 +451,10 @@ public class MongoImporter {
      * type to "recordIdentifier".
      *
      * @param identifier The NodeList of identifiers, found in the MEST file.
-     * @param idMap      The map which takes the pid-type-value pairs.
      */
-    private void idNodeListToMap(NodeList identifier, Map<String, String> idMap) {
+    private List<Id> idNodeListToMap(NodeList identifier, Boolean isRecordIdentifier) {
+
+        List<Id> idList = new ArrayList<Id>();
 
         for (int i = 0; i < identifier.getLength(); i++) {
 
@@ -461,21 +465,24 @@ public class MongoImporter {
             if (isObjectIdentifierOfThisObject(node)) {
 
                 NamedNodeMap attributes = node.getAttributes();
-                Node attributeNode = attributes.getNamedItem("type");
+                Node typeAttr = attributes.getNamedItem("type");
+                Node sourceAttr = attributes.getNamedItem("source");
 
+                Id id = new Id(isRecordIdentifier);
 
-                if (attributeNode != null) {
-                    String attrKey = attributeNode.getNodeValue();
-                    if (!idMap.containsKey(attrKey))
-                        idMap.put(attrKey, node.getFirstChild().getNodeValue());
-                }
+                if (typeAttr != null)
+                    id.setType(typeAttr.getNodeValue());
 
-                if (node.getNodeName().contains("recordIdentifier")) {
-                    if (!idMap.containsKey("recordIdentifier"))
-                        idMap.put("recordIdentifier", node.getFirstChild().getNodeValue().trim().replaceAll("\\s+", " "));
-                }
+                if (sourceAttr != null)
+                    id.setSource(sourceAttr.getNodeValue());
+
+                id.setValue(node.getFirstChild().getNodeValue().trim().replaceAll("\\s+", " "));
+
+                idList.add(id);
             }
         }
+
+        return idList;
     }
 
     /**
@@ -511,7 +518,7 @@ public class MongoImporter {
         namespace_json = handleNamespaces();
 
         // find the pids within the mets
-        idMap = retrievePids();
+        idList = retrievePids();
 
         titleList = retrieveDocumentTitles();
 
@@ -547,7 +554,7 @@ public class MongoImporter {
 
 
         // process id's retrieved from dmdSec
-        id_json = handleIds();
+        //id_json = handleIds();
 
         // process amdSec
         AmdSecHelper amdSecHelper = new AmdSecHelper(document, this);
@@ -621,14 +628,14 @@ public class MongoImporter {
         storeFileInMongo(metsFile, docid, "mets");
     }
 
-    private void writeToMongo(BasicDBObject teiBasicDBObject) {
-
-        WriteResult wr = tei_coll.update(teiBasicDBObject, teiBasicDBObject, true, false, WriteConcern.SAFE);
-//        if (wr.getField("upserted") != null) {
-//            System.out.println((ObjectId) wr.getField("upserted"));
+//    private void writeToMongo(BasicDBObject teiBasicDBObject) {
 //
-//        }
-    }
+//        WriteResult wr = tei_coll.update(teiBasicDBObject, teiBasicDBObject, true, false, WriteConcern.SAFE);
+////        if (wr.getField("upserted") != null) {
+////            System.out.println((ObjectId) wr.getField("upserted"));
+////
+////        }
+//    }
 
     private void removeFileFromMongo(String type, String docid) {
 
@@ -648,12 +655,12 @@ public class MongoImporter {
         IdHelper idHelper = new IdHelper();
         Map<String, String> idsFromDB = idHelper.getPidsFromDB(db, mets_coll_name);
 
-        String pid = idHelper.aleadyInDB(idMap, idsFromDB);
+        String pid = idHelper.aleadyInDB(this.getMajorId(), idsFromDB);
 
         if (pid != null) {
             this.alreadyInDB = true;
-            List<String> keyValuePair = idHelper.getKeyValuePairFor(this.idMap, pid);
-            this.docid = idHelper.findDocid(keyValuePair, db, mets_coll_name);
+            //List<String> keyValuePair = idHelper.getKeyValuePairFor(this.idMap, pid);
+            this.docid = idHelper.findDocid(this.getMajorId(), db, mets_coll_name);
 
             return true;
         }
@@ -723,16 +730,13 @@ public class MongoImporter {
     }
 
     /**
-     * Retrieves the pid's and saves these in a BasicDBObject.
+     * Retrieves the pid and saves these in a BasicDBObject.
      *
-     * @return The pid's of the described object.
+     * @return The major pid's of the described object.
      */
     private BasicDBObject handleIds() {
 
-        BasicDBObject doc = new BasicDBObject();
-        doc.putAll(idMap);
-
-        return doc;
+        return getMajorId().toJSON();
     }
 
     /**
@@ -746,17 +750,7 @@ public class MongoImporter {
 
         BasicDBObject doc = new BasicDBObject();
 
-        if (this.idMap.containsKey("PPN")) {
-            doc.append("id", this.idMap.get("PPN"));
-        } else if (this.idMap.containsKey("PPNanalog")) {
-            doc.append("id", this.idMap.get("PPNanalog"));
-        } else {
-            doc.append("id", this.getFilename());
-        }
-
-        if (this.idMap.containsKey("recordIdentifier")) {
-            doc.append("id", this.idMap.get("recordIdentifier"));
-        }
+        doc.append("id", this.getMajorId().toJSON());
 
         if (!this.titleList.isEmpty())
             doc.append("title", this.titleList.get(0));
@@ -806,9 +800,8 @@ public class MongoImporter {
 
         BasicDBObject doc = new BasicDBObject();
 
-        // TODO shouldn't be empty
-        if (!id_json.isEmpty())
-            doc.append("ids", id_json);
+//        if (!id_json.isEmpty())
+//            doc.append("ids", id_json);
 
         if (!mets_json.isEmpty())
             doc.append("mets", mets_json);
@@ -880,4 +873,17 @@ public class MongoImporter {
     }
 
 
+    public Id getMajorId() {
+
+        for (Id id : this.idList) {
+            if (id.isRecordIdentifier() ||
+                    id.getType().equals("gbv-ppn") || id.getType().equals("PPN") ||
+                    id.getType().equals("fileNameBased")
+                    )
+                return id;
+
+        }
+
+        return idList.get(0);
+    }
 }

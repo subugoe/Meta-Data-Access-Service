@@ -21,14 +21,12 @@
     <bean id="mongoImporter" scope="request"  class="de.unigoettingen.sub.mongomapper.ingest.MongoImporter">
         <constructor-arg name="db_name" value="${mongo.dbName}"/>
         <constructor-arg name="mets_coll_name" value="${mongo.mets.collName}"/>
-        <constructor-arg name="tei_coll_name" value="${mongo.tei.collName}"/>
     </bean>
 
 
     <bean id="mongoExporer" scope="request"  class="de.unigoettingen.sub.mongomapper.access.MongoExporter">
         <constructor-arg name="db_name" value="${mongo.dbName}"/>
         <constructor-arg name="mets_coll_name" value="${mongo.mets.collName}"/>
-        <constructor-arg name="tei_coll_name" value="${mongo.tei.collName}"/>
     </bean>
 
 

@@ -57,14 +57,13 @@ public class IdHelper {
      * Checks if an object is already in mongo. The pids of the document
      * will be compared with the pids in the db.
      *
-     * @param idMap     The map with pid's of the object.
      * @param idsFromDB A map with pid's of objects in mongo.
      * @return The pid if found or null.
      */
-    public String aleadyInDB(Map<String, String> idMap, Map<String, String> idsFromDB) {
+    public String aleadyInDB(Id id, Map<String, String> idsFromDB) {
 
         for (String idValue : idsFromDB.values()) {
-            if (aleadyInDB(idMap, idValue))
+            if (idValue.equals(id.getValue()))
                 return idValue;
         }
 
@@ -72,17 +71,17 @@ public class IdHelper {
     }
 
 
-    /**
-     * Helper for {@link #aleadyInDB(java.util.Map, java.util.Map) aleadyInDB}.
-     *
-     * @param idMap    The map with pid's of the object.
-     * @param idFromDB A map with pid's of objects in mongo.
-     * @return True if tho document is already in the db, otherwise false.
-     */
-    public boolean aleadyInDB(Map<String, String> idMap, String idFromDB) {
-
-        return idMap.containsValue(idFromDB);
-    }
+//    /**
+//     * Helper for {@link #aleadyInDB(java.util.Map, java.util.Map) aleadyInDB}.
+//     *
+//     * @param idMap    The map with pid's of the object.
+//     * @param idFromDB A map with pid's of objects in mongo.
+//     * @return True if tho document is already in the db, otherwise false.
+//     */
+//    public boolean aleadyInDB(Map<String, String> idMap, String idFromDB) {
+//
+//        return idMap.containsValue(idFromDB);
+//    }
 
 
     /**
@@ -112,17 +111,18 @@ public class IdHelper {
     /**
      * Search the db for a pair (type, value) and returns the related mongo docid.
      *
-     * @param keyValuePair The pair of pid type (e.g. PPN, PURL) and value.
+     *
+     * @param id
      * @param db           The DB to search in.
      * @param coll_name    The collection to search in.
      * @return The found mongo docid or null.
      */
-    public String findDocid(List<String> keyValuePair, DB db, String coll_name) {
+    public String findDocid(Id id, DB db, String coll_name) {
 
         DBCollection coll = db.getCollection(coll_name);
 
         BasicDBObject keys = new BasicDBObject();
-        keys.put(keyValuePair.get(0), keyValuePair.get(1));
+        keys.put("docinfo.id.value", id.getValue());
         DBCursor cursor = coll.find(new BasicDBObject(), keys);
 
         if (cursor.size() > 0) {

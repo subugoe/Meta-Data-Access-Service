@@ -20,7 +20,7 @@ public class DocInfo {
     private final List<String> props;
     private String docid = "";
 
-    private String id = "";
+    private Id id;
     private String title = "";
     private String titleShort = "";
     private String mets = "";
@@ -55,8 +55,18 @@ public class DocInfo {
         // retrieve docinfo fields
         BasicDBObject docinfo = (BasicDBObject) doc.get("docinfo");
 
-        if (docinfo.containsField("id"))
-            this.id = docinfo.get("id").toString();
+
+        if (docinfo.containsField("id")) {
+
+            BasicDBObject basicDBObject = (BasicDBObject) docinfo.get("id");
+           if (basicDBObject != null) {
+
+                this.id = new Id(Boolean.valueOf(basicDBObject.getString("isRecordIdentifier")));
+                this.id.setValue(basicDBObject.getString("value"));
+                this.id.setType(basicDBObject.getString("type"));
+                this.id.setSource(basicDBObject.getString("source"));
+            }
+        }
 
         if (docinfo.containsField("title"))
             this.title = docinfo.get("title").toString();
@@ -121,7 +131,7 @@ public class DocInfo {
         if (props.isEmpty()) {
 
             doc.append("docid", this.getDocid());
-            doc.append("id", this.getId());
+            doc.append("id", this.id.toJSON());
             doc.append("title", this.getTitle());
             doc.append("titleShort", this.getTitleShort());
             doc.append("mets", this.getMets());
@@ -141,7 +151,7 @@ public class DocInfo {
         doc.append("docid", this.getDocid());
 
         if (props.contains("id"))
-            doc.append("id", this.getId());
+            doc.append("id", this.id.toJSON());
 
         if (props.contains("title"))
             doc.append("title", this.getTitle());
@@ -192,8 +202,8 @@ public class DocInfo {
 
             tag.addTag("docid")
                     .addText(this.getDocid())
-                    .addTag("id")
-                    .addText(this.getId())
+                    .addTag(this.id.toXML())
+
                     .addTag("title")
                     .addText(this.getTitle())
                     .addTag("titleShort")
@@ -223,8 +233,7 @@ public class DocInfo {
                 .addText(this.getDocid());
 
         if (props.contains("id"))
-            tag.addTag("id")
-                    .addText(this.getId());
+            tag.addTag(this.id.toXML());
 
         if (props.contains("title"))
             tag.addTag("title")
@@ -276,11 +285,11 @@ public class DocInfo {
         this.docid = docid;
     }
 
-    public String getId() {
+    public Id getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Id id) {
         this.id = id;
     }
 
