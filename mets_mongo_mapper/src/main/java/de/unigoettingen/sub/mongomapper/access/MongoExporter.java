@@ -204,7 +204,7 @@ public class MongoExporter {
     /**
      * Retrieves the related METS or TEI document if available, else null.
      *
-     * @param docid   The MongoDB id of the related mongoDB object or any of its PIDs.
+     * @param docid   The MongoDB id of the related mongoDB object.
      * @param type    The document type to get ("mets" or "tei").
      * @param teiType The TEI type ("tei" or "teiType)
      * @return The METS document as an InputStream or null.
@@ -247,7 +247,7 @@ public class MongoExporter {
      * for getEmeddedDocument, is creates the query and forwards the request to
      * mongoDB.
      *
-     * @param docid   The MongoDB id of the related mongoDB object, or any PID.
+     * @param docid   The MongoDB id of the related mongoDB object.
      * @param type    The object type e.g. "mets", "tei"
      * @param teiType The TEI type, possibilities are {tei | teiEnriched}.
      * @return The requested file object.
