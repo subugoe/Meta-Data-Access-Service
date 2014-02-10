@@ -1,6 +1,8 @@
 package de.unigoettingen.sub.mongomapper.helper;
 
 import com.mongodb.*;
+import com.mongodb.gridfs.GridFS;
+import com.mongodb.gridfs.GridFSDBFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,10 +130,36 @@ public class IdHelper {
 
         DBCursor cursor = coll.find(query, keys);
 
-        if (cursor.size() > 0) {
-            return cursor.next().get("_id").toString();
+        try {
+            if (cursor.hasNext()) {
+                String docid = cursor.next().get("_id").toString();
+                cursor.close();
+                return docid;
+            }
+        } catch (Exception e) {
+            System.out.println("PID -> " + value);
+        } finally {
+            cursor.close();
+
         }
+
 
         return null;
     }
+
+
+    /**
+     *
+     */
+    public String checkIfExist(String filename, DB db, String coll_name) {
+
+        GridFS gridFs = new GridFS(db, coll_name);
+        GridFSDBFile file = gridFs.findOne(filename);
+
+        BasicDBObject obj = (BasicDBObject)file.get("metadata");
+
+        return (String)obj.get("relatedObjId");
+
+    }
+
 }

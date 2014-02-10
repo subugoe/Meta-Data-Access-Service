@@ -331,5 +331,48 @@ public class AccessController {
         return mongoExporter.getDocumentKml(docid);
     }
 
+    /**
+     * Checks, if an object with the given pid is already in the db.
+     *
+     * @param pid The pid of the document to search.
+     * @param model
+     * @return The docid of the document or null if it doesn't exist.
+     */
+    @RequestMapping(value = "/documents/{pid}/exist", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String isPidInDB(@PathVariable("pid") String pid, Model model) {
+
+
+        String docid = mongoExporter.isInDB(pid);
+
+        if (docid == null) {
+            return null;
+        } else
+            return docid;
+    }
+
+    /**
+     * Checks, if an METS file is already in the db.
+     *
+     * @param filename The name of the file for which to check.
+     * @param model
+     * @return The docid of the document or null if it doesn't exist.
+     */
+    @RequestMapping(value = "/documents/{filename}/exist", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String isFileInDB(@PathVariable("filename") String filename, Model model) {
+
+        String docid = mongoExporter.isFileInDB(filename);
+
+        if (docid == null) {
+            System.out.println("docid==null für -> " + filename);
+            return null;
+        } else
+            return docid;
+
+
+    }
 
 }

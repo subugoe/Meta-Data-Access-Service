@@ -52,6 +52,10 @@ public class MongoExporter {
     }
 
 
+    protected void finalize( ) throws Throwable {
+        mongoClient.close();
+    }
+
     /**
      * init() initializes the object, establishes the connection to the mongoDB server.
      */
@@ -267,8 +271,6 @@ public class MongoExporter {
                     append("teiType", teiType));
         }
 
-        System.out.println(query);
-
         return gridFs.findOne(query);
 
     }
@@ -289,6 +291,28 @@ public class MongoExporter {
 
     public String getDocumentKml(String docid) {
         return null;
+    }
+
+
+    public String isInDB(String pid) {
+
+
+        IdHelper idHelper = new IdHelper();
+        String docid = idHelper.findDocid(pid, db, mets_coll_name);
+        this.mongoClient.close();
+
+        return docid;
+    }
+
+
+    public String isFileInDB(String filename) {
+
+        IdHelper idHelper = new IdHelper();
+        String docid = idHelper.checkIfExist(filename, db, mets_coll_name);
+
+        this.mongoClient.close();
+
+        return docid;
     }
 
 

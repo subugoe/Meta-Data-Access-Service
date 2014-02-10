@@ -48,10 +48,7 @@ public class IngestController {
                        @RequestParam(value = "handling", defaultValue = "replace") String handling,
                        HttpServletRequest request) {
 
-        //long start = System.currentTimeMillis();
         mongoImporter.processMetsAndStore(file, handling, this.getUrlString(request));
-        //System.out.println(System.currentTimeMillis() - start + " millisec");
-
     }
 
 
@@ -72,9 +69,7 @@ public class IngestController {
                       @PathVariable("docid") String docid,
                       HttpServletRequest request) {
 
-        long start = System.currentTimeMillis();
         mongoImporter.processTeiAndStore(file, docid, "tei", "tei", this.getUrlString(request));
-        System.out.println(System.currentTimeMillis() - start + " millisec");
     }
 
     /**
@@ -94,9 +89,7 @@ public class IngestController {
                               @PathVariable("docid") String docid,
                               HttpServletRequest request) {
 
-        long start = System.currentTimeMillis();
         mongoImporter.processTeiAndStore(file, docid, "tei", "teiEnriched", this.getUrlString(request));
-        System.out.println(System.currentTimeMillis() - start + " millisec");
     }
 
 

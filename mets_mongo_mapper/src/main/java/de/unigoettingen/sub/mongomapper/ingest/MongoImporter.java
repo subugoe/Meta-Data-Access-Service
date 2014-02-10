@@ -218,6 +218,7 @@ public class MongoImporter {
         this.appUrlString = appUrlString;
         this.filename = metsFile.getOriginalFilename();
 
+
         nsMap = new HashMap<String, String>();
 
         this.handling = handling;
@@ -339,10 +340,7 @@ public class MongoImporter {
      */
     private List<Id> retrievePids() {
 
-
         String modsNsUri = NsHelper.getNs(getNsMap(), "mods");
-
-
         NodeList recordIdentifier = null;
 
         if (modsNsUri != null && !modsNsUri.equals(""))
@@ -366,7 +364,7 @@ public class MongoImporter {
         if (identifier != null && identifier.getLength() > 0)
             return idNodeListToList(identifier, false);
 
-        return null;
+        return new ArrayList<Id>();
     }
 
     /**
@@ -377,14 +375,24 @@ public class MongoImporter {
 
 
         List<Classifier> classificationList = new ArrayList<>();
+
         String modsNsUri = NsHelper.getNs(getNsMap(), "mods");
-        NodeList classifiers = this.document.getElementsByTagNameNS(modsNsUri, "classification");
+        NodeList classifiers = null;
 
+        if (modsNsUri != null && !modsNsUri.equals(""))
+            classifiers = this.document.getElementsByTagNameNS(modsNsUri, "classification");
 
-        if (classifiers != null) {
+        if (classifiers == null || classifiers.getLength() == 0)
+            classifiers = this.document.getElementsByTagName("mods:classification");
+
+        if (classifiers != null && classifiers.getLength() > 0) {
             for (int i = 0; i < classifiers.getLength(); i++) {
                 Node classifier = classifiers.item(i);
-                String authority = classifier.getAttributes().getNamedItem("authority").getNodeValue();
+                Node authorityNode = classifier.getAttributes().getNamedItem("authority");
+                String authority = "";
+                if (authorityNode != null)
+                    authority = authorityNode.getNodeValue();
+
                 String value = classifier.getFirstChild().getNodeValue();
 
                 classificationList.add(new Classifier(authority, value));
@@ -402,15 +410,30 @@ public class MongoImporter {
     private List<String> retrieveDocumentTitles() {
 
         List<String> titleList = new ArrayList<String>();
+
         String modsNsUri = NsHelper.getNs(getNsMap(), "mods");
+        NodeList titles = null;
 
-        NodeList titleNodeList = this.document.getElementsByTagNameNS(modsNsUri, "title");
+        if (modsNsUri != null && !modsNsUri.equals(""))
+            titles = this.document.getElementsByTagNameNS(modsNsUri, "title");
 
-        if (titleNodeList.getLength() > 0) {
-            for (int i = 0; i < titleNodeList.getLength(); i++) {
-                Node node = titleNodeList.item(i);
-                if (node.getParentNode().getParentNode().getNodeName().equalsIgnoreCase("mods:mods"))
-                    titleList.add(titleNodeList.item(i).getFirstChild().getNodeValue());
+        if (titles == null || titles.getLength() == 0)
+            titles = this.document.getElementsByTagName("mods:title");
+
+
+        // must check, because the mods:part element detail, has also an element title
+        if (titles != null && titles.getLength() > 0) {
+            for (int i = 0; i < titles.getLength(); i++) {
+                Node node = titles.item(i);
+                if (node.getParentNode().getParentNode().getNodeName().equalsIgnoreCase("mods:mods")) {
+
+                    Node titleNode = titles.item(i).getFirstChild();
+                    String title = "";
+                    if (titleNode != null)
+                        title = titleNode.getNodeValue();
+
+                    titleList.add(title);
+                }
             }
         }
         return titleList;
@@ -425,28 +448,47 @@ public class MongoImporter {
     private List<RelatedItem> retrieveRelatedItems() {
 
         List<RelatedItem> relatedItemList = new ArrayList<RelatedItem>();
+
         String modsNsUri = NsHelper.getNs(getNsMap(), "mods");
+        NodeList relatedItems = null;
 
-        NodeList relatedItemNodeList = this.document.getElementsByTagNameNS(modsNsUri, "relatedItem");
-        if (relatedItemNodeList.getLength() > 0) {
+        if (modsNsUri != null && !modsNsUri.equals(""))
+            relatedItems = this.document.getElementsByTagNameNS(modsNsUri, "relatedItem");
 
-            for (int i = 0; i < relatedItemNodeList.getLength(); i++) {
-                Node node = relatedItemNodeList.item(i);
+        if (relatedItems == null || relatedItems.getLength() == 0)
+            relatedItems = this.document.getElementsByTagName("mods:relatedItem");
+
+        if (relatedItems != null && relatedItems.getLength() > 0) {
+
+            for (int i = 0; i < relatedItems.getLength(); i++) {
+                Node node = relatedItems.item(i);
 
                 if (node.getParentNode().getNodeName().equalsIgnoreCase("mods:mods")) {
 
                     NamedNodeMap attributes = node.getAttributes();
-                    String type = attributes.getNamedItem("type").getNodeValue();
 
-                    if (type != null && !type.equals("")) {
+                    String type = "";
+                    Node typeNode = attributes.getNamedItem("type");
 
-                        // mods:recordIdentifier
-                        Node relatedItemIdNode = node.getFirstChild().getFirstChild();
-                        String source = relatedItemIdNode.getAttributes().getNamedItem("source").getNodeValue();
-                        String relatedItemRecordIdentifier = relatedItemIdNode.getFirstChild().getNodeValue();
+                    if (typeNode != null)
+                        type = typeNode.getNodeValue();
 
-                        relatedItemList.add(new RelatedItem(type, relatedItemRecordIdentifier, source));
+                    //if (type != null && !type.equals("")) {
+
+                    // mods:recordIdentifier
+                    Node relatedItemIdNode = node.getFirstChild().getFirstChild();
+                    Node sourceNode = relatedItemIdNode.getAttributes().getNamedItem("source");
+                    String source = "";
+                    String relatedItemRecordIdentifier = "";
+
+                    if (sourceNode != null) {
+                        source = sourceNode.getNodeValue();
                     }
+
+                    relatedItemRecordIdentifier = relatedItemIdNode.getFirstChild().getNodeValue();
+                    relatedItemList.add(new RelatedItem(type, relatedItemRecordIdentifier, source));
+
+                    //}
                 }
             }
         }
