@@ -7,6 +7,7 @@ import com.mycila.xmltool.XMLDoc;
 import com.mycila.xmltool.XMLTag;
 import de.unigoettingen.sub.mongomapper.helper.DocInfo;
 import de.unigoettingen.sub.mongomapper.helper.IdHelper;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +73,13 @@ public class MongoExporter {
         coll = db.getCollection(this.mets_coll_name);
     }
 
+    public String getCollectionAsXML(List<String> props) {
+        return null;
+    }
+
+    public String getCollectionAsJSON(List<String> props) {
+        return null;
+    }
 
     /**
      * Collects information about the documents in the repository.
@@ -120,6 +128,32 @@ public class MongoExporter {
         return docs;
     }
 
+    public BasicDBObject getDocumentAsJSON(String docid, List<String> props) {
+
+        BasicDBObject docs = new BasicDBObject();
+        BasicDBList docList = new BasicDBList();
+
+        // find docinfo
+        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
+
+        BasicDBObject query = new BasicDBObject();
+        query.put("_id", new ObjectId(docid));
+
+        DBCursor dbCursor = coll.find(query, field);
+
+        while (dbCursor.hasNext()) {
+
+            DBObject dbObject = dbCursor.next();
+
+            DocInfo docInfo = new DocInfo(props);
+            docInfo.setFromJSON(dbObject);
+            docList.add(docInfo.getAsJSON());
+
+            docs.append("docs", docList);
+        }
+        return docs;
+    }
+
     /**
      * Collects information about the documents in the repository.
      *
@@ -150,6 +184,35 @@ public class MongoExporter {
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
         DBCursor dbCursor = coll.find(new BasicDBObject(), field);
+
+        XMLTag tag = XMLDoc.newDocument()
+                .addRoot("docs");
+
+        while (dbCursor.hasNext()) {
+
+            DBObject dbObject = dbCursor.next();
+            DocInfo docInfo = new DocInfo(props);
+            docInfo.setFromJSON(dbObject);
+
+            XMLTag t = docInfo.getAsXML();
+
+            tag.addDocument(t);
+        }
+        return tag.toString();
+    }
+
+
+    public String getDocumentAsXML(String docid, List<String> props) {
+
+
+        // find docinfo
+        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
+
+
+        BasicDBObject query = new BasicDBObject();
+        query.put("_id", new ObjectId(docid));
+
+        DBCursor dbCursor = coll.find(query, field);
 
         XMLTag tag = XMLDoc.newDocument()
                 .addRoot("docs");
@@ -314,6 +377,7 @@ public class MongoExporter {
 
         return docid;
     }
+
 
 
 }

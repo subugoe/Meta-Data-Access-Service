@@ -1,24 +1,21 @@
 package de.unigoettingen.sub.mongomapper;
 
-import com.mongodb.MongoClient;
 import de.unigoettingen.sub.mongomapper.access.MongoExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,7 +25,7 @@ import java.util.List;
  * 12/2013
  */
 @Controller
-@Scope(value="request")
+@Scope(value = "request")
 public class AccessController {
 
     private final Logger logger = LoggerFactory.getLogger(AccessController.class);
@@ -39,39 +36,148 @@ public class AccessController {
 
 
 
+    @RequestMapping(value = "/collection", method = RequestMethod.GET, produces = "application/xml")
+    public
+    @ResponseBody
+    String getCollectionsAsXML(@RequestParam(value = "props", required = false) List<String> props,
+                             Model model) {
+
+        if (props == null) {
+            props = new ArrayList<>();
+        }
+
+        return mongoExporter.getCollectionAsXML(props);
+
+    }
+
+    @RequestMapping(value = "/collection", method = RequestMethod.GET, produces = "application/json")
+    public
+    @ResponseBody
+    String getCollectionsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
+                               Model model) {
+
+        if (props == null) {
+            props = new ArrayList<>();
+        }
+
+        return mongoExporter.getCollectionAsJSON(props);
+
+    }
+
+
     /**
      * Collects information about the documents in the repository.
      * <p/>
-     * request: /documents ? format={xml | json} & props=id & props=...}
+     * request: /documents ? props=id & props=...}
+     * header:  Accept: application/xml
      *
-     * @param format The requested document format (xml or json).
-     * @param props  Reduce the docinfo to a required infoset. Possible values for
-     *               props are:
-     *               {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
-     *
-     * @param model  The Spring-Model objekt, required for transmission of parameters within the request scope.
-     * @return A List of documents with a set of desciptive information.
-     *
+     * @param props Reduce the docinfo to a required infoset. Possible values for
+     *              props are:
+     *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
+     * @return A List of documents with a set of desciptive information, encoded in XML.
      */
     @RequestMapping(value = "/documents", method = RequestMethod.GET)
     public
     @ResponseBody
-    String getDocuments(@RequestParam(value = "format", defaultValue = "xml") String format,
-                        @RequestParam(value = "props", required = false) List<String> props,
-                        Model model) {     // or (ModelMap model)
+    String getDocumentsAsXML(@RequestParam(value = "props", required = false) List<String> props,
+                             Model model) {
 
         if (props == null) {
-           props = new ArrayList<>();
+            props = new ArrayList<>();
         }
 
-        if (format.equalsIgnoreCase("xml")) {
-            return mongoExporter.getDocumentsAsXML(props);
-        } else if (format.equalsIgnoreCase("json")) {
-            return mongoExporter.getDocumentsAsJSON(props).toString();
-        }
+        return mongoExporter.getDocumentsAsXML(props);
 
-        return null;
     }
+
+    /**
+     * Collects information about the documents in the repository.
+     * <p/>
+     * request: /documents ? props=id & props=...}
+     * header:  Accept: application/json
+     *
+     * @param props Reduce the docinfo to a required infoset. Possible values for
+     *              props are:
+     *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
+     * @return A List of documents with a set of desciptive information, encoded in JSON.
+     */
+    @RequestMapping(value = "/documents", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String getDocumentsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
+                             Model model) {
+
+        if (props == null) {
+            props = new ArrayList<>();
+        }
+
+        return mongoExporter.getDocumentsAsJSON(props).toString();
+
+    }
+
+    /**
+     * Collects information about the documents in the repository.
+     * <p/>
+     * request: /documents ? props=id & props=...}
+     * header:  Accept: application/xml
+     *
+     * @param props  Reduce the docinfo to a required infoset. Possible values for
+     *               props are:
+     *               {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param model  The Spring-Model objekt, required for transmission of parameters within the request scope.
+     * @return A List of documents with a set of desciptive information, encoded in XML.
+     */
+    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = "application/xml")
+    public
+    @ResponseBody
+    String getDocumentAsXML(@PathVariable("docid") String docid,
+                            @RequestParam(value = "props", required = false) List<String> props,
+                            Model model) {     // or (ModelMap model)
+
+        if (props == null) {
+            props = new ArrayList<>();
+        }
+
+
+        return mongoExporter.getDocumentAsXML(docid, props);
+
+    }
+
+    /**
+     * Collects information about the documents in the repository.
+     * <p/>
+     * request: /documents ? props=id & props=...}
+     * header:  Accept: application/json
+     *
+     * @param props  Reduce the docinfo to a required infoset. Possible values for
+     *               props are:
+     *               {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param model  The Spring-Model objekt, required for transmission of parameters within the request scope.
+     * @return A List of documents with a set of desciptive information, encoded in JSON.
+     */
+    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = "application/json")
+    public
+    @ResponseBody
+    String getDocumentAsJSON(@PathVariable("docid") String docid,
+                             @RequestParam(value = "props", required = false) List<String> props,
+                             Model model) {     // or (ModelMap model)
+
+        if (props == null) {
+            props = new ArrayList<>();
+        }
+
+
+        return mongoExporter.getDocumentAsJSON(docid, props).toString();
+
+    }
+
+
+
+
+
+
 
     /**
      * Returns an  outline of a document.
@@ -334,7 +440,7 @@ public class AccessController {
     /**
      * Checks, if an object with the given pid is already in the db.
      *
-     * @param pid The pid of the document to search.
+     * @param pid   The pid of the document to search.
      * @param model
      * @return The docid of the document or null if it doesn't exist.
      */
@@ -371,8 +477,6 @@ public class AccessController {
             return null;
         } else
             return docid;
-
-
     }
 
 }
