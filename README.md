@@ -1,8 +1,8 @@
-# Mongo Mapper (MoMa)
+# Meta Data Access Server (MeDAS)
 
 ## Über das Projekt:
 
-Das Projekt MoMa ist mit der Entwicklung eines Mets/Tei-Nach-Mongo Mappings beschäftigt. Das Mets Mapping erfolgt 1:1, d.h. ein Mets-Dokument wird auf ein Mongo-Dokument abgebildet. Die Felder *_id*, *ids*, *docinfo* und *namespaces* im MongoDB Dokument werden zur einfacheren indentifizierung, Beschreibung und Übertragung der Namespaces hinzugefügt, sie haben kein direktes Pendant im Mets-Dokument. Die  METS -> Mongo Abbildung wird wie folgt vorgenommen:
+Das Projekt MeDAS ist mit der Entwicklung eines Metadaten Servers beschäftigt. Derzeit auf ein Mets nach Mongo Mappings ausgerichtet. Das Mets Mapping erfolgt 1:1, d.h. ein Mets-Dokument wird auf ein Mongo-Dokument abgebildet. Die Felder *_id*, *ids*, *docinfo* und *namespaces* im MongoDB Dokument werden zur einfacheren indentifizierung, Beschreibung und Übertragung der Namespaces hinzugefügt, sie haben kein direktes Pendant im Mets-Dokument. Die  METS -> Mongo Abbildung wird wie folgt vorgenommen:
 
 - **_id**: *Feld hat **kein äquvalent** in Mets*, enthält die docid in Mongo. Immer enthalten.
 - **ids**: *Feld hat **kein äquvalent** in Mets*, enthält die PIDs des Mets-Dokuments. Immer enthalten.
