@@ -28,7 +28,7 @@ public class MongoExporter {
 
     private final Logger logger = LoggerFactory.getLogger(MongoExporter.class);
 
-    
+
     private final String db_name;
     private final String mets_coll_name;
     //private final String tei_coll_name;                                             #
@@ -41,7 +41,7 @@ public class MongoExporter {
     /**
      * Construct the object with required parameters
      *
-     * @param db_name   The name of the mongoDB
+     * @param db_name        The name of the mongoDB
      * @param mets_coll_name The name of the collection, to store the documents
      */
     public MongoExporter(String db_name, String mets_coll_name) {
@@ -53,7 +53,7 @@ public class MongoExporter {
     }
 
 
-    protected void finalize( ) throws Throwable {
+    protected void finalize() throws Throwable {
         mongoClient.close();
     }
 
@@ -73,18 +73,88 @@ public class MongoExporter {
         coll = db.getCollection(this.mets_coll_name);
     }
 
-    public String getCollectionAsXML(List<String> props) {
+    // TODO we have currently no collection data in the db. to be continued if we get the data.
+    public String getCollectionsAsXML(List<String> props, int start, int number) {
+
+//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
+//
+//        BasicDBObject query = new BasicDBObject();
+//        query.put("docinfo.relatedItem.type", "host");
+//
+//        DBCursor dbCursor = coll.find(query, field);
+//
+//        XMLTag tag = XMLDoc.newDocument()
+//                .addRoot("docs");
+//
+//        while (dbCursor.hasNext()) {
+//
+//            DBObject dbObject = dbCursor.next();
+//            DocInfo docInfo = new DocInfo(props);
+//            docInfo.setFromJSON(dbObject);
+//
+//            XMLTag t = docInfo.getAsXML();
+//
+//            tag.addDocument(t);
+//        }
+//        return tag.toString();
+
         return null;
     }
 
-    public String getCollectionAsJSON(List<String> props) {
-        return null;
+    // TODO we have currently no collection data in the db. to be continued if we get the data.
+    public BasicDBObject getCollectionsAsJSON(List<String> props, int start, int number) {
+
+        BasicDBObject docs = new BasicDBObject();
+//        BasicDBList docList = new BasicDBList();
+//
+//        // find docinfo
+//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
+//
+//
+//        BasicDBObject query = new BasicDBObject();
+//        QueryBuilder qb = new QueryBuilder();
+////        qb.or(new QueryBuilder().start("docinfo.relatedItem").exists(false).
+////                or("docinfo.relatedItem.type").notEquals("host").
+////                or("docinfo.relatedItem.type").notEquals("preceding").
+////                or("docinfo.relatedItem.type").notEquals("succeeding").get());//,
+////                //new QueryBuilder().put("docinfo.relatedItem.type").notEquals("series").get());
+//
+//        qb.or(new QueryBuilder().put("docinfo.relatedItem").exists(false).get(),
+//                new QueryBuilder().put("docinfo.relatedItem.type").notEquals("host").get(),
+//                new QueryBuilder().put("docinfo.relatedItem.type").notEquals("preceding").get(),
+//                new QueryBuilder().put("docinfo.relatedItem.type").notEquals("succeeding").get()
+//        );
+//
+//        query.putAll(qb.get());
+//
+//        System.out.println(qb.toString());
+//        query.putAll(qb.get());
+//
+//
+//        DBCursor dbCursor = coll.find(query, field);
+//
+//        while (dbCursor.hasNext()) {
+//
+//
+//            DBObject dbObject = dbCursor.next();
+//
+//            DocInfo docInfo = new DocInfo(props);
+//            docInfo.setFromJSON(dbObject);
+//            docList.add(docInfo.getAsJSON());
+//
+//            docs.append("docs", docList);
+//        }
+
+        return docs;
     }
 
     /**
      * Collects information about the documents in the repository.
      *
-     * @return A list of document info in JSON.
+     *
+     * @param props
+     * @param start
+     *@param number @return A list of document info in JSON.
      * Format:
      * {docs : [
      * {doc:  {
@@ -103,9 +173,8 @@ public class MongoExporter {
      * },
      * ...
      * }]}
-     * @param props
      */
-    public BasicDBObject getDocumentsAsJSON(List<String> props) {
+    public BasicDBObject getDocumentsAsJSON(List<String> props, int start, int number) {
 
         BasicDBObject docs = new BasicDBObject();
         BasicDBList docList = new BasicDBList();
@@ -131,7 +200,6 @@ public class MongoExporter {
     public BasicDBObject getDocumentAsJSON(String docid, List<String> props) {
 
         BasicDBObject docs = new BasicDBObject();
-        BasicDBList docList = new BasicDBList();
 
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
@@ -139,25 +207,23 @@ public class MongoExporter {
         BasicDBObject query = new BasicDBObject();
         query.put("_id", new ObjectId(docid));
 
-        DBCursor dbCursor = coll.find(query, field);
+        DBObject dbObject = coll.findOne(query, field);
 
-        while (dbCursor.hasNext()) {
 
-            DBObject dbObject = dbCursor.next();
+        DocInfo docInfo = new DocInfo(props);
+        docInfo.setFromJSON(dbObject);
 
-            DocInfo docInfo = new DocInfo(props);
-            docInfo.setFromJSON(dbObject);
-            docList.add(docInfo.getAsJSON());
 
-            docs.append("docs", docList);
-        }
-        return docs;
+        return new BasicDBObject("doc", docInfo.getAsJSON());
     }
 
     /**
      * Collects information about the documents in the repository.
      *
-     * @return A list of document info in XML.
+     *
+     * @param props
+     * @param start
+     *@param number @return A list of document info in XML.
      * Format:
      * <docs>
      * <doc>
@@ -176,14 +242,13 @@ public class MongoExporter {
      * </doc>
      * ...
      * </docs>
-     * @param props
      */
-    public String getDocumentsAsXML(List<String> props) {
+    public String getDocumentsAsXML(List<String> props, int start, int number) {
 
 
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-        DBCursor dbCursor = coll.find(new BasicDBObject(), field);
+        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(start).batchSize(number);
 
         XMLTag tag = XMLDoc.newDocument()
                 .addRoot("docs");
@@ -204,30 +269,18 @@ public class MongoExporter {
 
     public String getDocumentAsXML(String docid, List<String> props) {
 
-
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-
 
         BasicDBObject query = new BasicDBObject();
         query.put("_id", new ObjectId(docid));
 
-        DBCursor dbCursor = coll.find(query, field);
+        DBObject dbObject = coll.findOne(query, field);
 
-        XMLTag tag = XMLDoc.newDocument()
-                .addRoot("docs");
+        DocInfo docInfo = new DocInfo(props);
+        docInfo.setFromJSON(dbObject);
 
-        while (dbCursor.hasNext()) {
-
-            DBObject dbObject = dbCursor.next();
-            DocInfo docInfo = new DocInfo(props);
-            docInfo.setFromJSON(dbObject);
-
-            XMLTag t = docInfo.getAsXML();
-
-            tag.addDocument(t);
-        }
-        return tag.toString();
+        return docInfo.getAsXML().toString();
     }
 
 
@@ -377,7 +430,6 @@ public class MongoExporter {
 
         return docid;
     }
-
 
 
 }
