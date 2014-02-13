@@ -79,6 +79,8 @@ public class AccessController {
      * @param props Reduce the docinfo to a required infoset. Possible values for
      *              props are:
      *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param start Reduce the docinfo to a required infoset. Possible values for
+     * @param number Reduce the docinfo to a required infoset. Possible values for
      * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information, encoded in XML.
      */
