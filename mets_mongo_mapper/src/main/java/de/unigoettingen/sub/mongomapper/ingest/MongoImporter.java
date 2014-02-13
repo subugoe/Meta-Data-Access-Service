@@ -952,8 +952,8 @@ public class MongoImporter {
             return ids.get("recordIdentifier");
         else if (ids.containsKey("PPN"))
             return ids.get("PPN");
-        else if (ids.containsKey("recordIdentifier"))
-            return ids.get("recordIdentifier");
+        else if (ids.containsKey("PPNanalog"))
+            return ids.get("PPNanalog");
         else {
 
             Id filenameBasedId = new Id(false);

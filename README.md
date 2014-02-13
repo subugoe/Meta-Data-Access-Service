@@ -1,4 +1,4 @@
-# Meta Data Access Server (MeDAS)
+# Meta Data Access Service (MeDAS)
 
 ## Über das Projekt:
 
