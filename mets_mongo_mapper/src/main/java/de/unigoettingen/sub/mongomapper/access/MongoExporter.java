@@ -174,9 +174,9 @@ public class MongoExporter {
      * ...
      * }]}
      */
-    public BasicDBObject getDocumentsAsJSON(List<String> props, int start, int number) {
+    public BasicDBList getDocumentsAsJSON(List<String> props, int start, int number) {
 
-        BasicDBObject docs = new BasicDBObject();
+        //BasicDBObject docs = new BasicDBObject();
         BasicDBList docList = new BasicDBList();
 
         // find docinfo
@@ -192,9 +192,9 @@ public class MongoExporter {
             docInfo.setFromJSON(dbObject);
             docList.add(docInfo.getAsJSON());
 
-            docs.append("docs", docList);
+            //docs.append("docs", docList);
         }
-        return docs;
+        return docList;
     }
 
     public BasicDBObject getDocumentAsJSON(String docid, List<String> props) {
