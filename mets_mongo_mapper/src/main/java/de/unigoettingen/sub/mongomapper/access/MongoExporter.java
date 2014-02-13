@@ -213,8 +213,8 @@ public class MongoExporter {
         DocInfo docInfo = new DocInfo(props);
         docInfo.setFromJSON(dbObject);
 
-
-        return new BasicDBObject("doc", docInfo.getAsJSON());
+        return docInfo.getAsJSON();
+        //return new BasicDBObject("doc", docInfo.getAsJSON());
     }
 
     /**
