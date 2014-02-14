@@ -42,7 +42,7 @@ public class AccessController {
     @ResponseBody
     String getCollectionsAsXML(@RequestParam(value = "props", required = false) List<String> props,
                                @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                               @RequestParam(value = "limit", required = false, defaultValue = "25") int limit,
+                               @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
                                Model model) {
 
         if (props == null) {
@@ -58,7 +58,7 @@ public class AccessController {
     @ResponseBody
     String getCollectionsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
                                 @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                                @RequestParam(value = "limit", required = false, defaultValue = "25") int limit,
+                                @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
                                 Model model) {
 
         if (props == null) {
@@ -89,7 +89,7 @@ public class AccessController {
     @ResponseBody
     String getDocumentsAsXML(@RequestParam(value = "props", required = false) List<String> props,
                              @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                             @RequestParam(value = "limit", required = false, defaultValue = "25") int limit,
+                             @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
                              Model model) {
 
         if (props == null) {
@@ -119,7 +119,7 @@ public class AccessController {
     @ResponseBody
     String getDocumentsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
                               @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                              @RequestParam(value = "limit", required = false, defaultValue = "25") int limit,
+                              @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
                               Model model) {
 
         if (props == null) {
@@ -147,9 +147,7 @@ public class AccessController {
     @ResponseBody
     String getDocumentAsXML(@PathVariable("docid") String docid,
                             @RequestParam(value = "props", required = false) List<String> props,
-                            HttpServletResponse response) {
-
-        //response.setContentType("text/html;charset=UTF-8");
+                            Model model) {
 
         if (props == null) {
             props = new ArrayList<>();

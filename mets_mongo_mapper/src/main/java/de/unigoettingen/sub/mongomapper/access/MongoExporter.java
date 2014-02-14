@@ -182,9 +182,10 @@ public class MongoExporter {
 
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip).limit(limit);
+        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip);
 
-        System.out.println();
+        if (limit >0)
+            dbCursor = dbCursor.limit(limit);
 
         while (dbCursor.hasNext()) {
 
@@ -251,7 +252,10 @@ public class MongoExporter {
 
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip).limit(limit);
+        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip);
+
+        if (limit >0)
+            dbCursor = dbCursor.limit(limit);
 
         XMLTag tag = XMLDoc.newDocument()
                 .addRoot("docs");
