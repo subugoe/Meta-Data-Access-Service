@@ -140,8 +140,8 @@ public class DocInfo {
             doc.append("teiEnriched", this.getTeiEnriched());
             doc.append("pageCount", this.getPageCount());
             doc.append("fulltext", this.getFulltext());
-            doc.append("relatedItem", this.getRelatedItemsAsJSON());
-            doc.append("classification", this.getClassificationsAsJSON());
+            doc.append("relatedItems", this.getRelatedItemsAsJSON());
+            doc.append("classifications", this.getClassificationsAsJSON());
 
             return doc;
 
@@ -181,7 +181,7 @@ public class DocInfo {
             doc.append("relatedItem", this.getRelatedItemsAsJSON());
 
         if (props.contains("classifications"))
-            doc.append("classification", this.getClassificationsAsJSON());
+            doc.append("classifications", this.getClassificationsAsJSON());
 
         return doc;
 

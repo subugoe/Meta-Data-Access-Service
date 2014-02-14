@@ -153,8 +153,9 @@ public class MongoExporter {
      *
      *
      * @param props
-     * @param start
-     *@param number @return A list of document info in JSON.
+     * @param skip  The number of dokuments to skip.
+     * @param limit The number of documents to get.
+     * @return A list of document info in JSON.
      * Format:
      * {docs : [
      * {doc:  {
@@ -174,14 +175,16 @@ public class MongoExporter {
      * ...
      * }]}
      */
-    public BasicDBList getDocumentsAsJSON(List<String> props, int start, int number) {
+    public BasicDBObject getDocumentsAsJSON(List<String> props, int skip, int limit) {
 
-        //BasicDBObject docs = new BasicDBObject();
+        BasicDBObject docs = new BasicDBObject();
         BasicDBList docList = new BasicDBList();
 
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-        DBCursor dbCursor = coll.find(new BasicDBObject(), field);
+        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip).limit(limit);
+
+        System.out.println();
 
         while (dbCursor.hasNext()) {
 
@@ -192,9 +195,9 @@ public class MongoExporter {
             docInfo.setFromJSON(dbObject);
             docList.add(docInfo.getAsJSON());
 
-            //docs.append("docs", docList);
+            docs.append("docs", docList);
         }
-        return docList;
+        return docs;
     }
 
     public BasicDBObject getDocumentAsJSON(String docid, List<String> props) {
@@ -222,8 +225,9 @@ public class MongoExporter {
      *
      *
      * @param props
-     * @param start
-     *@param number @return A list of document info in XML.
+     * @param skip  The number of dokuments to skip.
+     * @param limit The number of documents to get.
+     * @return A list of document info in XML.
      * Format:
      * <docs>
      * <doc>
@@ -243,12 +247,12 @@ public class MongoExporter {
      * ...
      * </docs>
      */
-    public String getDocumentsAsXML(List<String> props, int start, int number) {
+    public String getDocumentsAsXML(List<String> props, int skip, int limit) {
 
 
         // find docinfo
         BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(start).batchSize(number);
+        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip).limit(limit);
 
         XMLTag tag = XMLDoc.newDocument()
                 .addRoot("docs");

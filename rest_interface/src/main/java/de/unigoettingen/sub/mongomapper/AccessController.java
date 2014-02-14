@@ -79,8 +79,8 @@ public class AccessController {
      * @param props Reduce the docinfo to a required infoset. Possible values for
      *              props are:
      *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
-     * @param start Reduce the docinfo to a required infoset. Possible values for
-     * @param number Reduce the docinfo to a required infoset. Possible values for
+     *  @param skip  The number of documents to skip (default = 0).
+     * @param limit The number of documents to get (default = 25).
      * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information, encoded in XML.
      */
@@ -88,15 +88,15 @@ public class AccessController {
     public
     @ResponseBody
     String getDocumentsAsXML(@RequestParam(value = "props", required = false) List<String> props,
-                             @RequestParam(value = "start", required = false, defaultValue = "1") int start,
-                             @RequestParam(value = "number", required = false, defaultValue = "25") int number,
+                             @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+                             @RequestParam(value = "limit", required = false, defaultValue = "25") int limit,
                              Model model) {
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
-        return mongoExporter.getDocumentsAsXML(props, start, number);
+        return mongoExporter.getDocumentsAsXML(props, skip, limit);
 
     }
 
@@ -109,6 +109,8 @@ public class AccessController {
      * @param props Reduce the docinfo to a required infoset. Possible values for
      *              props are:
      *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param skip  The number of documents to skip (default = 0).
+     * @param limit The number of documents to get (default = 25).
      * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information, encoded in JSON.
      */
@@ -116,15 +118,15 @@ public class AccessController {
     public
     @ResponseBody
     String getDocumentsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
-                              @RequestParam(value = "start", required = false, defaultValue = "1") int start,
-                              @RequestParam(value = "number", required = false, defaultValue = "25") int number,
+                              @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+                              @RequestParam(value = "limit", required = false, defaultValue = "25") int limit,
                               Model model) {
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
-        return mongoExporter.getDocumentsAsJSON(props, start, number).toString();
+        return mongoExporter.getDocumentsAsJSON(props, skip, limit).toString();
 
     }
 

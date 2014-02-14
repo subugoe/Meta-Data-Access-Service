@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
  * 12/2013
  */
 @Controller
-@Scope(value="request")
+@Scope(value = "request")
 public class IngestController {
 
     private final Logger logger = LoggerFactory.getLogger(IngestController.class);
@@ -95,6 +95,23 @@ public class IngestController {
 
     public String getUrlString(HttpServletRequest request) {
 
-        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        String schema = request.getScheme();
+        String server = request.getServerName();
+        int port = request.getServerPort();
+        String contextpath = request.getContextPath();
+
+        StringBuffer strb = new StringBuffer();
+
+        if (schema != null)
+            strb.append(schema + "://");
+        if (server != null)
+            strb.append(server);
+        if (port > 0)
+            strb.append(":" + port);
+        if (contextpath != null)
+            strb.append(contextpath);
+
+
+        return strb.toString();
     }
 }
