@@ -41,15 +41,15 @@ public class AccessController {
     public
     @ResponseBody
     String getCollectionsAsXML(@RequestParam(value = "props", required = false) List<String> props,
-                               @RequestParam(value = "start", required = false, defaultValue = "1") int start,
-                               @RequestParam(value = "number", required = false, defaultValue = "25") int number,
+                               @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+                               @RequestParam(value = "limit", required = false, defaultValue = "25") int limit,
                                Model model) {
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
-        return mongoExporter.getCollectionsAsXML(props, start, number);
+        return mongoExporter.getCollectionsAsXML(props, skip, limit);
 
     }
 
@@ -57,15 +57,15 @@ public class AccessController {
     public
     @ResponseBody
     String getCollectionsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
-                                @RequestParam(value = "start", required = false, defaultValue = "1") int start,
-                                @RequestParam(value = "number", required = false, defaultValue = "25") int number,
+                                @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+                                @RequestParam(value = "limit", required = false, defaultValue = "25") int limit,
                                 Model model) {
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
-        return mongoExporter.getCollectionsAsJSON(props, start, number).toString();
+        return mongoExporter.getCollectionsAsJSON(props, skip, limit).toString();
 
     }
 
@@ -84,7 +84,7 @@ public class AccessController {
      * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information, encoded in XML.
      */
-    @RequestMapping(value = "/documents", method = RequestMethod.GET, produces = "application/xml")
+    @RequestMapping(value = "/documents", method = RequestMethod.GET, produces = "application/xml; charset=UTF-8")
     public
     @ResponseBody
     String getDocumentsAsXML(@RequestParam(value = "props", required = false) List<String> props,
@@ -114,7 +114,7 @@ public class AccessController {
      * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information, encoded in JSON.
      */
-    @RequestMapping(value = "/documents", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/documents", method = RequestMethod.GET, produces = "application/json; charset=UTF-8")
     public
     @ResponseBody
     String getDocumentsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
@@ -142,33 +142,20 @@ public class AccessController {
      * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information, encoded in XML.
      */
-    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = "application/xml")
+    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = "application/xml; charset=UTF-8")
     public
     @ResponseBody
     String getDocumentAsXML(@PathVariable("docid") String docid,
                             @RequestParam(value = "props", required = false) List<String> props,
-                            Model model) {
+                            HttpServletResponse response) {
+
+        //response.setContentType("text/html;charset=UTF-8");
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
-        String doc = mongoExporter.getDocumentAsXML(docid, props);
-
-        if (doc == null)
-            return null;
-
         return mongoExporter.getDocumentAsXML(docid, props);
-
-
-//        if (AjaxUtils.isAjaxRequest(request)) {
-//            response.setHeader("Content-Type", "application/json");
-//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            return "Unknown error occurred: " + ex.getMessage();
-//        } else {
-//            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
-//            return null;
-//        }
 
     }
 
@@ -184,7 +171,7 @@ public class AccessController {
      * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information, encoded in JSON.
      */
-    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = "application/json; charset=UTF-8")
     public
     @ResponseBody
     String getDocumentAsJSON(@PathVariable("docid") String docid,

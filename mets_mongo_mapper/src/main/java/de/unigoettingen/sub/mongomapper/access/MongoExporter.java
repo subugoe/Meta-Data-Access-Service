@@ -11,7 +11,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
+import java.io.*;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +65,7 @@ public class MongoExporter {
         // init mongo
         try {
             mongoClient = new MongoClient();
+
         } catch (UnknownHostException e) {
             logger.error(e.getMessage());
         }
@@ -74,14 +75,14 @@ public class MongoExporter {
     }
 
     // TODO we have currently no collection data in the db. to be continued if we get the data.
-    public String getCollectionsAsXML(List<String> props, int start, int number) {
+    public String getCollectionsAsXML(List<String> props, int skip, int limit) {
 
 //        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
 //
 //        BasicDBObject query = new BasicDBObject();
 //        query.put("docinfo.relatedItem.type", "host");
 //
-//        DBCursor dbCursor = coll.find(query, field);
+//        DBCursor dbCursor = coll.find(query, field).skip(skip).limit(limit);
 //
 //        XMLTag tag = XMLDoc.newDocument()
 //                .addRoot("docs");
@@ -102,7 +103,7 @@ public class MongoExporter {
     }
 
     // TODO we have currently no collection data in the db. to be continued if we get the data.
-    public BasicDBObject getCollectionsAsJSON(List<String> props, int start, int number) {
+    public BasicDBObject getCollectionsAsJSON(List<String> props, int skip, int limit) {
 
         BasicDBObject docs = new BasicDBObject();
 //        BasicDBList docList = new BasicDBList();
@@ -131,7 +132,7 @@ public class MongoExporter {
 //        query.putAll(qb.get());
 //
 //
-//        DBCursor dbCursor = coll.find(query, field);
+//        DBCursor dbCursor = coll.find(query, field).skip(skip).limit(limit);
 //
 //        while (dbCursor.hasNext()) {
 //
@@ -150,7 +151,6 @@ public class MongoExporter {
 
     /**
      * Collects information about the documents in the repository.
-     *
      *
      * @param props
      * @param skip  The number of dokuments to skip.
@@ -223,7 +223,6 @@ public class MongoExporter {
     /**
      * Collects information about the documents in the repository.
      *
-     *
      * @param props
      * @param skip  The number of dokuments to skip.
      * @param limit The number of documents to get.
@@ -267,7 +266,7 @@ public class MongoExporter {
 
             tag.addDocument(t);
         }
-        return tag.toString();
+        return tag.toString("UTF-8");
     }
 
 
@@ -284,7 +283,7 @@ public class MongoExporter {
         DocInfo docInfo = new DocInfo(props);
         docInfo.setFromJSON(dbObject);
 
-        return docInfo.getAsXML().toString();
+        return docInfo.getAsXML().toString("UTF-8");
     }
 
 
@@ -433,6 +432,26 @@ public class MongoExporter {
         this.mongoClient.close();
 
         return docid;
+    }
+
+    public String convertToUTF8(String s) {
+        String out = null;
+        try {
+            out = new String(s.getBytes("UTF-8"), "ISO-8859-1");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return null;
+        }
+        return out;
+    }
+
+    public String convertFromUTF8(String s) {
+        String out = null;
+        try {
+            out = new String(s.getBytes("ISO-8859-1"), "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return null;
+        }
+        return out;
     }
 
 
