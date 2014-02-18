@@ -15,8 +15,7 @@ import org.springframework.web.servlet.mvc.multiaction.NoSuchRequestHandlingMeth
 
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +78,7 @@ public class AccessController {
      * @param props Reduce the docinfo to a required infoset. Possible values for
      *              props are:
      *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
-     *  @param skip  The number of documents to skip (default = 0).
+     * @param skip  The number of documents to skip (default = 0).
      * @param limit The number of documents to get (default = 25).
      * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
      * @return A List of documents with a set of desciptive information, encoded in XML.
@@ -152,6 +151,7 @@ public class AccessController {
         if (props == null) {
             props = new ArrayList<>();
         }
+
 
         return mongoExporter.getDocumentAsXML(docid, props);
 
@@ -452,7 +452,7 @@ public class AccessController {
      * @param pid   The pid of the document to search.
      * @param model
      * @return The docid of the document or null if it doesn't exist.
-     */
+     *
     @RequestMapping(value = "/documents/{pid}/exist", method = RequestMethod.GET)
     public
     @ResponseBody
@@ -465,7 +465,8 @@ public class AccessController {
             return null;
         } else
             return docid;
-    }
+    } */
+
 
     /**
      * Checks, if an METS file is already in the db.
@@ -483,9 +484,23 @@ public class AccessController {
 
         if (docid == null) {
             System.out.println("docid==null für -> " + filename);
-            return null;
-        } else
-            return docid;
+            writeFileNameToFile(filename);
+            return "";
+        }
+       // else
+       //     return docid;
+        return "";
+    }
+
+    private void writeFileNameToFile(String filename) {
+
+        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("/Users/jpanzer/Documents/data/digizeit/out.txt", true)))) {
+            out.println(filename);
+        }catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
+
+
     }
 
 
