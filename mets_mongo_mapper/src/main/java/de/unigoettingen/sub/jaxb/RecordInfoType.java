@@ -60,12 +60,12 @@ import javax.xml.bind.annotation.XmlValue;
 public class RecordInfoType {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "recordContentSource", namespace = "http://www.loc.gov/mods/v3", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "recordChangeDate", namespace = "http://www.loc.gov/mods/v3", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "recordIdentifier", namespace = "http://www.loc.gov/mods/v3", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "recordOrigin", namespace = "http://www.loc.gov/mods/v3", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "languageOfCataloging", namespace = "http://www.loc.gov/mods/v3", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "recordCreationDate", namespace = "http://www.loc.gov/mods/v3", type = JAXBElement.class, required = false)
+        @XmlElementRef(name = "recordContentSource", type =  RecordContentSource.class, required = false),
+        @XmlElementRef(name = "recordChangeDate", type = RecordChangeDate.class, required = false),
+        @XmlElementRef(name = "recordIdentifier", type = RecordIdentifier.class, required = false),
+        @XmlElementRef(name = "recordOrigin", type = RecordOrigin.class, required = false),
+        @XmlElementRef(name = "languageOfCataloging", type = LanguageOfCataloging.class, required = false),
+        @XmlElementRef(name = "recordCreationDate", type = RecordCreationDate.class, required = false)
     })
     protected List<JAXBElement<?>> recordContentSourcesAndRecordCreationDatesAndRecordChangeDates;
     @XmlAttribute(name = "lang")
