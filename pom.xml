@@ -11,7 +11,12 @@
     <modules>
         <module>rest_interface</module>
         <module>mets_mongo_mapper</module>
-        </modules>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
 
     <dependencies>
         <dependency>
