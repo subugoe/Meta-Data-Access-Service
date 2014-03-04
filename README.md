@@ -7,7 +7,7 @@ Das Projekt MeDAS ist mit der Entwicklung eines Metadaten Servers beschäftigt. 
 - **_id**: *Feld hat **kein äquvalent** in Mets*, enthält die docid in Mongo. Immer enthalten.
 - **ids**: *Feld hat **kein äquvalent** in Mets*, enthält die PIDs des Mets-Dokuments. Immer enthalten.
 - **root**         ->   **mets**: Enthält Attribute des Root-Mets-Element. Optional.
-- **docinfo**: *Feld hat **kein äquvalent** in Mets*, enthält eine Zusammenfassung von wichtigen Informationen (pid, title, titleShort, mets-url, tei-url, teiEnriched-url, ). Immer enthalten.
+- **docinfo**: *Feld hat **kein äquvalent** in Mets*, enthält eine Zusammenfassung von wichtigen Informationen (pid, title, subTitle, mets-url, tei-url, teiEnriched-url, ). Immer enthalten.
 - **aus root**     ->   **namespaces**: Enthält die Namespacedeklarationen aus dem Mets-Dokument. Optionale.
 - **metsHdr**      ->   **metsHdr**: Informationen über das Mets-Dokument.
 - **dmdSec**       ->   **dmdSec**: Enthält die beschreibenden Metadaten aus dem Mets-Dokument. Optional.

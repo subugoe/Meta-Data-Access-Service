@@ -17,7 +17,7 @@ public class Doc {
     private String docid;
     private Id id;
     private String title;
-    private String titleShort;
+    private String subTitle;
     private String mets;
     private String preview;
     private String tei;
@@ -103,12 +103,12 @@ public class Doc {
         this.title = title;
     }
 
-    public String getTitleShort() {
-        return titleShort;
+    public String getSubTitle() {
+        return subTitle;
     }
 
-    public void setTitleShort(String titleShort) {
-        this.titleShort = titleShort;
+    public void setSubTitle(String subTitle) {
+        this.subTitle = subTitle;
     }
 
     public String getMets() {

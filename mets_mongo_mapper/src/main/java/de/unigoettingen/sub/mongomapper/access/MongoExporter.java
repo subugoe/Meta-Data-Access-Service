@@ -678,6 +678,7 @@ public class MongoExporter {
     }
 
 
+
     private void removeMetsDocument(ShortDocInfo shortDocInfo) {
         this.logger.info("removeMets Mets document with recordIdentifier: " + shortDocInfo.getRecordIdentifier());
 
