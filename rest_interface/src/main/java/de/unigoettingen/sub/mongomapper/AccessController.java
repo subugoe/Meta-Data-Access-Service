@@ -135,9 +135,9 @@ public class AccessController {
      * request: /documents ? props=id & props=...}
      * header:  Accept: application/xml
      *
-     * @param props Reduce the docinfo to a required infoset. Possible values for
-     *              props are:
-     *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param props    Reduce the docinfo to a required infoset. Possible values for
+     *                 props are:
+     *                 {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
      * @param response The HttpServletResponse object.
      * @return A List of documents with a set of desciptive information, encoded in XML.
      */
@@ -360,6 +360,26 @@ public class AccessController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    // TODO just via an admn account !!!
+
+    /**
+     * Returns the METS document.
+     * <p/>
+     * request: /documents/{docid}/mets
+     *
+     * @param docid    The MongoDB id of the related mongoDB object.
+     * @param response The HttpServletResponse object.
+     */
+    @RequestMapping(value = "/documents/{docid}/remove", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    void getRemoveMets(@PathVariable("docid") String docid,
+                       HttpServletResponse response) {
+
+        mongoExporter.removeMets(docid);
     }
 
 

@@ -7,6 +7,7 @@ import de.unigoettingen.sub.medas.model.Doc;
 import de.unigoettingen.sub.medas.model.Id;
 import de.unigoettingen.sub.mongomapper.helper.DocInfo;
 
+import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -306,7 +308,7 @@ public class MongoExporter {
 
         retrieveDocInfo(mets);
 
-        }
+    }
 
     private void retrieveDocInfo(Mets mets) {
 
@@ -320,20 +322,19 @@ public class MongoExporter {
 
             processModsElements(objectList);
 
-    }
+        }
 
 
-    // mets-url
-    //String metsUrl = String.format(this.getUrlString(request) + "/documents/%s/mets", docid);
+        // mets-url
+        //String metsUrl = String.format(this.getUrlString(request) + "/documents/%s/mets", docid);
 
-    // page-count
+        // page-count
         // Todo
 
-    // related items
+        // related items
 
 
-
-    // classification
+        // classification
 
 
 //        // find docinfo
@@ -350,7 +351,7 @@ public class MongoExporter {
 //        return docInfo.getAsXML().toString("UTF-8");
 
 
-    // ---
+        // ---
 
 //        OutputStream out = null;
 //
@@ -371,7 +372,7 @@ public class MongoExporter {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-}
+    }
 
     private void processModsElements(List<Object> objectList) {
 
@@ -379,9 +380,11 @@ public class MongoExporter {
 
 
         for (Object obj : objectList) {
+
             if (obj instanceof RecordInfoType) {
                 RecordInfoType recordInfoType = (RecordInfoType) obj;
                 List<Object> objectList1 = recordInfoType.getElements();
+
                 for (Object o : objectList1) {
                     if (o instanceof RecordInfoType.RecordIdentifier) {
                         RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o;
@@ -393,26 +396,28 @@ public class MongoExporter {
                     }
                 }
             }
+
             if (obj instanceof TitleInfoType) {
                 TitleInfoType titleInfoType = (TitleInfoType) obj;
                 List<Object> objectList1 = titleInfoType.getElements();
                 for (Object o : objectList1) {
                     if (o instanceof Title) {
-                        Title title = (Title)o;
+                        Title title = (Title) o;
                         title.getValue();
                     }
                     if (o instanceof BaseTitleInfoType.SubTitle) {
-                        BaseTitleInfoType.SubTitle subTitle = (BaseTitleInfoType.SubTitle)o;
+                        BaseTitleInfoType.SubTitle subTitle = (BaseTitleInfoType.SubTitle) o;
                         subTitle.getValue();
                     }
                 }
             }
 
             if (obj instanceof RelatedItemType) {
-                RelatedItemType relatedItemType = (RelatedItemType)obj;
+                RelatedItemType relatedItemType = (RelatedItemType) obj;
                 relatedItemType.getElements();
             }
         }
+
     }
 
 
@@ -648,8 +653,6 @@ public class MongoExporter {
 //        }
 //        return out;
 //    }
-
-
     public void getMetsDocument(String docid, ServletOutputStream outputStream) {
 
         Mets resultsMets = metsRepo.findOne(docid);
@@ -670,5 +673,65 @@ public class MongoExporter {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    private void removeMetsDocument(ShortDocInfo shortDocInfo) {
+        this.logger.info("removeMets Mets document with recordIdentifier: " + shortDocInfo.getRecordIdentifier());
+
+        removeReferencedModsDocuments(shortDocInfo.getDocid());
+        metsRepo.removeMets(shortDocInfo.getDocid());
+    }
+
+    private void removeReferencedModsDocuments(String docid) {
+
+        Mets mets = metsRepo.findOne(docid);
+        List<MdSecType> dmdSecs = mets.getDmdSecs();
+        for (MdSecType mdSec : dmdSecs) {
+            List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();
+            for (Mods mods : modsList) {
+                metsRepo.removeMods(mods.getID());
+            }
+        }
+    }
+
+    public void removeMets(String docid) {
+        Mets mets = metsRepo.findOne(docid);
+
+        Id id = getFirstRecordIdentifier(mets);
+        if (id != null)
+            this.removeMetsDocument(new ShortDocInfo(docid, id.getValue()));
+    }
+
+    private Id getFirstRecordIdentifier(Mets mets) {
+
+        List<Id> idList = new ArrayList<>();
+        List<MdSecType> dmdSecs = mets.getDmdSecs();
+
+        for (MdSecType mdSecType : dmdSecs) {
+            Mods mods = mdSecType.getMdWrap().getXmlData().getMods().get(0);
+
+            List<Object> objectList1 = mods.getElements();
+
+            for (Object o1 : objectList1) {
+                if (o1 instanceof RecordInfoType) {
+                    RecordInfoType recordInfoType = (RecordInfoType) o1;
+                    List<Object> objectList2 = recordInfoType.getElements();
+
+                    for (Object o2 : objectList2) {
+                        if (o2 instanceof RecordInfoType.RecordIdentifier) {
+                            RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
+
+                            Id id = new Id();
+                            id.setSource(recordIdentifier.getSource());
+                            id.setValue(recordIdentifier.getValue());
+                            return id;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }
