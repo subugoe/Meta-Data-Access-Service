@@ -1,34 +1,35 @@
 package de.unigoettingen.sub.mongomapper.ingest;
 
-import au.edu.apsr.mtk.base.*;
-import au.edu.apsr.mtk.ch.METSReader;
+
 import com.mongodb.*;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSInputFile;
+import de.unigoettingen.sub.jaxb.*;
 import de.unigoettingen.sub.mongomapper.helper.BasicDBObjectHelper;
 import de.unigoettingen.sub.mongomapper.helper.Id;
-import de.unigoettingen.sub.mongomapper.helper.IdHelper;
+import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
 import de.unigoettingen.sub.mongomapper.helper.mets.*;
 
 import de.unigoettingen.sub.mongomapper.helper.mods.Classifier;
 import de.unigoettingen.sub.mongomapper.helper.mods.RelatedItem;
-import de.unigoettingen.sub.mongomapper.helper.tei.StaxHandler;
+import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,7 @@ import java.util.Map;
  * <p/>
  * On ingest of a new embedded tei document, the docinfo needs to modified too.
  */
+@Component
 public class MongoImporter {
 
     private final Logger logger = LoggerFactory.getLogger(MongoImporter.class);
@@ -59,11 +61,11 @@ public class MongoImporter {
     private final String HOST = "localhost";
     private final int PORT = 27017;
 
-    private MongoClient mongoClient = null;
-    private METSWrapper metswrapper = null;
+//    private MongoClient mongoClient = null;
+//    private METSWrapper metswrapper = null;
 
-    private DB db = null;
-    private DBCollection coll = null;
+    //    private DB db = null;
+//    private DBCollection coll = null;
     private GridFS gridFs = null;
     private DBCollection tei_coll = null;
 
@@ -72,7 +74,7 @@ public class MongoImporter {
     private String mets_coll_name = "";
     //private String tei_coll_name = "";
 
-    private METS mets = null;
+    //    private METS mets = null;
     private Document document;
 
     private BasicDBObject docinfo_json = null;
@@ -102,18 +104,38 @@ public class MongoImporter {
     private String appUrlString;
 
 
-    /**
-     * Construct the object with required parameters
-     *
-     * @param db_name        The name of the mongoDB
-     * @param mets_coll_name The name of the collection, to store the documents
-     */
-    public MongoImporter(String db_name, String mets_coll_name) {
-        this.db_name = db_name;
-        this.mets_coll_name = mets_coll_name;
-        //this.tei_coll_name = tei_coll_name;
-        init();
+    //---
+
+//    this.context = new ClassPathXmlApplicationContext("spring-config.xml");
+//
+//    this.mongoTemplate = (MongoTemplate) context.getBean("mongoTemplate");
+//
+//    this.metsRepo = (MetsRepository) context.getBean("mongoDbMetsRepository");
+//
+
+
+    @Autowired()
+    private MongoDbMetsRepository metsRepo;
+
+//    private DB database;
+//    private DBCollection coll;
+
+    public MongoImporter() {
+
     }
+
+//    /**
+//     * Construct the object with required parameters
+//     *
+//     * @param db_name        The name of the mongoDB
+//     * @param mets_coll_name The name of the collection, to store the documents
+//     */
+//    public MongoImporter(String mets_coll_name) {
+//        //this.db_name = db_name;
+//        this.mets_coll_name = mets_coll_name;
+//
+//        init();
+//    }
 
 
     /**
@@ -121,86 +143,36 @@ public class MongoImporter {
      */
     private void init() {
 
-        // init mongo
-        // TODO better exception handling required
-        try {
-            mongoClient = new MongoClient();
-        } catch (UnknownHostException e) {
-            logger.error(e.getMessage());
-        }
-
-        db = mongoClient.getDB(this.db_name);
-
-        coll = db.getCollection(this.mets_coll_name);
-        gridFs = new GridFS(db, mets_coll_name);
-
-        //tei_coll = db.getCollection(this.tei_coll_name);
+//        this.context = new ClassPathXmlApplicationContext("spring-config.xml");
+//
+//        this.mongoTemplate = (MongoTemplate) context.getBean("mongoTemplate");
+//
+//        this.metsRepo = (MetsRepository) context.getBean("mongoDbMetsRepository");
+//
+//        //Mongo mongo = (Mongo) context.getBean("mongo");
+//
+//        this.database = mongoTemplate.getDb();
+//        this.coll = database.getCollection("this.mets_coll_name");
 
 
-        coll.createIndex(new BasicDBObject("docinfo.id.value", 1));  // create index on "i", ascending
-
-    }
-
-
-    /**
-     * Stores a TEI structure to mongoDB.
-     *
-     * @param teiFile      The TEI file to store in mongodb.
-     * @param docid        The docid of the related METS document.
-     * @param type         The object type e.g. "mets", "tei"
-     * @param teiType      The TEI type, possibilities are {tei | teiEnriched}.
-     * @param appUrlString The application URL (schema://host:port/).
-     */
-    public void processTeiAndStore(MultipartFile teiFile, String docid, String type, String teiType, String appUrlString) {
-
-        this.teiType = teiType;
-        this.appUrlString = appUrlString;
-        this.docid = docid;
-        InputStream inputStream = null;
-        StaxHandler staxHandler = null;
-
-        BasicDBObject teiBasicDBObject = null;
-
-        try {
-            inputStream = teiFile.getInputStream();
-            staxHandler = new StaxHandler(inputStream);
-            teiBasicDBObject = staxHandler.processXMLFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // because of the priorisation on METS tei will no longer be mapped
-        // saves the tei elements as fields in a mongo tei collection/document
-        //this.writeToMongo(teiBasicDBObject);
-
-        storeFileInMongo(teiFile, docid, type);
-
-        String content = String.format(this.appUrlString + "/documents/%s/tei?type=%s", docid, teiType);
-
-        if (teiType.equalsIgnoreCase("tei"))
-            this.addOrChangeDocInfoField(docid, "tei", content);
-        else if (teiType.equalsIgnoreCase("teiEnriched"))
-            this.addOrChangeDocInfoField(docid, "teiEnriched", content);
-
-    }
+//        // init mongo
+//        // TODO better exception handling required
+//        try {
+//            mongoClient = new MongoClient();
+//        } catch (UnknownHostException e) {
+//            logger.error(e.getMessage());
+//        }
+//
+//        db = mongoClient.getDB(this.db_name);
+//
+//        coll = db.getCollection(this.mets_coll_name);
+//        gridFs = new GridFS(db, mets_coll_name);
+//
+//        //tei_coll = db.getCollection(this.tei_coll_name);
 
 
-    private void addOrChangeDocInfoField(String docid, String field, String content) {
+        //coll.createIndex(new BasicDBObject("docinfo.id.value", 1));  // create index on "i", ascending
 
-        DBObject dbObject = this.coll.find(this.getQueryBasicDBObject(docid)).toArray().get(0);
-
-        DBObject docinfo = (DBObject) dbObject.get("docinfo");
-        docinfo.put(field, content);
-
-        this.coll.findAndModify(this.getQueryBasicDBObject(docid), dbObject);
     }
 
 
@@ -208,74 +180,228 @@ public class MongoImporter {
      * Processes a Mets structure and store these to mongoDB.
      *
      * @param metsFile     The METS file to store in mongodb.
-     * @param handling     Specifies what to do if a METS file with the same PID already
-     *                     exist. Possibilities are:
+     * @param handling     If a document is already in the db it will be replaced. The existence test will be performed
+     *                     via the (recordInfo) recordIdentifier element. Possibilities values:
      *                     reject:     Rejects the request, the file will not be stored.
+     *                     replace:    The new METS file will replace an existing document in mongoDB (default).
      * @param appUrlString The application URL (schema://host:port/).
      */
-    public void processMetsAndStore(MultipartFile metsFile, String handling, String appUrlString) {
+    public void storeMetsDocument(MultipartFile metsFile, String handling, String appUrlString) {
 
         this.appUrlString = appUrlString;
         this.filename = metsFile.getOriginalFilename();
-
-
-        nsMap = new HashMap<String, String>();
-
         this.handling = handling;
 
-        // TODO there should be only one METS file (overwrite) !!!
 
-        METSReader metsreader = new METSReader();
-
-        // TODO better exception handling required
-        try {
-            InputStream inputStream = metsFile.getInputStream();
-            metsreader.mapToDOM(inputStream);
-            inputStream.close();
-
-        } catch (SAXException e) {
-            logger.error(e.getMessage());
-        } catch (ParserConfigurationException e) {
-            logger.error(e.getMessage());
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-
-        // TODO better exception handling required
-        try {
-            Document document = metsreader.getMETSDocument();
-
-            metswrapper = new METSWrapper(document);
-
-        } catch (METSException e) {
-            logger.error(e.getMessage());
-            e.printStackTrace();
-        }
         // TODO execution of validate fails, because of the used mets schema in METSWrapper.validate()
         //metswrapper.validate();
 
-        mets = metswrapper.getMETSObject();
-        document = metswrapper.getMETSDocument();
+
+        InputStream inputStream = null;
+
+        // TODO better exception handling required
+        try {
+
+            inputStream = metsFile.getInputStream();
+
+            try {
+
+                JAXBContext jaxbctx = JAXBContext.newInstance(Mets.class);
+
+                Unmarshaller um = jaxbctx.createUnmarshaller();
+
+                Mets mets = (Mets) um.unmarshal(inputStream);
+
+                ShortDocInfo shortDocInfo = this.checkIfExist(mets);
+
+                if (shortDocInfo != null) {
+                    if (handling.equals("reject")) {
+                        logger.info("ingest is rejected, because there is already a document with the recordIdentifier: " + shortDocInfo.getRecordIdentifier());
+                        return;
+                    }
+
+                    removeReferencedModsDocuments(shortDocInfo);
+                    removeMetsDocument(shortDocInfo);
+
+                    mets.setID(shortDocInfo.getDocid());
+                }
+
+                saveMods(mets);
+                saveMets(mets);
 
 
-        this.alreadyInDB = this.process();
+            } catch (JAXBException e) {
+                e.printStackTrace();
+            }
 
 
-        if (this.alreadyInDB && handling.equalsIgnoreCase("reject")) {
-            logger.info("Request rejected, because the METS file " +
-                    this.filename + " is already in the db with mongo id " + this.docid);
-            return;
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                if (inputStream != null)
+                    inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
 
-        this.writeToMongo(prepareForStorage(), metsFile);
+    }
+
+    private void removeMetsDocument(ShortDocInfo shortDocInfo) {
+        logger.info("removeMets Mets document with recordIdentifier: " + shortDocInfo.getRecordIdentifier());
+        metsRepo.removeMets(shortDocInfo.getDocid());
+    }
+
+    private void removeReferencedModsDocuments(ShortDocInfo shortDocInfo) {
+        logger.info("removeMets Mods documents related to Mets document with recordIdentifier: " + shortDocInfo.getRecordIdentifier());
+
+        Mets mets = metsRepo.findOne(shortDocInfo.getDocid());
+        List<MdSecType> dmdSecs = mets.getDmdSecs();
+        for (MdSecType mdSec : dmdSecs) {
+            List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();
+            for (Mods mods : modsList) {
+                metsRepo.removeMods(mods.getID());
+            }
+        }
+
+    }
+
+    private void getRecordIdentifier(Mets mets) {
+
+    }
+
+    private void saveMets(Mets mets) {
+
+        metsRepo.save(mets);
+    }
+
+    private void saveMods(Mets mets) {
+
+        List<MdSecType> dmdSecs = mets.getDmdSecs();
+        for (MdSecType mdSecType : dmdSecs) {
+            MdSecType.MdWrap mdWrap = mdSecType.getMdWrap();
+            MdSecType.MdWrap.XmlData xmlData = mdWrap.getXmlData();
+            List<Mods> modsList = xmlData.getMods();
+
+            for (Mods mods : modsList) {
+                metsRepo.save(mods);
+            }
+        }
+    }
+
+    /**
+     * The method checks if the document is in the DB, and returns the docid and recordIdentifier packed as a
+     * ShortDocInfo object or null if not in the db. The test will be performed with the recordIdentifier.
+     *
+     * @param mets The Mets document to check.
+     * @return The docid if already stored, otherwise null.
+     */
+    private ShortDocInfo checkIfExist(Mets mets) {
 
 
-        String content = String.format(this.appUrlString + "/documents/%s/mets", docid);
-        this.addOrChangeDocInfoField(docid, "mets", content);
+        List<MdSecType> dmdSecs = mets.getDmdSecs();
+        for (MdSecType mdSec : dmdSecs) {
+            List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();
+            for (Mods mods : modsList) {
+                List<Object> objectList = mods.getElements();
+                for (Object obj : objectList) {
+                    if (obj instanceof RecordInfoType) {
+                        List<Object> elements = ((RecordInfoType) obj).getElements();
+                        for (Object o : elements) {
+                            if (o instanceof RecordInfoType.RecordIdentifier) {
+                                String value = ((RecordInfoType.RecordIdentifier) o).getValue();
 
-        this.mongoClient.close();
+                                Mods m = metsRepo.findModsByRecordIdentifier(value);
 
+                                if (m != null) {
+
+                                    Mets resultsMets = metsRepo.findMetsByModsId(m.getID());
+
+                                    String docid = resultsMets.getID();
+
+                                    ShortDocInfo shortDocInfo =  new ShortDocInfo(docid, value);
+
+                                    System.out.println(shortDocInfo);
+
+                                    return shortDocInfo;
+                                }
+
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+
+    }
+
+
+
+
+//    /**
+//     * Stores a TEI structure to mongoDB.
+//     *
+//     * @param teiFile      The TEI file to store in mongodb.
+//     * @param docid        The docid of the related METS document.
+//     * @param type         The object type e.g. "mets", "tei"
+//     * @param teiType      The TEI type, possibilities are {tei | teiEnriched}.
+//     * @param appUrlString The application URL (schema://host:port/).
+//     */
+//    public void processTeiAndStore(MultipartFile teiFile, String docid, String type, String teiType, String appUrlString) {
+//
+//        this.teiType = teiType;
+//        this.appUrlString = appUrlString;
+//        this.docid = docid;
+//        InputStream inputStream = null;
+//        StaxHandler staxHandler = null;
+//
+//        BasicDBObject teiBasicDBObject = null;
+//
+//        try {
+//            inputStream = teiFile.getInputStream();
+//            staxHandler = new StaxHandler(inputStream);
+//            teiBasicDBObject = staxHandler.processXMLFile();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (XMLStreamException e) {
+//            e.printStackTrace();
+//        } finally {
+//            try {
+//                inputStream.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        // because of the priorisation on METS tei will no longer be mapped
+//        // saves the tei elements as fields in a mongo tei collection/document
+//        //this.writeToMongo(teiBasicDBObject);
+//
+//        storeFileInMongo(teiFile, docid, type);
+//
+//        String content = String.format(this.appUrlString + "/documents/%s/tei?type=%s", docid, teiType);
+//
+//        if (teiType.equalsIgnoreCase("tei"))
+//            this.addOrChangeDocInfoField(docid, "tei", content);
+//        else if (teiType.equalsIgnoreCase("teiEnriched"))
+//            this.addOrChangeDocInfoField(docid, "teiEnriched", content);
+//
+//    }
+
+
+    private void addOrChangeDocInfoField(String docid, String field, String content) {
+
+//        DBObject dbObject = this.coll.find(this.getQueryBasicDBObject(docid)).toArray().get(0);
+//
+//        DBObject docinfo = (DBObject) dbObject.get("docinfo");
+//        docinfo.put(field, content);
+//
+//        this.coll.findAndModify(this.getQueryBasicDBObject(docid), dbObject);
     }
 
 
@@ -319,19 +445,19 @@ public class MongoImporter {
      */
     private void checkIfExistAndRemove(String type) {
 
-        GridFS gridFs = new GridFS(db, mets_coll_name);
-        BasicDBObject query;
-
-        if (type.equalsIgnoreCase("mets")) {
-            query = new BasicDBObject("metadata", new BasicDBObject("relatedObjId", docid).
-                    append("type", type));
-        } else {
-            query = new BasicDBObject("metadata", new BasicDBObject("relatedObjId", docid).
-                    append("type", type).
-                    append("teiType", teiType));
-        }
-
-        gridFs.remove(query);
+//        GridFS gridFs = new GridFS(db, mets_coll_name);
+//        BasicDBObject query;
+//
+//        if (type.equalsIgnoreCase("mets")) {
+//            query = new BasicDBObject("metadata", new BasicDBObject("relatedObjId", docid).
+//                    append("type", type));
+//        } else {
+//            query = new BasicDBObject("metadata", new BasicDBObject("relatedObjId", docid).
+//                    append("type", type).
+//                    append("teiType", teiType));
+//        }
+//
+//        gridFs.removeMets(query);
     }
 
     /**
@@ -563,68 +689,69 @@ public class MongoImporter {
      * (JSON-like).
      */
     private boolean process() {
-
-        Boolean alreadyInDB = false;
-
-        // find namespaces
-        namespace_json = handleNamespaces();
-
-        // find the pids within the mets
-        idList = retrievePids();
-
-
-        titleList = retrieveDocumentTitles();
-
-        classificationList = retrieveClassifiers();
-
-        relatedItemList = retrieveRelatedItems();
-
-        // checks if the doc is already in the db. If the request contains
-        // the flag "reject" the controll gets back to the caller.
-
-        if (alreadyInDB = isMetsFileAlreadyInDB()) {
-
-            if (handling.equalsIgnoreCase("reject"))
-                return true;
-
-            if (handling.equalsIgnoreCase("replace"))
-                this.removeFileFromMongo("mets", this.docid);
-        }
-
-        // process dmdSec
-        DmdSecHelper dmdSecHelper = new DmdSecHelper(document, this);
-        dmdsec_json_list = dmdSecHelper.handleDmdSec(mets);
-
-        // summary about the object
-        docinfo_json = handleDocinfo();
-
-        // process the mets root element
-        mets_json = handleMetsRoot();
-
-        // process MetsHdr
-        hdr_json = metsHdrHelper.handleMetsHdr(mets);
-
-
-        // process id's retrieved from dmdSec
-        //id_json = handleIds();
-
-        // process amdSec
-        AmdSecHelper amdSecHelper = new AmdSecHelper(document, this);
-        amdsec_json_list = amdSecHelper.handleAmdSec(mets);
-
-        // process fileSec
-        filesec_json = fileSecHelper.handleFileSec(mets);
-
-        // process structMap
-        structmap_json_list = structMapHelper.handleStructMap(mets);
-
-        // process structLink
-        structlink_json = structLinkHelper.handleStructLink(mets);
-
-        // process behaviorSec
-        behavior_json_list = behaviorSecHelper.handleBehaviorSec(mets);
-
-        return alreadyInDB;
+//
+//        Boolean alreadyInDB = false;
+//
+//        // find namespaces
+//        namespace_json = handleNamespaces();
+//
+//        // find the pids within the mets
+//        idList = retrievePids();
+//
+//
+//        titleList = retrieveDocumentTitles();
+//
+//        classificationList = retrieveClassifiers();
+//
+//        relatedItemList = retrieveRelatedItems();
+//
+//        // checks if the doc is already in the db. If the request contains
+//        // the flag "reject" the controll gets back to the caller.
+//
+//        if (alreadyInDB = isMetsFileAlreadyInDB()) {
+//
+//            if (handling.equalsIgnoreCase("reject"))
+//                return true;
+//
+//            if (handling.equalsIgnoreCase("replace"))
+//                this.removeFileFromMongo("mets", this.docid);
+//        }
+//
+//        // process dmdSec
+//        DmdSecHelper dmdSecHelper = new DmdSecHelper(document, this);
+//        dmdsec_json_list = dmdSecHelper.handleDmdSec(mets);
+//
+//        // summary about the object
+//        docinfo_json = handleDocinfo();
+//
+//        // process the mets root element
+//        mets_json = handleMetsRoot();
+//
+//        // process MetsHdr
+//        hdr_json = metsHdrHelper.handleMetsHdr(mets);
+//
+//
+//        // process id's retrieved from dmdSec
+//        //id_json = handleIds();
+//
+//        // process amdSec
+//        AmdSecHelper amdSecHelper = new AmdSecHelper(document, this);
+//        amdsec_json_list = amdSecHelper.handleAmdSec(mets);
+//
+//        // process fileSec
+//        filesec_json = fileSecHelper.handleFileSec(mets);
+//
+//        // process structMap
+//        structmap_json_list = structMapHelper.handleStructMap(mets);
+//
+//        // process structLink
+//        structlink_json = structLinkHelper.handleStructLink(mets);
+//
+//        // process behaviorSec
+//        behavior_json_list = behaviorSecHelper.handleBehaviorSec(mets);
+//
+//        return alreadyInDB;
+        return false;
     }
 
 
@@ -659,11 +786,11 @@ public class MongoImporter {
      */
     private void writeToMongo_Initial(BasicDBObject doc, MultipartFile metsFile) {
 
-        WriteResult wr = coll.update(doc, doc, true, false, WriteConcern.SAFE);
-        if (wr.getField("upserted") != null) {
-            this.docid = ((ObjectId) wr.getField("upserted")).toString();
-            storeFileInMongo(metsFile, docid, "mets");
-        }
+//        WriteResult wr = coll.update(doc, doc, true, false, WriteConcern.SAFE);
+//        if (wr.getField("upserted") != null) {
+//            this.docid = ((ObjectId) wr.getField("upserted")).toString();
+//            storeFileInMongo(metsFile, docid, "mets");
+//        }
     }
 
 
@@ -676,8 +803,8 @@ public class MongoImporter {
      */
     private void writeToMongo_Replace(BasicDBObject doc, MultipartFile metsFile) {
 
-        WriteResult wr = coll.update(getQueryBasicDBObject(this.docid), doc, true, false, WriteConcern.SAFE);
-        storeFileInMongo(metsFile, docid, "mets");
+//        WriteResult wr = coll.update(getQueryBasicDBObject(this.docid), doc, true, false, WriteConcern.SAFE);
+//        storeFileInMongo(metsFile, docid, "mets");
     }
 
 //    private void writeToMongo(BasicDBObject teiBasicDBObject) {
@@ -704,14 +831,14 @@ public class MongoImporter {
      */
     private boolean isMetsFileAlreadyInDB() {
 
-        String value = this.getMajorId().getValue();
-        IdHelper idHelper = new IdHelper();
-        this.docid = idHelper.findDocid(value, db, mets_coll_name);
-
-        if (this.docid != null)
-            return true;
-        else
-            return false;
+//        Stri        ng value = this.getMajorId().getValue();
+//        IdHelper idHelper = new IdHelper();
+//        this.docid = idHelper.findDocid(value, db, mets_coll_name);
+//
+//        if (this.docid != null)
+//            return true;
+//        else
+        return false;
 
 //        IdHelper idHelper = new IdHelper();
 //        Map<String, String> idsFromDB = idHelper.getPidsFromDB(db, mets_coll_name);
@@ -783,11 +910,11 @@ public class MongoImporter {
     private BasicDBObject handleMetsRoot() {
 
         BasicDBObject doc = new BasicDBObject();
-        basicDBObjectHelper.createBasicDBObject("ID", mets.getID(), doc);
-        basicDBObjectHelper.createBasicDBObject("OBJID", mets.getObjID(), doc);
-        basicDBObjectHelper.createBasicDBObject("LABEL", mets.getLabel(), doc);
-        basicDBObjectHelper.createBasicDBObject("TYPE", mets.getType(), doc);
-        basicDBObjectHelper.createBasicDBObject("PROFILE", mets.getProfile(), doc);
+//        basicDBObjectHelper.createBasicDBObject("ID", mets.getID(), doc);
+//        basicDBObjectHelper.createBasicDBObject("OBJID", mets.getObjID(), doc);
+//        basicDBObjectHelper.createBasicDBObject("LABEL", mets.getLabel(), doc);
+//        basicDBObjectHelper.createBasicDBObject("TYPE", mets.getType(), doc);
+//        basicDBObjectHelper.createBasicDBObject("PROFILE", mets.getProfile(), doc);
         return doc;
     }
 
