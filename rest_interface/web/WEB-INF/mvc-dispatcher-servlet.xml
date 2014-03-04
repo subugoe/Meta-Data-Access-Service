@@ -19,16 +19,6 @@
         <property name="suffix" value=".jsp"/>
     </bean>
 
-
-    <bean id="mongoDataSource" class="de.unigoettingen.sub.mongomapper.helper.MongoDataSource">
-        <constructor-arg name="server" value="${mongo.server}"/>
-        <constructor-arg name="port" value="${mongo.port}"/>
-        <constructor-arg name="dbName" value="${mongo.dbName}"/>
-        <constructor-arg name="userName" value="${mongo.userName}"/>
-        <constructor-arg name="password" value="${mongo.password}"/>
-    </bean>
-
-
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>
 

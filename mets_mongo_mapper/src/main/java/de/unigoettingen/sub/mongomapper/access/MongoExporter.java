@@ -1,11 +1,9 @@
 package de.unigoettingen.sub.mongomapper.access;
 
 import com.mongodb.*;
-import com.mongodb.gridfs.GridFSDBFile;
 import de.unigoettingen.sub.jaxb.*;
 import de.unigoettingen.sub.medas.model.Doc;
 import de.unigoettingen.sub.medas.model.Id;
-import de.unigoettingen.sub.mongomapper.helper.DocInfo;
 
 import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
@@ -193,50 +191,54 @@ public class MongoExporter {
      * }]}
      */
     public BasicDBObject getDocumentsAsJSON(List<String> props, int skip, int limit) {
+//
+//        BasicDBObject docs = new BasicDBObject();
+//        BasicDBList docList = new BasicDBList();
+//
+//        // find docinfo
+//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
+//        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip);
+//
+//        if (limit > 0)
+//            dbCursor = dbCursor.limit(limit);
+//
+//        while (dbCursor.hasNext()) {
+//
+//
+//            DBObject dbObject = dbCursor.next();
+//
+//            DocInfo docInfo = new DocInfo(props);
+//            docInfo.setFromJSON(dbObject);
+//            docList.add(docInfo.getAsJSON());
+//
+//            docs.append("docs", docList);
+//        }
+//        return docs;
+        return null;
+  }
 
-        BasicDBObject docs = new BasicDBObject();
-        BasicDBList docList = new BasicDBList();
-
-        // find docinfo
-        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip);
-
-        if (limit > 0)
-            dbCursor = dbCursor.limit(limit);
-
-        while (dbCursor.hasNext()) {
-
-
-            DBObject dbObject = dbCursor.next();
-
-            DocInfo docInfo = new DocInfo(props);
-            docInfo.setFromJSON(dbObject);
-            docList.add(docInfo.getAsJSON());
-
-            docs.append("docs", docList);
-        }
-        return docs;
-    }
 
     public BasicDBObject getDocumentAsJSON(String docid, List<String> props) {
-
-        BasicDBObject docs = new BasicDBObject();
-
-        // find docinfo
-        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-
-        BasicDBObject query = new BasicDBObject();
-        query.put("_id", new ObjectId(docid));
-
-        DBObject dbObject = coll.findOne(query, field);
-
-
-        DocInfo docInfo = new DocInfo(props);
-        docInfo.setFromJSON(dbObject);
-
-        return docInfo.getAsJSON();
-        //return new BasicDBObject("doc", docInfo.getAsJSON());
+//
+//        BasicDBObject docs = new BasicDBObject();
+//
+//        // find docinfo
+//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
+//
+//        BasicDBObject query = new BasicDBObject();
+//        query.put("_id", new ObjectId(docid));
+//
+//        DBObject dbObject = coll.findOne(query, field);
+//
+//
+//        DocInfo docInfo = new DocInfo(props);
+//        docInfo.setFromJSON(dbObject);
+//
+//        return docInfo.getAsJSON();
+//        //return new BasicDBObject("doc", docInfo.getAsJSON());
+        return null;
     }
+
 
     /**
      * Collects information about the documents in the repository.

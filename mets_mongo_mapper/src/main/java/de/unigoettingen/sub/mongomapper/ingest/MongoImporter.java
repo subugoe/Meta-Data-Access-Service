@@ -1,24 +1,15 @@
 package de.unigoettingen.sub.mongomapper.ingest;
 
 
-import com.mongodb.*;
-import com.mongodb.gridfs.GridFS;
 import de.unigoettingen.sub.jaxb.*;
-import de.unigoettingen.sub.mongomapper.helper.BasicDBObjectHelper;
-import de.unigoettingen.sub.mongomapper.helper.Id;
 import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
 
-import de.unigoettingen.sub.mongomapper.helper.mets.*;
-
-import de.unigoettingen.sub.mongomapper.helper.mods.Classifier;
-import de.unigoettingen.sub.mongomapper.helper.mods.RelatedItem;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.Document;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -26,7 +17,6 @@ import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jpanzer.
