@@ -1,5 +1,6 @@
 package de.unigoettingen.sub.mongomapper;
 
+import de.unigoettingen.sub.medas.model.Doc;
 import de.unigoettingen.sub.mongomapper.access.MongoExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,9 @@ import org.springframework.web.servlet.mvc.multiaction.NoSuchRequestHandlingMeth
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -151,7 +155,35 @@ public class AccessController {
 
         response.setContentType("application/xml");
 
-        mongoExporter.getDocumentAsXML(docid, props, request, response);
+        String metsUrlString = this.getUrlString(request) + "/documents/" + docid + "/mets";
+        System.out.println(metsUrlString);
+
+        Doc doc = mongoExporter.getDocumentAsXML(docid, props, metsUrlString);
+
+
+        if (doc != null) {
+            JAXBContext jaxbctx = null;
+            Marshaller m = null;
+
+            try {
+                jaxbctx = JAXBContext.newInstance(Doc.class);
+                m = jaxbctx.createMarshaller();
+                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+
+                try {
+                    m.marshal(doc, response.getOutputStream());
+                    response.getOutputStream().flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            } catch (JAXBException e) {
+                e.printStackTrace();
+            }
+        }
+
 
 //        try {
 //            if (in != null) {
@@ -175,6 +207,29 @@ public class AccessController {
 //
 //        return mongoExporter.getDocumentAsXML(docid, props);
 
+    }
+
+
+    public String getUrlString(HttpServletRequest request) {
+
+        String schema = request.getScheme();
+        String server = request.getServerName();
+        int port = request.getServerPort();
+        String contextpath = request.getContextPath();
+
+        StringBuffer strb = new StringBuffer();
+
+        if (schema != null)
+            strb.append(schema + "://");
+        if (server != null)
+            strb.append(server);
+        if (port > 0)
+            strb.append(":" + port);
+        if (contextpath != null)
+            strb.append(contextpath);
+
+
+        return strb.toString();
     }
 
     /**

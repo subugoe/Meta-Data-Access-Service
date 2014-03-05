@@ -17,14 +17,18 @@ public class Docs {
 
 //    @XmlElementWrapper(name = "docs")
     
-    private Set<Doc> doc;
+    private Set<Doc> docs;
 
     @XmlElement(name = "docs")
     public Set<Doc> getDocs() {
-        return doc;
+        return docs;
     }
 
     public void setDocs(Set<Doc> docs) {
-        this.doc = docs;
+        this.docs = docs;
+    }
+
+    public void addDocs(Doc doc) {
+        this.docs.add(doc);
     }
 }

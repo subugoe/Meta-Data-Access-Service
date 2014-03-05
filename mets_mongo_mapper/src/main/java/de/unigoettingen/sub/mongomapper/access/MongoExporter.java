@@ -2,26 +2,25 @@ package de.unigoettingen.sub.mongomapper.access;
 
 import com.mongodb.*;
 import de.unigoettingen.sub.jaxb.*;
-import de.unigoettingen.sub.medas.model.Doc;
-import de.unigoettingen.sub.medas.model.Id;
+import de.unigoettingen.sub.medas.model.*;
 
 import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
-import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by jpanzer.
@@ -215,7 +214,7 @@ public class MongoExporter {
 //        }
 //        return docs;
         return null;
-  }
+    }
 
 
     public BasicDBObject getDocumentAsJSON(String docid, List<String> props) {
@@ -296,35 +295,38 @@ public class MongoExporter {
     }
 
 
-    public void getDocumentAsXML(String docid,
-                                 List<String> props,
-                                 HttpServletRequest request,
-                                 HttpServletResponse response) {
+    public Doc getDocumentAsXML(String docid,
+                                List<String> props, String metsUrlString) {
 
         Mets mets = metsRepo.findOne(docid);
 
-        // docid
-        // docid;
 
-        // recordIdentifier  & title
-
-        retrieveDocInfo(mets);
+        return retrieveDocInfo(mets, metsUrlString);
 
     }
 
-    private void retrieveDocInfo(Mets mets) {
 
+    private Doc retrieveDocInfo(Mets mets, String metsUrl) {
+
+        //List<Doc> docList = new ArrayList<>();
         List<MdSecType> dmdSecs = mets.getDmdSecs();
 
+
+        // TODO currently just the first mdSec element will be examined - is this sufficient?
         // TODO currently just the first mods element will be examined - is this sufficient?
-        for (MdSecType mdSec : dmdSecs) {
-            Mods mods = mdSec.getMdWrap().getXmlData().getMods().get(0);
 
-            List<Object> objectList = mods.getElements();
+        Mods mods = dmdSecs.get(0).getMdWrap().getXmlData().getMods().get(0);
 
-            processModsElements(objectList);
+        List<Object> objectList = mods.getElements();
 
-        }
+        Doc doc = new Doc();
+
+        doc.setDocid(mets.getID());
+        doc.setMets(metsUrl);
+
+        processModsElements(objectList, doc);
+
+        return doc;
 
 
         // mets-url
@@ -376,27 +378,14 @@ public class MongoExporter {
 //        }
     }
 
-    private void processModsElements(List<Object> objectList) {
-
-        Doc doc = new Doc();
-
+    private void processModsElements(List<Object> objectList, Doc doc) {
 
         for (Object obj : objectList) {
 
             if (obj instanceof RecordInfoType) {
                 RecordInfoType recordInfoType = (RecordInfoType) obj;
-                List<Object> objectList1 = recordInfoType.getElements();
-
-                for (Object o : objectList1) {
-                    if (o instanceof RecordInfoType.RecordIdentifier) {
-                        RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o;
-                        Id id = new Id();
-                        id.setSource(recordIdentifier.getSource());
-                        id.setValue(recordIdentifier.getValue());
-                        doc.setId(id);
-
-                    }
-                }
+                List<RecordIdentifier> recordIdentifiers = this.getRecordIdentifiers(recordInfoType);
+                doc.addRecordIdentifiers(recordIdentifiers);
             }
 
             if (obj instanceof TitleInfoType) {
@@ -405,18 +394,41 @@ public class MongoExporter {
                 for (Object o : objectList1) {
                     if (o instanceof Title) {
                         Title title = (Title) o;
-                        title.getValue();
+                        doc.setTitle(title.getValue());
                     }
                     if (o instanceof BaseTitleInfoType.SubTitle) {
                         BaseTitleInfoType.SubTitle subTitle = (BaseTitleInfoType.SubTitle) o;
-                        subTitle.getValue();
+                        doc.setSubTitle(subTitle.getValue());
                     }
                 }
             }
 
             if (obj instanceof RelatedItemType) {
+                RelatedItem relatedItem = new RelatedItem();
+
                 RelatedItemType relatedItemType = (RelatedItemType) obj;
-                relatedItemType.getElements();
+                relatedItem.setType(relatedItemType.getType());
+
+                List<Object> objectList1 = relatedItemType.getElements();
+                for (Object o2 : objectList1) {
+                    if (o2 instanceof RecordInfoType) {
+                        RecordInfoType recordInfoType = (RecordInfoType) o2;
+                        List<RecordIdentifier> recordIdentifiers = this.getRecordIdentifiers(recordInfoType);
+                        relatedItem.addRecordIdentifiers(recordIdentifiers);
+                        doc.addRelatedItem(relatedItem);
+                    }
+                }
+            }
+
+            if (obj instanceof ClassificationType) {
+                Classification classification = new Classification();
+
+                ClassificationType classificationType = (ClassificationType) obj;
+                classification.setAuthority(classification.getAuthority());
+                classification.setValue(classificationType.getValue());
+
+                doc.addClassifications(classification);
+
             }
         }
 
@@ -459,28 +471,6 @@ public class MongoExporter {
         }
 
 
-    }
-
-    public String getUrlString(HttpServletRequest request) {
-
-        String schema = request.getScheme();
-        String server = request.getServerName();
-        int port = request.getServerPort();
-        String contextpath = request.getContextPath();
-
-        StringBuffer strb = new StringBuffer();
-
-        if (schema != null)
-            strb.append(schema + "://");
-        if (server != null)
-            strb.append(server);
-        if (port > 0)
-            strb.append(":" + port);
-        if (contextpath != null)
-            strb.append(contextpath);
-
-
-        return strb.toString();
     }
 
 
@@ -678,7 +668,6 @@ public class MongoExporter {
     }
 
 
-
     private void removeMetsDocument(ShortDocInfo shortDocInfo) {
         this.logger.info("removeMets Mets document with recordIdentifier: " + shortDocInfo.getRecordIdentifier());
 
@@ -701,40 +690,48 @@ public class MongoExporter {
     public void removeMets(String docid) {
         Mets mets = metsRepo.findOne(docid);
 
-        Id id = getFirstRecordIdentifier(mets);
-        if (id != null)
-            this.removeMetsDocument(new ShortDocInfo(docid, id.getValue()));
-    }
 
-    private Id getFirstRecordIdentifier(Mets mets) {
-
-        List<Id> idList = new ArrayList<>();
         List<MdSecType> dmdSecs = mets.getDmdSecs();
 
-        for (MdSecType mdSecType : dmdSecs) {
-            Mods mods = mdSecType.getMdWrap().getXmlData().getMods().get(0);
+        // TODO currently just the first mods element will be examined - is this sufficient?
+        for (MdSecType mdSec : dmdSecs) {
+            Mods mods = mdSec.getMdWrap().getXmlData().getMods().get(0);
 
-            List<Object> objectList1 = mods.getElements();
+            List<Object> objectList = mods.getElements();
+            for (Object obj : objectList) {
+                if (obj instanceof RecordInfoType) {
 
-            for (Object o1 : objectList1) {
-                if (o1 instanceof RecordInfoType) {
-                    RecordInfoType recordInfoType = (RecordInfoType) o1;
-                    List<Object> objectList2 = recordInfoType.getElements();
-
-                    for (Object o2 : objectList2) {
-                        if (o2 instanceof RecordInfoType.RecordIdentifier) {
-                            RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
-
-                            Id id = new Id();
-                            id.setSource(recordIdentifier.getSource());
-                            id.setValue(recordIdentifier.getValue());
-                            return id;
+                    List<RecordIdentifier> recordIdentifiers = getRecordIdentifiers((RecordInfoType) obj);
+                    if (!recordIdentifiers.isEmpty()) {
+                        if (recordIdentifiers.iterator().hasNext()) {
+                            RecordIdentifier recordIdentifier = recordIdentifiers.iterator().next();
+                            this.removeMetsDocument(new ShortDocInfo(docid, recordIdentifier.getValue()));
+                            return;
                         }
+
                     }
                 }
             }
+
+        }
+    }
+
+    private List<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType) {
+
+        List<Object> objectList2 = recordInfoType.getElements();
+        List<RecordIdentifier> recordIdentifiers = new ArrayList<>();
+
+        for (Object o2 : objectList2) {
+            if (o2 instanceof RecordInfoType.RecordIdentifier) {
+
+                RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
+
+                String source = recordIdentifier.getSource();
+                String value = recordIdentifier.getValue();
+                recordIdentifiers.add(new RecordIdentifier(value, source));
+            }
         }
 
-        return null;
+        return recordIdentifiers;
     }
 }

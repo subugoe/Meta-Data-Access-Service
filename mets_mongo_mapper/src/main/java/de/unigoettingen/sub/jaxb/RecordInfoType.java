@@ -232,6 +232,7 @@ public class RecordInfoType {
 
         @XmlValue
         protected String value;
+
         @XmlAttribute(name = "source")
         protected String source;
 

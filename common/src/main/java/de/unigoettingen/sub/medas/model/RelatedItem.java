@@ -1,42 +1,50 @@
 package de.unigoettingen.sub.medas.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
  * @author jdo
  */
-@XmlType
-@XmlRootElement(name="relatedItem")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+        "recordIdentifier"
+})
 public class RelatedItem {
-    private String host; //TODO enum
-    private String recordIdentifier;
-    private String source;
 
-    public String getHost() {
-        return host;
+    @XmlAttribute(name = "type")
+    private String type; //TODO enum
+
+
+    @XmlElementWrapper(name = "recordInfo")
+    private List<RecordIdentifier> recordIdentifier = new ArrayList<>();
+
+    public String getType() {
+        return type;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getRecordIdentifier() {
+
+    public List<RecordIdentifier> getRecordIdentifier() {
         return recordIdentifier;
     }
 
-    public void setRecordIdentifier(String recordIdentifier) {
+    public void setRecordIdentifier(List<RecordIdentifier> recordIdentifier) {
         this.recordIdentifier = recordIdentifier;
     }
 
-    public String getSource() {
-        return source;
+    public void addRecordIdentifier(RecordIdentifier recordIdentifier) {
+        this.recordIdentifier.add(recordIdentifier);
     }
 
-    public void setSource(String source) {
-        this.source = source;
+
+    public void addRecordIdentifiers(List<RecordIdentifier> recordIdentifiers) {
+
+        for (RecordIdentifier recordIdentifier : recordIdentifiers)
+            this.recordIdentifier.add(recordIdentifier);
     }
-            
-    
 }

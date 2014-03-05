@@ -1,31 +1,49 @@
 package de.unigoettingen.sub.medas.model;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 
 /**
- *
  * @author doenitz@sub.uni-goettingen.de
- *
  */
-@XmlType
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "doc", propOrder = {
+        "docid", "recordIdentifier", "relatedItem", "title",
+        "subTitle", "classification", "mets", "tei", "teiEnriched", "preview", "pageCount", "fulltext"
+})
 @XmlRootElement(name = "doc")
 public class Doc {
 
+    @XmlElement
     private String docid;
-    private Id id;
+    @XmlElementWrapper(name = "recordInfo")
+    @XmlElement
+    private List<RecordIdentifier> recordIdentifier = new ArrayList<>();
+    @XmlElement
     private String title;
+    @XmlElement
     private String subTitle;
+    @XmlElement
     private String mets;
+    @XmlElement
     private String preview;
+    @XmlElement
     private String tei;
+    @XmlElement
     private String teiEnriched;
+    @XmlElement
     private String pageCount;
+    @XmlElement
     private String fulltext;
-    private Set<RelatedItem> relatedItems;
-    private Set<Classification> classifications;
+    //@XmlElementWrapper(name = "relatedItems")
+    @XmlElement
+    private Set<RelatedItem> relatedItem = new HashSet<>();
+    @XmlElementWrapper(name = "classifications")
+    @XmlElement
+    private Set<Classification> classification = new HashSet<>();
 
     /**
      * The PPN of the parent item. E. g. the journal a volume belongs to. If
@@ -33,16 +51,16 @@ public class Doc {
      * <code>null</code> is returned.
      *
      * @return The PPN of the parent, or <code>null</code>
-     */
-    public String getHostPPN() {
-        if (relatedItems == null) {
-            return null;
-        }
-        for (RelatedItem relItem : relatedItems) {
-            return relItem.getRecordIdentifier();
-        }
-        return null;
-    }
+     */     // TODO there are possibly several recordIdentifiers
+//    public String getHostPPN() {
+//        if (relatedItems == null) {
+//            return null;
+//        }
+//        for (RelatedItem relItem : relatedItems) {
+//            return relItem.getRecordIdentifiers().iterator()
+//        }
+//        return null;
+//    }
 
     /**
      * Get the value of the classification according to the DDC standard. If no
@@ -53,11 +71,11 @@ public class Doc {
      */
     public String getDDC() {
         // return value or the classification object. If the authority is only the type, we don't need it.
-        if (classifications == null) {
+        if (classification == null) {
             // required?
             return null;
         }
-        for (Classification c : classifications) {
+        for (Classification c : classification) {
             if ("dz".equals(c.getAuthority())) {
                 return c.getValue();
             }
@@ -87,13 +105,24 @@ public class Doc {
         this.docid = docid;
     }
 
-    public Id getId() {
-        return id;
+    public List<RecordIdentifier> getRecordIdentifier() {
+        return recordIdentifier;
     }
 
-    public void setId(Id id) {
-        this.id = id;
+    public void setRecordIdentifier(List<RecordIdentifier> recordIdentifier) {
+        this.recordIdentifier = recordIdentifier;
     }
+
+    public void addRecordIdentifiers(List<RecordIdentifier> recordIdentifiers) {
+        for (RecordIdentifier recordIdentifier : recordIdentifiers)
+            this.recordIdentifier.add(recordIdentifier);
+    }
+
+    public void addRecordIdentifier(RecordIdentifier recordIdentifier) {
+
+        this.recordIdentifier.add(recordIdentifier);
+    }
+
 
     public String getTitle() {
         return title;
@@ -159,23 +188,27 @@ public class Doc {
         this.fulltext = fulltext;
     }
 
-//    @XmlElementWrapper(name = "relatedItems")
-    @XmlElement(name = "relatedItems")
-    public Set<RelatedItem> getRelatedItems() {
-        return relatedItems;
+    public Set<RelatedItem> getRelatedItem() {
+        return relatedItem;
     }
 
-    public void setRelatedItems(Set<RelatedItem> relatedItems) {
-        this.relatedItems = relatedItems;
+    public void setRelatedItem(Set<RelatedItem> relatedItem) {
+        this.relatedItem = relatedItem;
     }
 
-//    @XmlElementWrapper(name = "classifications")
-    @XmlElement(name = "classifications")
-    public Set<Classification> getClassifications() {
-        return classifications;
+    public void addRelatedItem(RelatedItem relatedItem) {
+        this.relatedItem.add(relatedItem);
     }
 
-    public void setClassifications(Set<Classification> classifications) {
-        this.classifications = classifications;
+    public Set<Classification> getClassification() {
+        return classification;
+    }
+
+    public void setClassification(Set<Classification> classification) {
+        this.classification = classification;
+    }
+
+    public void addClassifications(Classification classification) {
+        this.classification.add(classification);
     }
 }

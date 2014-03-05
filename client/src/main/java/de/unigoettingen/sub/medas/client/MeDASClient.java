@@ -27,9 +27,9 @@ public class MeDASClient {
         Doc response = (Doc) webResource.accept(MediaType.APPLICATION_JSON).get(Doc.class);
         System.out.println("doc " + response.getDocid());
         System.out.println("title " + response.getTitle());
-        System.out.println("related "+response.getRelatedItems().size() );
-        System.out.println("host " + response.getRelatedItems().iterator().next().getRecordIdentifier());
-        System.out.println("ddc "  + response.getClassifications().iterator().next().getValue());        
+        System.out.println("related "+response.getRelatedItem().size() );
+        System.out.println("type " + response.getRelatedItem().iterator().next().getRecordIdentifier().iterator().next().getSource());
+        System.out.println("ddc "  + response.getClassification().iterator().next().getValue());
     }
     
     public Docs getAllDocuments(){

@@ -1,17 +1,22 @@
 package de.unigoettingen.sub.medas.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 
 /**
  *
  * @author jdo
  */
-@XmlType
-@XmlRootElement(name="classification")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "classification", propOrder = {
+        "value"
+})
 public class Classification {
-    private String authority;
+
+    @XmlValue
     private String value;
+
+    @XmlAttribute(name = "authority")
+    private String authority;
 
     public String getAuthority() {
         return authority;
