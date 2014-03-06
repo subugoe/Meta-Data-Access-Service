@@ -85,6 +85,7 @@ public class MongoDbMetsRepository implements MetsRepository {
 
     }
 
+
     @Override
     public Mods save(Mods mods) {
         operations.save(mods);
@@ -98,4 +99,24 @@ public class MongoDbMetsRepository implements MetsRepository {
         operations.remove(query, Mods.class);
     }
 
+
+    //--- allgemein
+
+    @Override
+    public String findDocidByRecordIdentifier(String ppn) {
+
+        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
+                where("_class").is("de.unigoettingen.sub.jaxb.RecordInfoType$RecordIdentifier").and("value").is(ppn))));
+        Mods mods = operations.findOne(query, Mods.class);
+
+        Mets mets;
+
+        if (mods != null) {
+            mets = this.findMetsByModsId(mods.getID());
+            if (mets != null)
+                return mets.getID();
+        }
+        return null;
+
+    }
 }

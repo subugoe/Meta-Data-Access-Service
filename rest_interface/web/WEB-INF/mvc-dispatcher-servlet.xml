@@ -1,14 +1,21 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+       <!-- xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:oxm="http://www.springframework.org/schema/oxm"
+
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/oxm
+        http://www.springframework.org/schema/oxm/spring-oxm-3.0.xsd -->
+
 
     <import resource="classpath*:spring-config.xml"/>
 
-    <context:component-scan base-package="de.unigoettingen.sub" />
+    <context:component-scan base-package="de.unigoettingen.sub"/>
     <context:property-placeholder location="classpath*:mapper.properties"/>
 
 
@@ -21,5 +28,18 @@
 
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>
+
+    <!--<oxm:jaxb2-marshaller id="marshaller" contextPath="org.springframework.ws.samples.airline.schema"/>
+
+    <bean id="jaxb2Marshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+        <property name="classesToBeBound">
+            <list>
+                <value>de.unigoettingen.sub.jaxb.Mets</value>
+                &lt;!&ndash;<value>org.springframework.oxm.jaxb.Flights</value>&ndash;&gt;
+            </list>
+        </property>
+        <property name="schema" value="classpath:mets_1.6.xsd"/>
+    </bean>-->
+
 
 </beans>

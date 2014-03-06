@@ -1,5 +1,6 @@
 package de.unigoettingen.sub.medas.model;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
@@ -15,11 +16,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name="docs")
 public class Docs {
 
-//    @XmlElementWrapper(name = "docs")
-    
-    private Set<Doc> docs;
 
-    @XmlElement(name = "docs")
+    private Set<Doc> docs = new HashSet<>();
+
+    @XmlElement(name = "doc")
     public Set<Doc> getDocs() {
         return docs;
     }

@@ -1,6 +1,7 @@
 package de.unigoettingen.sub.mongomapper;
 
 import de.unigoettingen.sub.medas.model.Doc;
+import de.unigoettingen.sub.medas.model.Docs;
 import de.unigoettingen.sub.mongomapper.access.MongoExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,16 +92,40 @@ public class AccessController {
     @RequestMapping(value = "/documents", method = RequestMethod.GET, produces = "application/xml; charset=UTF-8")
     public
     @ResponseBody
-    String getDocumentsAsXML(@RequestParam(value = "props", required = false) List<String> props,
+    void getDocumentsAsXML(@RequestParam(value = "props", required = false) List<String> props,
                              @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
                              @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
-                             Model model) {
+                             HttpServletRequest request,
+                             HttpServletResponse response) {
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
-        return mongoExporter.getDocumentsAsXML(props, skip, limit);
+        Docs docs = mongoExporter.getDocumentsAsXML(props, skip, limit, request);
+
+        if (docs != null) {
+            JAXBContext jaxbctx = null;
+            Marshaller m = null;
+
+            try {
+                jaxbctx = JAXBContext.newInstance(Docs.class);
+                m = jaxbctx.createMarshaller();
+                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+
+                try {
+                    m.marshal(docs, response.getOutputStream());
+                    response.getOutputStream().flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            } catch (JAXBException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -155,10 +180,7 @@ public class AccessController {
 
         response.setContentType("application/xml");
 
-        String metsUrlString = this.getUrlString(request) + "/documents/" + docid + "/mets";
-        System.out.println(metsUrlString);
-
-        Doc doc = mongoExporter.getDocumentAsXML(docid, props, metsUrlString);
+        Doc doc = mongoExporter.getDocumentAsXML(docid, props, request);
 
 
         if (doc != null) {
@@ -210,27 +232,6 @@ public class AccessController {
     }
 
 
-    public String getUrlString(HttpServletRequest request) {
-
-        String schema = request.getScheme();
-        String server = request.getServerName();
-        int port = request.getServerPort();
-        String contextpath = request.getContextPath();
-
-        StringBuffer strb = new StringBuffer();
-
-        if (schema != null)
-            strb.append(schema + "://");
-        if (server != null)
-            strb.append(server);
-        if (port > 0)
-            strb.append(":" + port);
-        if (contextpath != null)
-            strb.append(contextpath);
-
-
-        return strb.toString();
-    }
 
     /**
      * Collects information about the documents in the repository.
@@ -534,26 +535,29 @@ public class AccessController {
 //        return mongoExporter.getDocumentKml(docid);
 //    }
 
-//    /**
-//     * Checks, if an object with the given pid is already in the db.
-//     *
-//     * @param pid   The pid of the document to search.
-//     * @param model
-//     * @return The docid of the document or null if it doesn't exist.
-//     */
-//    @RequestMapping(value = "/documents/{pid}/exist", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String isPidInDB(@PathVariable("pid") String pid, Model model) {
-//
-//
-//        String docid = mongoExporter.isInDB(pid);
-//
-//        if (docid == null) {
-//            return null;
-//        } else
-//            return docid;
-//    }
+    /**
+     * Checks, if an object with the given pid is already in the db.
+     *
+     * @param pid   The pid of the document to search.
+     * @param model
+     * @return The docid of the document or null if it doesn't exist.
+     */
+    @RequestMapping(value = "/documents/{pid}/exist", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String isPidInDB(@PathVariable("pid") String pid, Model model) {
+
+
+        String docid = mongoExporter.isInDB(pid);
+
+        if (docid == null) {
+            System.out.println("null");
+            return null;
+        } else {
+            System.out.println(docid);
+            return docid;
+        }
+    }
 
 
 //    /**

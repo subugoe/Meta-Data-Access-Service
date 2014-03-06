@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -243,8 +244,9 @@ public class MongoExporter {
      * Collects information about the documents in the repository.
      *
      * @param props
-     * @param skip  The number of dokuments to skip.
-     * @param limit The number of documents to get.
+     * @param skip    The number of dokuments to skip.
+     * @param limit   The number of documents to get.
+     * @param request
      * @return A list of document info in XML.
      * Format:
      * <docs>
@@ -265,48 +267,53 @@ public class MongoExporter {
      * ...
      * </docs>
      */
-    public String getDocumentsAsXML(List<String> props, int skip, int limit) {
+    public Docs getDocumentsAsXML(List<String> props, int skip, int limit, HttpServletRequest request) {
 
-        List<Mets> resultsMets = metsRepo.findAll();
+        List<Mets> metsList = metsRepo.findAll();
+        Docs docs = new Docs();
 
-
-//        // find docinfo
-//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-//        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip);
-//
-//        if (limit >0)
-//            dbCursor = dbCursor.limit(limit);
-//
-//        XMLTag tag = XMLDoc.newDocument()
-//                .addRoot("docs");
-//
-//        while (dbCursor.hasNext()) {
-//
-//            DBObject dbObject = dbCursor.next();
-//            DocInfo docInfo = new DocInfo(props);
-//            docInfo.setFromJSON(dbObject);
-//
-//            XMLTag t = docInfo.getAsXML();
-//
-//            tag.addDocument(t);
-//        }
-//        return tag.toString("UTF-8");
-        return "not implemented";
+        for (Mets mets : metsList) {
+            Doc doc = this.getDocumentAsXML(mets.getID(), props, request);
+            docs.addDocs(doc);
+        }
+        return docs;
     }
 
 
     public Doc getDocumentAsXML(String docid,
-                                List<String> props, String metsUrlString) {
+                                List<String> props, HttpServletRequest request) {
 
         Mets mets = metsRepo.findOne(docid);
 
-
-        return retrieveDocInfo(mets, metsUrlString);
+        return retrieveDocInfo(mets, this.getUrlString(request));
 
     }
 
 
-    private Doc retrieveDocInfo(Mets mets, String metsUrl) {
+    private String getUrlString(HttpServletRequest request) {
+
+        String schema = request.getScheme();
+        String server = request.getServerName();
+        int port = request.getServerPort();
+        String contextpath = request.getContextPath();
+
+        StringBuffer strb = new StringBuffer();
+
+        if (schema != null)
+            strb.append(schema + "://");
+        if (server != null)
+            strb.append(server);
+        if (port > 0)
+            strb.append(":" + port);
+        if (contextpath != null)
+            strb.append(contextpath);
+
+
+        return strb.toString();
+    }
+
+    private Doc retrieveDocInfo(Mets mets, String metsUrlString) {
+
 
         //List<Doc> docList = new ArrayList<>();
         List<MdSecType> dmdSecs = mets.getDmdSecs();
@@ -321,8 +328,10 @@ public class MongoExporter {
 
         Doc doc = new Doc();
 
-        doc.setDocid(mets.getID());
-        doc.setMets(metsUrl);
+        String docid = mets.getID();
+        doc.setDocid(docid);
+
+        doc.setMets(metsUrlString);
 
         processModsElements(objectList, doc);
 
@@ -384,7 +393,7 @@ public class MongoExporter {
 
             if (obj instanceof RecordInfoType) {
                 RecordInfoType recordInfoType = (RecordInfoType) obj;
-                List<RecordIdentifier> recordIdentifiers = this.getRecordIdentifiers(recordInfoType);
+                Set<RecordIdentifier> recordIdentifiers = this.getRecordIdentifiers(recordInfoType);
                 doc.addRecordIdentifiers(recordIdentifiers);
             }
 
@@ -413,7 +422,7 @@ public class MongoExporter {
                 for (Object o2 : objectList1) {
                     if (o2 instanceof RecordInfoType) {
                         RecordInfoType recordInfoType = (RecordInfoType) o2;
-                        List<RecordIdentifier> recordIdentifiers = this.getRecordIdentifiers(recordInfoType);
+                        Set<RecordIdentifier> recordIdentifiers = this.getRecordIdentifiers(recordInfoType);
                         relatedItem.addRecordIdentifiers(recordIdentifiers);
                         doc.addRelatedItem(relatedItem);
                     }
@@ -701,7 +710,7 @@ public class MongoExporter {
             for (Object obj : objectList) {
                 if (obj instanceof RecordInfoType) {
 
-                    List<RecordIdentifier> recordIdentifiers = getRecordIdentifiers((RecordInfoType) obj);
+                    Set<RecordIdentifier> recordIdentifiers = getRecordIdentifiers((RecordInfoType) obj);
                     if (!recordIdentifiers.isEmpty()) {
                         if (recordIdentifiers.iterator().hasNext()) {
                             RecordIdentifier recordIdentifier = recordIdentifiers.iterator().next();
@@ -716,10 +725,10 @@ public class MongoExporter {
         }
     }
 
-    private List<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType) {
+    private Set<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType) {
 
         List<Object> objectList2 = recordInfoType.getElements();
-        List<RecordIdentifier> recordIdentifiers = new ArrayList<>();
+        Set<RecordIdentifier> recordIdentifiers = new HashSet<>();
 
         for (Object o2 : objectList2) {
             if (o2 instanceof RecordInfoType.RecordIdentifier) {
@@ -733,5 +742,10 @@ public class MongoExporter {
         }
 
         return recordIdentifiers;
+    }
+
+    public String isInDB(String recordIdentifier) {
+
+        return metsRepo.findDocidByRecordIdentifier(recordIdentifier);
     }
 }

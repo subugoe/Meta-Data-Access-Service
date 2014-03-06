@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface MetsRepository extends Repository<Mets, Long> {
 
-    // Mets section
+    //--- Mets section
     Mets findOne(String docid);
     List<Mets> findAll();
     Mets findMetsByModsId(String docid);
@@ -23,11 +23,13 @@ public interface MetsRepository extends Repository<Mets, Long> {
     void removeMets(String docid);
 
 
-    // Mods section
+    //--- Mods section
     Mods findFirstMods(String docid);
     Mods findModsByRecordIdentifier(String recordIdentifier);
     Mods save(Mods mods);
     void removeMods(String docid);
 
+    //--- allgemein
+    String findDocidByRecordIdentifier(String ppn);
 
 }

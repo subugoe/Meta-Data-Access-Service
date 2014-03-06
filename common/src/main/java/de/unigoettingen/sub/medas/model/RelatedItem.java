@@ -2,7 +2,9 @@ package de.unigoettingen.sub.medas.model;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jdo
@@ -18,7 +20,7 @@ public class RelatedItem {
 
 
     @XmlElementWrapper(name = "recordInfo")
-    private List<RecordIdentifier> recordIdentifier = new ArrayList<>();
+    private Set<RecordIdentifier> recordIdentifier = new HashSet<>();
 
     public String getType() {
         return type;
@@ -29,11 +31,11 @@ public class RelatedItem {
     }
 
 
-    public List<RecordIdentifier> getRecordIdentifier() {
+    public Set<RecordIdentifier> getRecordIdentifier() {
         return recordIdentifier;
     }
 
-    public void setRecordIdentifier(List<RecordIdentifier> recordIdentifier) {
+    public void setRecordIdentifier(Set<RecordIdentifier> recordIdentifier) {
         this.recordIdentifier = recordIdentifier;
     }
 
@@ -42,7 +44,7 @@ public class RelatedItem {
     }
 
 
-    public void addRecordIdentifiers(List<RecordIdentifier> recordIdentifiers) {
+    public void addRecordIdentifiers(Set<RecordIdentifier> recordIdentifiers) {
 
         for (RecordIdentifier recordIdentifier : recordIdentifiers)
             this.recordIdentifier.add(recordIdentifier);

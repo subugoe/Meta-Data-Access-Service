@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 public class MeDASClient {
     private Client client;
 //    private final String BASE_URI = "http://10.0.2.206:8080/";
-    private final String BASE_URI = "http://10.0.3.83:6789/medas/";
+    private final String BASE_URI = "http://localhost:8080/";
 
     public MeDASClient(){
         client = Client.create();
@@ -24,7 +24,7 @@ public class MeDASClient {
         String path = "documents/"+id;
         WebResource webResource = client.resource(BASE_URI);
         webResource = webResource.path(path);
-        Doc response = (Doc) webResource.accept(MediaType.APPLICATION_JSON).get(Doc.class);
+        Doc response = (Doc) webResource.accept(MediaType.APPLICATION_XML).get(Doc.class);
         System.out.println("doc " + response.getDocid());
         System.out.println("title " + response.getTitle());
         System.out.println("related "+response.getRelatedItem().size() );
@@ -37,7 +37,7 @@ public class MeDASClient {
         WebResource webResource = client.resource(BASE_URI);
         webResource = webResource.path(path);        
 //        webResource = webResource.queryParam("skip", "0").queryParam("limit", "5000");
-        Docs response = (Docs) webResource.accept(MediaType.APPLICATION_JSON).get(Docs.class);
+        Docs response = (Docs) webResource.accept(MediaType.APPLICATION_XML).get(Docs.class);
         
         return response;
         

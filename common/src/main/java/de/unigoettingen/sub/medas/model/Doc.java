@@ -1,9 +1,6 @@
 package de.unigoettingen.sub.medas.model;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.xml.bind.annotation.*;
 
 /**
@@ -21,7 +18,7 @@ public class Doc {
     private String docid;
     @XmlElementWrapper(name = "recordInfo")
     @XmlElement
-    private List<RecordIdentifier> recordIdentifier = new ArrayList<>();
+    private Set<RecordIdentifier> recordIdentifier = new HashSet<>();
     @XmlElement
     private String title;
     @XmlElement
@@ -52,15 +49,31 @@ public class Doc {
      *
      * @return The PPN of the parent, or <code>null</code>
      */     // TODO there are possibly several recordIdentifiers
-//    public String getHostPPN() {
-//        if (relatedItems == null) {
-//            return null;
-//        }
-//        for (RelatedItem relItem : relatedItems) {
-//            return relItem.getRecordIdentifiers().iterator()
-//        }
-//        return null;
-//    }
+    public Set<String> getHostPPN() {
+
+
+        if (!relatedItem.iterator().hasNext()) {
+            return null;
+        }
+
+        Set<String> identifiers = new HashSet<>();
+
+        Iterator<RelatedItem> iter = relatedItem.iterator();
+        while (iter.hasNext()) {
+
+            RelatedItem relatedItem1 = iter.next();
+            if (relatedItem1.getType().equalsIgnoreCase("host")) {
+
+                Iterator<RecordIdentifier> identifierIterator = relatedItem1.getRecordIdentifier().iterator();
+                while (identifierIterator.hasNext()) {
+                    RecordIdentifier identifier = identifierIterator.next();
+                    identifiers.add(identifier.getValue());
+                }
+            }
+        }
+
+        return identifiers;
+    }
 
     /**
      * Get the value of the classification according to the DDC standard. If no
@@ -105,15 +118,15 @@ public class Doc {
         this.docid = docid;
     }
 
-    public List<RecordIdentifier> getRecordIdentifier() {
+    public Set<RecordIdentifier> getRecordIdentifier() {
         return recordIdentifier;
     }
 
-    public void setRecordIdentifier(List<RecordIdentifier> recordIdentifier) {
+    public void setRecordIdentifier(Set<RecordIdentifier> recordIdentifier) {
         this.recordIdentifier = recordIdentifier;
     }
 
-    public void addRecordIdentifiers(List<RecordIdentifier> recordIdentifiers) {
+    public void addRecordIdentifiers(Set<RecordIdentifier> recordIdentifiers) {
         for (RecordIdentifier recordIdentifier : recordIdentifiers)
             this.recordIdentifier.add(recordIdentifier);
     }
