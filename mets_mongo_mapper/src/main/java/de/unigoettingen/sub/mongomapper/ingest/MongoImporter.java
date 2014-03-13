@@ -17,6 +17,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by jpanzer.
@@ -129,7 +130,7 @@ public class MongoImporter {
 
     private void removeReferencedModsDocuments(String docid) {
 
-        Mets mets = metsRepo.findOne(docid);
+        Mets mets = metsRepo.findOneMets(docid);
         List<MdSecType> dmdSecs = mets.getDmdSecs();
         for (MdSecType mdSec : dmdSecs) {
             List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();
@@ -146,7 +147,7 @@ public class MongoImporter {
 
     private void saveMets(Mets mets) {
 
-        metsRepo.save(mets);
+        metsRepo.saveMets(mets);
     }
 
 
@@ -159,7 +160,7 @@ public class MongoImporter {
             List<Mods> modsList = xmlData.getMods();
 
             for (Mods mods : modsList) {
-                metsRepo.save(mods);
+                metsRepo.saveMods(mods);
             }
         }
     }
@@ -185,23 +186,25 @@ public class MongoImporter {
                         List<Object> elements = ((RecordInfoType) obj).getElements();
                         for (Object o : elements) {
                             if (o instanceof RecordInfoType.RecordIdentifier) {
-                                String value = ((RecordInfoType.RecordIdentifier) o).getValue();
+                                Set<String> value = ((RecordInfoType.RecordIdentifier) o).getValue();
 
-                                Mods m = metsRepo.findModsByRecordIdentifier(value);
+                                for (String recId : value) {
 
-                                if (m != null) {
+                                    Mods m = metsRepo.findModsByRecordIdentifier(recId);
 
-                                    Mets resultsMets = metsRepo.findMetsByModsId(m.getID());
+                                    if (m != null) {
 
-                                    String docid = resultsMets.getID();
+                                        Mets resultsMets = metsRepo.findMetsByModsId(m.getID());
 
-                                    ShortDocInfo shortDocInfo =  new ShortDocInfo(docid, value);
+                                        String docid = resultsMets.getID();
 
-                                    System.out.println(shortDocInfo);
+                                        ShortDocInfo shortDocInfo = new ShortDocInfo(docid, value);
 
-                                    return shortDocInfo;
+                                        System.out.println(shortDocInfo);
+
+                                        return shortDocInfo;
+                                    }
                                 }
-
 
                             }
                         }
@@ -213,8 +216,6 @@ public class MongoImporter {
         return null;
 
     }
-
-
 
 
 //    /**
@@ -737,7 +738,6 @@ public class MongoImporter {
 ////        }
 ////        return false;
 //    }
-
 
 
 //    private boolean isTeiFileAlreadyInDB(String docid) {

@@ -12,6 +12,7 @@ import com.google.code.morphia.annotations.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.*;
 
@@ -231,7 +232,7 @@ public class RecordInfoType {
     public static class RecordIdentifier {
 
         @XmlValue
-        protected String value;
+        protected Set<String> value;
 
         @XmlAttribute(name = "source")
         protected String source;
@@ -244,7 +245,7 @@ public class RecordInfoType {
          *     {@link String }
          *     
          */
-        public String getValue() {
+        public Set<String> getValue() {
             return value;
         }
 
@@ -256,7 +257,7 @@ public class RecordInfoType {
          *     {@link String }
          *     
          */
-        public void setValue(String value) {
+        public void setValue(Set<String> value) {
             this.value = value;
         }
 

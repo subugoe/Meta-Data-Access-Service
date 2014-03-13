@@ -11,14 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.jws.WebParam;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import java.io.*;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,208 +34,82 @@ public class MongoExporter {
     private final Logger logger = LoggerFactory.getLogger(MongoExporter.class);
 
 
-//    private final String db_name;
-//    private final String mets_coll_name;
-    //private final String tei_coll_name;                                             #
-
     private DB db = null;
     private DBCollection coll = null;
     private MongoClient mongoClient = null;
 
 
-    //---
     @Autowired()
     private MongoDbMetsRepository metsRepo;
 
 
-    public MongoExporter() {
-
-    }
-
-//    /**
-//     * Construct the object with required parameters
-//     *
-//     * @param db_name        The name of the mongoDB
-//     * @param mets_coll_name The name of the collection, to store the documents
-//     */
-//    public MongoExporter(String db_name, String mets_coll_name) {
-//        this.db_name = db_name;
-//        this.mets_coll_name = mets_coll_name;
-//        //this.tei_coll_name = tei_coll_name;
-//
-//        init();
-//    }
-
-
-    protected void finalize() throws Throwable {
-        //mongoClient.close();
-    }
-
-    /**
-     * init() initializes the object, establishes the connection to the mongoDB server.
-     */
-    private void init() {
-
-//        // init mongo
-//        try {
-//            mongoClient = new MongoClient();
-//
-//        } catch (UnknownHostException e) {
-//            logger.error(e.getMessage());
-//        }
-//
-//        db = mongoClient.getDB(this.db_name);
-//        coll = db.getCollection(this.mets_coll_name);
-    }
-
     // TODO we have currently no collection data in the db. to be continued if we get the data.
-    public String getCollectionsAsXML(List<String> props, int skip, int limit) {
+    public Docs getCollections(List<String> props, int skip, int limit, HttpServletRequest request) {
 
-//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
+        Docs docs = new Docs();
+
+        List<Mods> modsSet = metsRepo.findAllModsWithRelatedItem();
+        System.out.println("modsSet: " + modsSet.size());
+
+        List<Mods> modsList = metsRepo.findAllModsWithRelatedItem();
+        System.out.println("modswith related items" + modsList.size());
+
+        // key      -> recordIdentifier
+        // value    -> mods docid
+        HashMap<String, String> ids = new HashMap<String, String>();
+
+        for (Mods mods : modsList) {
+            List<Object> objectList = mods.getElements();
+            for (Object o : objectList) {
+                if (o instanceof RelatedItemType) {
+                    RelatedItemType relatedItemType = (RelatedItemType) o;
+                    String type = relatedItemType.getType();
+                    List<Object> relatedItemTypes = relatedItemType.getElements();
+                    for (Object o1 : relatedItemTypes) {
+                        if (o1 instanceof RecordInfoType) {
+                            RecordInfoType recordInfoType = (RecordInfoType) o1;
+                            List<Object> objectList1 = recordInfoType.getElements();
+                            for (Object o2 : objectList1) {
+                                if (o2 instanceof RecordInfoType.RecordIdentifier) {
+                                    RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
+                                    recordIdentifier.getSource();
+                                    Set<String> recids = recordIdentifier.getValue();
+                                    for (String id : recids)
+                                        ids.put(id, mods.getID());
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        //System.out.println("recordIdentifiers" + recordIdentifiers.size());
+        //System.out.println(ids.size());
+        System.out.println(ids.keySet());
+        System.out.println(ids.values());
+
+        for (String recId : ids.keySet()) {
+            Mods mods = metsRepo.findModsByRecordIdentifier(recId);
+
+
+            if (mods != null) {
+                Mets mets = metsRepo.findMetsByModsId(mods.getID());
+                docs.addDocs(retrieveDocInfo(mets, this.getUrlString(request)));
+            }
+        }
+
+
 //
-//        BasicDBObject query = new BasicDBObject();
-//        query.put("docinfo.relatedItem.type", "host");
 //
-//        DBCursor dbCursor = coll.find(query, field).skip(skip).limit(limit);
-//
-//        XMLTag tag = XMLDoc.newDocument()
-//                .addRoot("docs");
-//
-//        while (dbCursor.hasNext()) {
-//
-//            DBObject dbObject = dbCursor.next();
-//            DocInfo docInfo = new DocInfo(props);
-//            docInfo.setFromJSON(dbObject);
-//
-//            XMLTag t = docInfo.getAsXML();
-//
-//            tag.addDocument(t);
+//        for (Mets mets : metsList) {
+//            docs.addDocs(retrieveDocInfo(mets, this.getUrlString(request)));
 //        }
-//        return tag.toString();
-
-        return null;
-    }
-
-    // TODO we have currently no collection data in the db. to be continued if we get the data.
-    public BasicDBObject getCollectionsAsJSON(List<String> props, int skip, int limit) {
-
-        BasicDBObject docs = new BasicDBObject();
-//        BasicDBList docList = new BasicDBList();
-//
-//        // find docinfo
-//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-//
-//
-//        BasicDBObject query = new BasicDBObject();
-//        QueryBuilder qb = new QueryBuilder();
-////        qb.or(new QueryBuilder().start("docinfo.relatedItem").exists(false).
-////                or("docinfo.relatedItem.type").notEquals("host").
-////                or("docinfo.relatedItem.type").notEquals("preceding").
-////                or("docinfo.relatedItem.type").notEquals("succeeding").get());//,
-////                //new QueryBuilder().put("docinfo.relatedItem.type").notEquals("series").get());
-//
-//        qb.or(new QueryBuilder().put("docinfo.relatedItem").exists(false).get(),
-//                new QueryBuilder().put("docinfo.relatedItem.type").notEquals("host").get(),
-//                new QueryBuilder().put("docinfo.relatedItem.type").notEquals("preceding").get(),
-//                new QueryBuilder().put("docinfo.relatedItem.type").notEquals("succeeding").get()
-//        );
-//
-//        query.putAll(qb.get());
-//
-//        System.out.println(qb.toString());
-//        query.putAll(qb.get());
-//
-//
-//        DBCursor dbCursor = coll.find(query, field).skip(skip).limit(limit);
-//
-//        while (dbCursor.hasNext()) {
-//
-//
-//            DBObject dbObject = dbCursor.next();
-//
-//            DocInfo docInfo = new DocInfo(props);
-//            docInfo.setFromJSON(dbObject);
-//            docList.add(docInfo.getAsJSON());
-//
-//            docs.append("docs", docList);
-//        }
+//        System.out.println("docs: " + docs.getDocs().size());
 
         return docs;
-    }
 
-    /**
-     * Collects information about the documents in the repository.
-     *
-     * @param props
-     * @param skip  The number of dokuments to skip.
-     * @param limit The number of documents to get.
-     * @return A list of document info in JSON.
-     * Format:
-     * {docs : [
-     * {doc:  {
-     * id : string,
-     * title : string,
-     * titleShort : string,
-     * mets : url,
-     * preview : url,
-     * tei : url,
-     * teiEnriched : url,
-     * pageCount : int,
-     * fulltext : boolean
-     * },
-     * {
-     * ...
-     * },
-     * ...
-     * }]}
-     */
-    public BasicDBObject getDocumentsAsJSON(List<String> props, int skip, int limit) {
-//
-//        BasicDBObject docs = new BasicDBObject();
-//        BasicDBList docList = new BasicDBList();
-//
-//        // find docinfo
-//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-//        DBCursor dbCursor = coll.find(new BasicDBObject(), field).skip(skip);
-//
-//        if (limit > 0)
-//            dbCursor = dbCursor.limit(limit);
-//
-//        while (dbCursor.hasNext()) {
-//
-//
-//            DBObject dbObject = dbCursor.next();
-//
-//            DocInfo docInfo = new DocInfo(props);
-//            docInfo.setFromJSON(dbObject);
-//            docList.add(docInfo.getAsJSON());
-//
-//            docs.append("docs", docList);
-//        }
-//        return docs;
-        return null;
-    }
-
-
-    public BasicDBObject getDocumentAsJSON(String docid, List<String> props) {
-//
-//        BasicDBObject docs = new BasicDBObject();
-//
-//        // find docinfo
-//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-//
-//        BasicDBObject query = new BasicDBObject();
-//        query.put("_id", new ObjectId(docid));
-//
-//        DBObject dbObject = coll.findOne(query, field);
-//
-//
-//        DocInfo docInfo = new DocInfo(props);
-//        docInfo.setFromJSON(dbObject);
-//
-//        return docInfo.getAsJSON();
-//        //return new BasicDBObject("doc", docInfo.getAsJSON());
-        return null;
     }
 
 
@@ -267,23 +140,23 @@ public class MongoExporter {
      * ...
      * </docs>
      */
-    public Docs getDocumentsAsXML(List<String> props, int skip, int limit, HttpServletRequest request) {
+    public Docs getDocuments(List<String> props, int skip, int limit, HttpServletRequest request) {
 
-        List<Mets> metsList = metsRepo.findAll();
+        List<Mets> metsList = metsRepo.findAllMets();
         Docs docs = new Docs();
 
         for (Mets mets : metsList) {
-            Doc doc = this.getDocumentAsXML(mets.getID(), props, request);
+            Doc doc = this.getDocument(mets.getID(), props, request);
             docs.addDocs(doc);
         }
         return docs;
     }
 
 
-    public Doc getDocumentAsXML(String docid,
-                                List<String> props, HttpServletRequest request) {
+    public Doc getDocument(String docid,
+                           List<String> props, HttpServletRequest request) {
 
-        Mets mets = metsRepo.findOne(docid);
+        Mets mets = metsRepo.findOneMets(docid);
 
         return retrieveDocInfo(mets, this.getUrlString(request));
 
@@ -333,68 +206,11 @@ public class MongoExporter {
 
         doc.setMets(metsUrlString);
 
-        processModsElements(objectList, doc);
-
-        return doc;
-
-
-        // mets-url
-        //String metsUrl = String.format(this.getUrlString(request) + "/documents/%s/mets", docid);
-
-        // page-count
-        // Todo
-
-        // related items
-
-
-        // classification
-
-
-//        // find docinfo
-//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-//
-//        BasicDBObject query = new BasicDBObject();
-//        query.put("_id", new ObjectId(docid));
-//
-//        DBObject dbObject = coll.findOne(query, field);
-//
-//        DocInfo docInfo = new DocInfo(props);
-//        docInfo.setFromJSON(dbObject);
-//
-//        return docInfo.getAsXML().toString("UTF-8");
-
-
-        // ---
-
-//        OutputStream out = null;
-//
-//        Mets resultsMets = metsRepo.findOne(docid);
-//
-//        JAXBContext jaxbctx = null;
-//        Marshaller m = null;
-//
-//        try {
-//            jaxbctx = JAXBContext.newInstance(Mets.class);
-//            m = jaxbctx.createMarshaller();
-//            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-//
-//            m.marshal(resultsMets, response.getOutputStream());
-//            response.flushBuffer();
-//        } catch (JAXBException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-    }
-
-    private void processModsElements(List<Object> objectList, Doc doc) {
-
         for (Object obj : objectList) {
 
             if (obj instanceof RecordInfoType) {
-                RecordInfoType recordInfoType = (RecordInfoType) obj;
-                Set<RecordIdentifier> recordIdentifiers = this.getRecordIdentifiers(recordInfoType);
-                doc.addRecordIdentifiers(recordIdentifiers);
+
+                doc.addRecordIdentifiers(getRecordIdentifiers((RecordInfoType) obj));
             }
 
             if (obj instanceof TitleInfoType) {
@@ -421,9 +237,7 @@ public class MongoExporter {
                 List<Object> objectList1 = relatedItemType.getElements();
                 for (Object o2 : objectList1) {
                     if (o2 instanceof RecordInfoType) {
-                        RecordInfoType recordInfoType = (RecordInfoType) o2;
-                        Set<RecordIdentifier> recordIdentifiers = this.getRecordIdentifiers(recordInfoType);
-                        relatedItem.addRecordIdentifiers(recordIdentifiers);
+                        relatedItem.addRecordIdentifiers(this.getRecordIdentifiers((RecordInfoType) o2));
                         doc.addRelatedItem(relatedItem);
                     }
                 }
@@ -441,45 +255,10 @@ public class MongoExporter {
             }
         }
 
-    }
+        // Todo
+        // page-count
 
-
-    public void getMetsDocumentAsXML(String docid, HttpServletResponse response) {
-
-//        // find docinfo
-//        BasicDBObject field = new BasicDBObject().append("docinfo", 1);
-//
-//        BasicDBObject query = new BasicDBObject();
-//        query.put("_id", new ObjectId(docid));
-//
-//        DBObject dbObject = coll.findOne(query, field);
-//
-//        DocInfo docInfo = new DocInfo(props);
-//        docInfo.setFromJSON(dbObject);
-//
-//        return docInfo.getAsXML().toString("UTF-8");
-
-        OutputStream out = null;
-
-        Mets resultsMets = metsRepo.findOne(docid);
-
-        JAXBContext jaxbctx = null;
-        Marshaller m = null;
-
-        try {
-            jaxbctx = JAXBContext.newInstance(Mets.class);
-            m = jaxbctx.createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-            File f = new File("/Users/jpanzer/Documents/projects/dev/meta_data_access_service/tmp/out.xml");
-
-            m.marshal(resultsMets, f);
-            //  response.flushBuffer();
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-
-
+        return doc;
     }
 
 
@@ -656,7 +435,7 @@ public class MongoExporter {
 //    }
     public void getMetsDocument(String docid, ServletOutputStream outputStream) {
 
-        Mets resultsMets = metsRepo.findOne(docid);
+        Mets resultsMets = metsRepo.findOneMets(docid);
 
         if (resultsMets != null) {
             JAXBContext jaxbctx = null;
@@ -686,7 +465,7 @@ public class MongoExporter {
 
     private void removeReferencedModsDocuments(String docid) {
 
-        Mets mets = metsRepo.findOne(docid);
+        Mets mets = metsRepo.findOneMets(docid);
         List<MdSecType> dmdSecs = mets.getDmdSecs();
         for (MdSecType mdSec : dmdSecs) {
             List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();
@@ -697,7 +476,7 @@ public class MongoExporter {
     }
 
     public void removeMets(String docid) {
-        Mets mets = metsRepo.findOne(docid);
+        Mets mets = metsRepo.findOneMets(docid);
 
 
         List<MdSecType> dmdSecs = mets.getDmdSecs();
@@ -736,7 +515,7 @@ public class MongoExporter {
                 RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
 
                 String source = recordIdentifier.getSource();
-                String value = recordIdentifier.getValue();
+                Set<String> value = recordIdentifier.getValue();
                 recordIdentifiers.add(new RecordIdentifier(value, source));
             }
         }
@@ -744,8 +523,66 @@ public class MongoExporter {
         return recordIdentifiers;
     }
 
+    private Set<Set<String>> getRecordIdentifier(Mods mods) {
+        Set<Set<String>> recordIdentifierList = new HashSet<>();
+
+        List<Object> modsList = mods.getElements();
+        for (Object modsElement : modsList) {
+            if (modsElement instanceof RecordInfoType) {
+                RecordInfoType recordInfoType = (RecordInfoType) modsElement;
+                List<Object> recordInfoList = recordInfoType.getElements();
+                for (Object recordInfoElement : recordInfoList) {
+                    if (recordInfoElement instanceof RecordInfoType.RecordIdentifier) {
+                        RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) recordInfoElement;
+                        recordIdentifierList.add(recordIdentifier.getValue());
+                    }
+
+                }
+            }
+        }
+
+        return recordIdentifierList;
+    }
+
+    public Set<String> getRelatedItemRecordIdentifier(Mods mods) {
+        Set<String> recordIdentifierList = new HashSet<>();
+
+        List<Object> modsList = mods.getElements();
+        for (Object modsElement : modsList) {
+
+            if (modsElement instanceof RelatedItemType) {
+
+                RelatedItemType relatedItemType = (RelatedItemType) modsElement;
+
+                List<Object> objectList1 = relatedItemType.getElements();
+                for (Object o2 : objectList1) {
+                    if (o2 instanceof RecordInfoType) {
+                        RecordInfoType recordInfoType = (RecordInfoType) o2;
+                        List<Object> recordInfoList = recordInfoType.getElements();
+                        for (Object recordInfoElement : recordInfoList) {
+                            if (recordInfoElement instanceof RecordInfoType.RecordIdentifier) {
+                                RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) recordInfoElement;
+                                recordIdentifierList.addAll(recordIdentifier.getValue());
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return recordIdentifierList;
+    }
+
+    public RecordIdentifier getRcordIdentifier(RelatedItem relatedItem) {
+
+        return null;
+    }
+
     public String isInDB(String recordIdentifier) {
 
         return metsRepo.findDocidByRecordIdentifier(recordIdentifier);
     }
+
 }

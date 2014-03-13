@@ -49,14 +49,14 @@ public class Doc {
      *
      * @return The PPN of the parent, or <code>null</code>
      */     // TODO there are possibly several recordIdentifiers
-    public Set<String> getHostPPN() {
+    public Set<Set<String>> getHostPPN() {
 
 
         if (!relatedItem.iterator().hasNext()) {
             return null;
         }
 
-        Set<String> identifiers = new HashSet<>();
+        Set<Set<String>> identifiers = new HashSet<>();
 
         Iterator<RelatedItem> iter = relatedItem.iterator();
         while (iter.hasNext()) {

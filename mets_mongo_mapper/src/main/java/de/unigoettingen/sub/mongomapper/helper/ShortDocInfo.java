@@ -1,16 +1,18 @@
 package de.unigoettingen.sub.mongomapper.helper;
 
+import java.util.Set;
+
 /**
  * Created by jpanzer on 03.03.14.
  */
-public class ShortDocInfo{
+public class ShortDocInfo {
 
-    private String docid = "";
-    private String recordIdentifier = "";
+    private String docid;
+    private Set<String> recordIdentifiers;
 
-    public ShortDocInfo(String docid, String recordIdentifier) {
+    public ShortDocInfo(String docid, Set<String> recordIdentifiers) {
         this.docid = docid;
-        this.recordIdentifier = recordIdentifier;
+        this.recordIdentifiers = recordIdentifiers;
     }
 
     public String getDocid() {
@@ -21,19 +23,15 @@ public class ShortDocInfo{
         this.docid = docid;
     }
 
-    public String getRecordIdentifier() {
-        return recordIdentifier;
+    public Set<String> getRecordIdentifier() {
+        return recordIdentifiers;
     }
 
-    public void setRecordIdentifier(String recordIdentifier) {
-        this.recordIdentifier = recordIdentifier;
+    public void setRecordIdentifiers(Set<String> recordIdentifiers) {
+        this.recordIdentifiers = recordIdentifiers;
     }
 
-    @Override
-    public String toString() {
-        return "ShortDocInfo{" +
-                "docid='" + docid + '\'' +
-                ", recordIdentifier='" + recordIdentifier + '\'' +
-                '}';
+    public void addRecordIdentifier(Set<String> recordIdentifiers) {
+        this.recordIdentifiers.addAll(recordIdentifiers);
     }
 }

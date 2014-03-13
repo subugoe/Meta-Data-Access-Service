@@ -7,20 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.multiaction.NoSuchRequestHandlingMethodException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,119 +34,42 @@ public class AccessController {
     private MongoExporter mongoExporter;
 
 
-//    @RequestMapping(value = "/collections", method = RequestMethod.GET, produces = "application/xml")
-//    public
-//    @ResponseBody
-//    String getCollectionsAsXML(@RequestParam(value = "props", required = false) List<String> props,
-//                               @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-//                               @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
-//                               Model model) {
-//
-//        if (props == null) {
-//            props = new ArrayList<>();
-//        }
-//
-//        return mongoExporter.getCollectionsAsXML(props, skip, limit);
-//
-//    }
-
-//    @RequestMapping(value = "/collections", method = RequestMethod.GET, produces = "application/json")
-//    public
-//    @ResponseBody
-//    String getCollectionsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
-//                                @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-//                                @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
-//                                Model model) {
-//
-//        if (props == null) {
-//            props = new ArrayList<>();
-//        }
-//
-//        return mongoExporter.getCollectionsAsJSON(props, skip, limit).toString();
-//
-//    }
-
-
-    /**
-     * Collects information about the documents in the repository.
-     * <p/>
-     * request: /documents ? props=id & props=...}
-     * header:  Accept: application/xml
-     *
-     * @param props Reduce the docinfo to a required infoset. Possible values for
-     *              props are:
-     *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
-     * @param skip  The number of documents to skip (default = 0).
-     * @param limit The number of documents to get (default = 25).
-     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
-     * @return A List of documents with a set of desciptive information, encoded in XML.
-     */
-    @RequestMapping(value = "/documents", method = RequestMethod.GET, produces = "application/xml; charset=UTF-8")
+    @RequestMapping(value = "/collections", method = RequestMethod.GET,
+            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
     @ResponseBody
-    void getDocumentsAsXML(@RequestParam(value = "props", required = false) List<String> props,
-                             @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                             @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
-                             HttpServletRequest request,
-                             HttpServletResponse response) {
+    Docs getCollections(@RequestParam(value = "props", required = false) List<String> props,
+                        @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+                        @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
+                        HttpServletRequest request) {
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
-        Docs docs = mongoExporter.getDocumentsAsXML(props, skip, limit, request);
+        Docs docs = mongoExporter.getCollections(props, skip, limit, request);
 
-        if (docs != null) {
-            JAXBContext jaxbctx = null;
-            Marshaller m = null;
+        return docs;
 
-            try {
-                jaxbctx = JAXBContext.newInstance(Docs.class);
-                m = jaxbctx.createMarshaller();
-                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-
-                try {
-                    m.marshal(docs, response.getOutputStream());
-                    response.getOutputStream().flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
-            } catch (JAXBException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
-    /**
-     * Collects information about the documents in the repository.
-     * <p/>
-     * request: /documents ? props=id & props=...}
-     * header:  Accept: application/json
-     *
-     * @param props Reduce the docinfo to a required infoset. Possible values for
-     *              props are:
-     *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
-     * @param skip  The number of documents to skip (default = 0).
-     * @param limit The number of documents to get (default = 25).
-     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
-     * @return A List of documents with a set of desciptive information, encoded in JSON.
-     */
-    @RequestMapping(value = "/documents", method = RequestMethod.GET, produces = "application/json; charset=UTF-8")
+    @RequestMapping(value = "/collections/{docid}", method = RequestMethod.GET,
+            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
     @ResponseBody
-    String getDocumentsAsJSON(@RequestParam(value = "props", required = false) List<String> props,
-                              @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                              @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
-                              Model model) {
+    Doc getCollection(@PathVariable("docid") String docid,
+                        @RequestParam(value = "props", required = false) List<String> props,
+                        @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+                        @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
+                        HttpServletRequest request) {
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
-        return mongoExporter.getDocumentsAsJSON(props, skip, limit).toString();
+        Doc doc = mongoExporter.getDocument(docid, props, request);
+
+        return doc;
 
     }
 
@@ -164,101 +79,58 @@ public class AccessController {
      * request: /documents ? props=id & props=...}
      * header:  Accept: application/xml
      *
-     * @param props    Reduce the docinfo to a required infoset. Possible values for
-     *                 props are:
-     *                 {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
-     * @param response The HttpServletResponse object.
+     * @param props   Reduce the docinfo to a required infoset. Possible values for
+     *                props are:
+     *                {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param skip    The number of documents to skip (default = 0).
+     * @param limit   The number of documents to get (default = 25).
+     * @param request The HttpServletRequest object.
      * @return A List of documents with a set of desciptive information, encoded in XML.
      */
-    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = "application/xml; charset=UTF-8")
+    @RequestMapping(value = "/documents", method = RequestMethod.GET,
+            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
     @ResponseBody
-    void getDocumentAsXML(@PathVariable("docid") String docid,
-                          @RequestParam(value = "props", required = false) List<String> props,
-                          HttpServletRequest request,
-                          HttpServletResponse response) {
+    Docs getDocuments(@RequestParam(value = "props", required = false) List<String> props,
+                      @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+                      @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
+                      HttpServletRequest request) {
 
-        response.setContentType("application/xml");
-
-        Doc doc = mongoExporter.getDocumentAsXML(docid, props, request);
-
-
-        if (doc != null) {
-            JAXBContext jaxbctx = null;
-            Marshaller m = null;
-
-            try {
-                jaxbctx = JAXBContext.newInstance(Doc.class);
-                m = jaxbctx.createMarshaller();
-                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-
-                try {
-                    m.marshal(doc, response.getOutputStream());
-                    response.getOutputStream().flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
-            } catch (JAXBException e) {
-                e.printStackTrace();
-            }
+        if (props == null) {
+            props = new ArrayList<>();
         }
 
-
-//        try {
-//            if (in != null) {
-//                FileCopyUtils.copy(mongoExporter.getDocumentAsXML(docid, props);, response.getOutputStream());
-//                response.flushBuffer();
-//            } else {
-//                // TODO better return required, e.g. a redirect to an error page
-//                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Requested mets document is not available for Id: " + docid);
-//            }
-//        } catch (IOException e) {
-//            logger.error("Error on writing mets file to the output stream.");
-//            //throw new RuntimeException("IOError on writing mets file to the output stream.");
-//        }
-
-
-//
-//        if (props == null) {
-//            props = new ArrayList<>();
-//        }
-//
-//
-//        return mongoExporter.getDocumentAsXML(docid, props);
-
+        return mongoExporter.getDocuments(props, skip, limit, request);
     }
-
 
 
     /**
      * Collects information about the documents in the repository.
      * <p/>
      * request: /documents ? props=id & props=...}
-     * header:  Accept: application/json
+     * header:  Accept: application/json, application/xml
      *
-     * @param props Reduce the docinfo to a required infoset. Possible values for
-     *              props are:
-     *              {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
-     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
-     * @return A List of documents with a set of desciptive information, encoded in JSON.
+     * @param props   Reduce the docinfo to a required infoset. Possible values for
+     *                props are:
+     *                {id | title | titleShort | mets | preview | tei | teiEnriched | ralatedItems | classifications}
+     * @param request The HttpServletRequest object.
+     * @return A List of documents with a set of desciptive information, encoded in XML.
      */
-    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = "application/json; charset=UTF-8")
+    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
     @ResponseBody
-    String getDocumentAsJSON(@PathVariable("docid") String docid,
-                             @RequestParam(value = "props", required = false) List<String> props,
-                             Model model) {
+    Doc
+    getDocumentAsXML(@PathVariable("docid") String docid,
+                     @RequestParam(value = "props", required = false) List<String> props,
+                     HttpServletRequest request) {
 
         if (props == null) {
             props = new ArrayList<>();
         }
 
+        Doc doc = mongoExporter.getDocument(docid, props, request);
 
-        return mongoExporter.getDocumentAsJSON(docid, props).toString();
-
+        return doc;
     }
 
 

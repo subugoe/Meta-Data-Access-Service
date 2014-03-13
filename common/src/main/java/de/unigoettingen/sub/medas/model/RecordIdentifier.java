@@ -1,6 +1,7 @@
 package de.unigoettingen.sub.medas.model;
 
 import javax.xml.bind.annotation.*;
+import java.util.Set;
 
 /**
  * Created by jpanzer on 04.03.14.
@@ -14,22 +15,22 @@ public class RecordIdentifier {
     public RecordIdentifier() {
     }
 
-    public RecordIdentifier(String value, String source) {
+    public RecordIdentifier(Set<String> value, String source) {
         this.value = value;
         this.source = source;
     }
 
     @XmlValue
-    private String value;
+    private Set<String> value;
 
     @XmlAttribute(name = "source")
     private String source;
 
-    public String getValue() {
+    public Set<String> getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(Set<String> value) {
         this.value = value;
     }
 
