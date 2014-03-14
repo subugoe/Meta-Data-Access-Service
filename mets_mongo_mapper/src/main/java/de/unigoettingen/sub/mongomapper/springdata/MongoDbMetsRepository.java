@@ -154,9 +154,11 @@ public class MongoDbMetsRepository implements MetsRepository {
     @Override
     public String findDocidByRecordIdentifier(String ppn) {
 
-        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
-                where("_class").is("de.unigoettingen.sub.jaxb.RecordInfoType$RecordIdentifier").and("value").is(ppn))));
-        Mods mods = operations.findOne(query, Mods.class);
+//        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
+//                where("_class").is("de.unigoettingen.sub.jaxb.RecordInfoType$RecordIdentifier").and("value").is(ppn))));
+//        Mods mods = operations.findOne(query, Mods.class);
+
+        Mods mods = this.findModsByRecordIdentifier(ppn);
 
         Mets mets;
 
