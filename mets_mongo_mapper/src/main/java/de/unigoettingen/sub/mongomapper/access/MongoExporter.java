@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.stereotype.Component;
@@ -65,64 +66,67 @@ public class MongoExporter {
     public Docs getCollections(List<String> props, int skip, int limit, HttpServletRequest request) {
 
         Docs docs = new Docs();
-
-        System.out.println("anzahl Mets: " + mongoTemplate.count(new BasicQuery(new BasicDBObject()), Mets.class));
-
-        List<Mods> modsList = metsRepo.findAllModsWithRelatedItem(); 
-        // key      -> recordIdentifier
-        // value    -> mods docid
-        HashMap<String, String> ids = new HashMap<String, String>();
-
-        for (Mods mods : modsList) {
-            List<Object> objectList = mods.getElements();
-            for (Object o : objectList) {
-                if (o instanceof RelatedItemType) {
-                    RelatedItemType relatedItemType = (RelatedItemType) o;
-                    String type = relatedItemType.getType();
-                    List<Object> relatedItemTypes = relatedItemType.getElements();
-                    for (Object o1 : relatedItemTypes) {
-                        if (o1 instanceof RecordInfoType) {
-                            RecordInfoType recordInfoType = (RecordInfoType) o1;
-                            List<Object> objectList1 = recordInfoType.getElements();
-                            for (Object o2 : objectList1) {
-                                if (o2 instanceof RecordInfoType.RecordIdentifier) {
-                                    RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
-                                    recordIdentifier.getSource();
-                                    Set<String> recids = recordIdentifier.getValue();
-                                    for (String id : recids)
-                                        ids.put(id, mods.getID());
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-
-
-        //List<String> recIdList = ids.keySet().;
-        // Todo sort
-        //Collections.
-
-        for (String recId : ids.keySet()) {
-            Mods mods = metsRepo.findModsByRecordIdentifier(recId);
-
-
-            if (mods != null) {
-                Mets mets = metsRepo.findMetsByModsId(mods.getID());
-                String metsUrl = this.getUrlString(request)  + "/collections/" + mets.getID();
-                docs.addDocs(retrieveDocInfo(mets, metsUrl));
-            }
-        }
-
-
 //
+//        //System.out.println("anzahl Mets: " + mongoTemplate.count(new BasicQuery(new BasicDBObject()), Mets.class));
 //
-//        for (Mets mets : metsList) {
-//            docs.addDocs(retrieveDocInfo(mets, this.getUrlString(request)));
+//        List<Mods> modsList = metsRepo.findAllModsWithRelatedItem();
+//        // key      -> recordIdentifier
+//        // value    -> mods docid
+//        HashMap<String, String> ids = new HashMap<String, String>();
+//
+//        for (Mods mods : modsList) {
+//            List<Object> objectList = mods.getElements();
+//            for (Object o : objectList) {
+//                if (o instanceof RelatedItemType) {
+//                    RelatedItemType relatedItemType = (RelatedItemType) o;
+//                    String type = relatedItemType.getType();
+//                    List<Object> relatedItemTypes = relatedItemType.getElements();
+//                    for (Object o1 : relatedItemTypes) {
+//                        if (o1 instanceof RecordInfoType) {
+//                            RecordInfoType recordInfoType = (RecordInfoType) o1;
+//                            List<Object> objectList1 = recordInfoType.getElements();
+//                            for (Object o2 : objectList1) {
+//                                if (o2 instanceof RecordInfoType.RecordIdentifier) {
+//                                    RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
+//                                    recordIdentifier.getSource();
+//                                    Set<String> recids = recordIdentifier.getValue();
+//                                    for (String id : recids)
+//                                        ids.put(id, mods.getID());
+//                                }
+//                            }
+//
+//                        }
+//                    }
+//                }
+//            }
 //        }
-//        System.out.println("docs: " + docs.getDocs().size());
+//
+//
+//        //List<String> recIdList = ids.keySet().;
+//        // Todo sort
+//        //Collections.
+//
+//        for (String recId : ids.keySet()) {
+//            Mods mods = metsRepo.findModsByRecordIdentifier(recId);
+//
+//
+//            if (mods != null) {
+//                Mets mets = metsRepo.findMetsByModsId(mods.getID());
+//                String metsUrl = this.getUrlString(request)  + "/collections/" + mets.getID();
+//                docs.addDocs(retrieveDocInfo(mets, metsUrl));
+//            }
+//        }
+
+
+        List<Mets> metsList = metsRepo.findAllCollections(new PageRequest(0, 10));
+
+
+        for (Mets mets : metsList) {
+
+            String metsUrl = this.getUrlString(request) + "/collections/" + mets.getID();
+            docs.addDocs(retrieveDocInfo(mets, metsUrl));
+        }
+
 
         return docs;
 
@@ -177,7 +181,7 @@ public class MongoExporter {
 
         Mets mets = metsRepo.findOneMets(docid);
 
-        String metsUrl = this.getUrlString(request)  + "/documents/" + mets.getID();
+        String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID();
 
         Doc doc = retrieveDocInfo(mets, metsUrl);
 

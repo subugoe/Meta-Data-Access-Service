@@ -5,6 +5,7 @@ import de.unigoettingen.sub.jaxb.Mets;
 import de.unigoettingen.sub.jaxb.Mods;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -72,6 +73,23 @@ public class MongoDbMetsRepository implements MetsRepository {
         return modsList;
 
     }
+
+    public List<Mets> findAllCollections(Pageable pageable) {
+
+        Query query = query(where("isCollection").is(true));
+        List<Mets> metsList = operations.find(query, Mets.class);
+
+        return metsList;
+    }
+
+    public List<Mets> findAllDocuments(Pageable pageable) {
+
+        Query query = query(where("isCollection").is(false));
+        List<Mets> metsList = operations.find(query, Mets.class);
+
+        return metsList;
+    }
+
 
 //    @Override
 //    public List<Mods>findAllModsWithoutRelatedItem () {
