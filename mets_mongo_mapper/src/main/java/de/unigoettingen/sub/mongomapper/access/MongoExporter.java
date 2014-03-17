@@ -5,10 +5,15 @@ import de.unigoettingen.sub.jaxb.*;
 import de.unigoettingen.sub.medas.model.*;
 
 import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
+import de.unigoettingen.sub.mongomapper.springdata.MetsRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.stereotype.Component;
 
 import javax.jws.WebParam;
@@ -38,22 +43,32 @@ public class MongoExporter {
     private DBCollection coll = null;
     private MongoClient mongoClient = null;
 
+    private ApplicationContext context;
 
-    @Autowired()
+
+    @Autowired
     private MongoDbMetsRepository metsRepo;
 
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+
+//    public MongoExporter() {
+//
+//        context = new ClassPathXmlApplicationContext("spring-config.xml");
+//        mongoTemplate = (MongoTemplate) context.getBean("mongoTemplate");
+//
+//    }
 
     // TODO we have currently no collection data in the db. to be continued if we get the data.
     public Docs getCollections(List<String> props, int skip, int limit, HttpServletRequest request) {
 
         Docs docs = new Docs();
 
-        List<Mods> modsSet = metsRepo.findAllModsWithRelatedItem();
-        System.out.println("modsSet: " + modsSet.size());
+        System.out.println("anzahl Mets: " + mongoTemplate.count(new BasicQuery(new BasicDBObject()), Mets.class));
 
-        List<Mods> modsList = metsRepo.findAllModsWithRelatedItem();
-        System.out.println("modswith related items" + modsList.size());
-
+        List<Mods> modsList = metsRepo.findAllModsWithRelatedItem(); 
         // key      -> recordIdentifier
         // value    -> mods docid
         HashMap<String, String> ids = new HashMap<String, String>();
@@ -85,10 +100,10 @@ public class MongoExporter {
             }
         }
 
-        //System.out.println("recordIdentifiers" + recordIdentifiers.size());
-        //System.out.println(ids.size());
-        System.out.println(ids.keySet());
-        System.out.println(ids.values());
+
+        //List<String> recIdList = ids.keySet().;
+        // Todo sort
+        //Collections.
 
         for (String recId : ids.keySet()) {
             Mods mods = metsRepo.findModsByRecordIdentifier(recId);
@@ -96,7 +111,8 @@ public class MongoExporter {
 
             if (mods != null) {
                 Mets mets = metsRepo.findMetsByModsId(mods.getID());
-                docs.addDocs(retrieveDocInfo(mets, this.getUrlString(request)));
+                String metsUrl = this.getUrlString(request)  + "/collections/" + mets.getID();
+                docs.addDocs(retrieveDocInfo(mets, metsUrl));
             }
         }
 
@@ -143,12 +159,14 @@ public class MongoExporter {
     public Docs getDocuments(List<String> props, int skip, int limit, HttpServletRequest request) {
 
         List<Mets> metsList = metsRepo.findAllMets();
+
         Docs docs = new Docs();
 
         for (Mets mets : metsList) {
             Doc doc = this.getDocument(mets.getID(), props, request);
             docs.addDocs(doc);
         }
+
         return docs;
     }
 
@@ -156,10 +174,15 @@ public class MongoExporter {
     public Doc getDocument(String docid,
                            List<String> props, HttpServletRequest request) {
 
+
         Mets mets = metsRepo.findOneMets(docid);
 
-        return retrieveDocInfo(mets, this.getUrlString(request));
+        String metsUrl = this.getUrlString(request)  + "/documents/" + mets.getID();
 
+        Doc doc = retrieveDocInfo(mets, metsUrl);
+
+
+        return doc;
     }
 
 
@@ -201,15 +224,17 @@ public class MongoExporter {
 
         Doc doc = new Doc();
 
-        String docid = mets.getID();
-        doc.setDocid(docid);
+        // add docid
+        doc.setDocid(mets.getID());
 
+        // add metsURL
         doc.setMets(metsUrlString);
 
         for (Object obj : objectList) {
 
             if (obj instanceof RecordInfoType) {
 
+                // add recordIdentifiers
                 doc.addRecordIdentifiers(getRecordIdentifiers((RecordInfoType) obj));
             }
 

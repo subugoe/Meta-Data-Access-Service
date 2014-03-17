@@ -2,6 +2,7 @@ package de.unigoettingen.sub.mongomapper.ingest;
 
 
 import de.unigoettingen.sub.jaxb.*;
+import de.unigoettingen.sub.medas.model.RelatedItem;
 import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
 
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
@@ -43,6 +44,7 @@ public class MongoImporter {
 
     @Autowired()
     private MongoDbMetsRepository metsRepo;
+    private boolean isCollection = true;
 
 
     public MongoImporter() {
@@ -100,6 +102,8 @@ public class MongoImporter {
 
                 saveMods(mets);
                 saveMets(mets);
+                addType(mets);
+
 
 
             } catch (JAXBException e) {
@@ -120,6 +124,7 @@ public class MongoImporter {
 
 
     }
+
 
     private void removeMetsDocument(ShortDocInfo shortDocInfo) {
         this.logger.info("removeMets Mets document with recordIdentifier: " + shortDocInfo.getRecordIdentifier());
@@ -165,6 +170,13 @@ public class MongoImporter {
         }
     }
 
+    private void addType(Mets mets) {
+
+        metsRepo.findAndModifyMets(mets.getID(), this.isCollection);
+
+    }
+
+
 
     /**
      * The method checks if the document is in the DB, and returns the docid and recordIdentifier packed as a
@@ -175,6 +187,7 @@ public class MongoImporter {
      */
     private ShortDocInfo checkIfExist(Mets mets) {
 
+        this.isCollection = true;
 
         List<MdSecType> dmdSecs = mets.getDmdSecs();
         for (MdSecType mdSec : dmdSecs) {
@@ -208,6 +221,12 @@ public class MongoImporter {
 
                             }
                         }
+                    } else if (obj instanceof RelatedItemType) {
+                        RelatedItemType relatedItemType = ((RelatedItemType) obj);
+                        if (relatedItemType.getType().equalsIgnoreCase("host")) {
+                            this.isCollection = false;
+                        }
+
                     }
                 }
             }

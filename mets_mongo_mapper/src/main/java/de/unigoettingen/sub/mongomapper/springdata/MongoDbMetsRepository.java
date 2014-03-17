@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 
@@ -31,6 +32,7 @@ public class MongoDbMetsRepository implements MetsRepository {
     }
 
     //--- Mets section
+
 
     @Override
     public Mets findOneMets(String docid) {
@@ -114,6 +116,13 @@ public class MongoDbMetsRepository implements MetsRepository {
 
 
 
+    @Override
+    public void findAndModifyMets(String docid, boolean isCollection) {
+        Query query = query(where("_id").is(new ObjectId(docid)));
+        Update update = new Update();
+        update.set("isCollection", isCollection);
+        operations.findAndModify(query, update, Mets.class);
+    }
 
 
     //--- Mods section

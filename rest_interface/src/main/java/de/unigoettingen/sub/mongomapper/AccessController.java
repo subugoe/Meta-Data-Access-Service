@@ -47,31 +47,32 @@ public class AccessController {
             props = new ArrayList<>();
         }
 
+        long start = System.currentTimeMillis();
         Docs docs = mongoExporter.getCollections(props, skip, limit, request);
+        System.out.println(System.currentTimeMillis()-start);
 
         return docs;
-
     }
 
-    @RequestMapping(value = "/collections/{docid}", method = RequestMethod.GET,
-            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
-    public
-    @ResponseBody
-    Doc getCollection(@PathVariable("docid") String docid,
-                        @RequestParam(value = "props", required = false) List<String> props,
-                        @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                        @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
-                        HttpServletRequest request) {
-
-        if (props == null) {
-            props = new ArrayList<>();
-        }
-
-        Doc doc = mongoExporter.getDocument(docid, props, request);
-
-        return doc;
-
-    }
+//    @RequestMapping(value = "/collections/{docid}", method = RequestMethod.GET,
+//            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
+//    public
+//    @ResponseBody
+//    Doc getCollection(@PathVariable("docid") String docid,
+//                        @RequestParam(value = "props", required = false) List<String> props,
+//                        @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+//                        @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
+//                        HttpServletRequest request) {
+//
+//        if (props == null) {
+//            props = new ArrayList<>();
+//        }
+//
+//        Doc doc = mongoExporter.getDocument(docid, props, request);
+//
+//        return doc;
+//
+//    }
 
     /**
      * Collects information about the documents in the repository.
@@ -100,7 +101,11 @@ public class AccessController {
             props = new ArrayList<>();
         }
 
-        return mongoExporter.getDocuments(props, skip, limit, request);
+        long start = System.currentTimeMillis();
+        Docs docs = mongoExporter.getDocuments(props, skip, limit, request);
+        System.out.println(System.currentTimeMillis()-start);
+
+        return docs;
     }
 
 
@@ -128,7 +133,9 @@ public class AccessController {
             props = new ArrayList<>();
         }
 
+        long start = System.currentTimeMillis();
         Doc doc = mongoExporter.getDocument(docid, props, request);
+        System.out.println(System.currentTimeMillis()-start);
 
         return doc;
     }
