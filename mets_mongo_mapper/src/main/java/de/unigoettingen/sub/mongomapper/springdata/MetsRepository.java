@@ -22,8 +22,8 @@ public interface MetsRepository  extends Repository<Mets, Long> {
     List<Mets> findAllMets();
     List<Mods> findAllModsWithRelatedItem();
 
-    List<Mets> findAllCollections(Pageable pageable);
-    List<Mets> findAllDocuments(Pageable pageable);
+    List<Mets> findAllCollections();
+    List<Mets> findAllDocuments();
 
 //    List<Mods>findAllModsWithoutRelatedItem ();
     Mets findMetsByModsId(String docid);

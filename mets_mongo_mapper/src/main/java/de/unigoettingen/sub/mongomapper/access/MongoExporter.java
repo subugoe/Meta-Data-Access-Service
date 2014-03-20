@@ -5,28 +5,20 @@ import de.unigoettingen.sub.jaxb.*;
 import de.unigoettingen.sub.medas.model.*;
 
 import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
-import de.unigoettingen.sub.mongomapper.springdata.MetsRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.stereotype.Component;
 
-import javax.jws.WebParam;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by jpanzer.
@@ -55,81 +47,35 @@ public class MongoExporter {
     private MongoTemplate mongoTemplate;
 
 
-//    public MongoExporter() {
-//
-//        context = new ClassPathXmlApplicationContext("spring-config.xml");
-//        mongoTemplate = (MongoTemplate) context.getBean("mongoTemplate");
-//
-//    }
 
     // TODO we have currently no collection data in the db. to be continued if we get the data.
-    public Docs getCollections(List<String> props, int skip, int limit, HttpServletRequest request) {
+    public Colls getCollections(List<String> props, int skip, int limit, HttpServletRequest request) {
 
-        Docs docs = new Docs();
+        Colls colls = new Colls();
 //
-//        //System.out.println("anzahl Mets: " + mongoTemplate.count(new BasicQuery(new BasicDBObject()), Mets.class));
-//
-//        List<Mods> modsList = metsRepo.findAllModsWithRelatedItem();
-//        // key      -> recordIdentifier
-//        // value    -> mods docid
-//        HashMap<String, String> ids = new HashMap<String, String>();
-//
-//        for (Mods mods : modsList) {
-//            List<Object> objectList = mods.getElements();
-//            for (Object o : objectList) {
-//                if (o instanceof RelatedItemType) {
-//                    RelatedItemType relatedItemType = (RelatedItemType) o;
-//                    String type = relatedItemType.getType();
-//                    List<Object> relatedItemTypes = relatedItemType.getElements();
-//                    for (Object o1 : relatedItemTypes) {
-//                        if (o1 instanceof RecordInfoType) {
-//                            RecordInfoType recordInfoType = (RecordInfoType) o1;
-//                            List<Object> objectList1 = recordInfoType.getElements();
-//                            for (Object o2 : objectList1) {
-//                                if (o2 instanceof RecordInfoType.RecordIdentifier) {
-//                                    RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
-//                                    recordIdentifier.getSource();
-//                                    Set<String> recids = recordIdentifier.getValue();
-//                                    for (String id : recids)
-//                                        ids.put(id, mods.getID());
-//                                }
-//                            }
-//
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//
-//        //List<String> recIdList = ids.keySet().;
-//        // Todo sort
-//        //Collections.
-//
-//        for (String recId : ids.keySet()) {
-//            Mods mods = metsRepo.findModsByRecordIdentifier(recId);
-//
-//
-//            if (mods != null) {
-//                Mets mets = metsRepo.findMetsByModsId(mods.getID());
-//                String metsUrl = this.getUrlString(request)  + "/collections/" + mets.getID();
-//                docs.addDocs(retrieveDocInfo(mets, metsUrl));
-//            }
-//        }
 
 
-        List<Mets> metsList = metsRepo.findAllCollections(new PageRequest(0, 10));
+        List<Mets> metsList = metsRepo.findAllCollections();
 
 
         for (Mets mets : metsList) {
 
-            String metsUrl = this.getUrlString(request) + "/collections/" + mets.getID();
-            docs.addDocs(retrieveDocInfo(mets, metsUrl));
+            String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID() + "/mets";
+            colls.addColls(retrieveCollInfo(mets, metsUrl));
         }
 
 
-        return docs;
+        return colls;
 
+    }
+
+    public Coll getCollection(String docid, List<String> props, HttpServletRequest request) {
+
+        Mets mets = metsRepo.findOneMets(docid);
+        String metsUrl = this.getUrlString(request);
+        Coll coll = retrieveCollInfo(mets, metsUrl + "/documents/" + mets.getID() + "/mets");
+        coll.setContent(retrieveCollContents(mets, metsUrl +  "/documents/"));
+        return coll;
     }
 
 
@@ -162,12 +108,14 @@ public class MongoExporter {
      */
     public Docs getDocuments(List<String> props, int skip, int limit, HttpServletRequest request) {
 
-        List<Mets> metsList = metsRepo.findAllMets();
+        List<Mets> metsList = metsRepo.findAllDocuments();
 
         Docs docs = new Docs();
 
         for (Mets mets : metsList) {
-            Doc doc = this.getDocument(mets.getID(), props, request);
+
+            String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID() + "/mets";
+            Doc doc = retrieveDocInfo(mets, metsUrl);
             docs.addDocs(doc);
         }
 
@@ -181,7 +129,7 @@ public class MongoExporter {
 
         Mets mets = metsRepo.findOneMets(docid);
 
-        String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID();
+        String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID() + "/mets";
 
         Doc doc = retrieveDocInfo(mets, metsUrl);
 
@@ -290,6 +238,122 @@ public class MongoExporter {
         return doc;
     }
 
+    private Coll retrieveCollInfo(Mets mets, String metsUrlString) {
+
+
+        //List<Doc> docList = new ArrayList<>();
+        List<MdSecType> dmdSecs = mets.getDmdSecs();
+
+
+        // TODO currently just the first mdSec element will be examined - is this sufficient?
+        // TODO currently just the first mods element will be examined - is this sufficient?
+
+        Mods mods = dmdSecs.get(0).getMdWrap().getXmlData().getMods().get(0);
+
+        List<Object> objectList = mods.getElements();
+
+        Coll coll = new Coll();
+
+        // add docid
+        coll.setDocid(mets.getID());
+
+        // add metsURL
+        coll.setMets(metsUrlString);
+
+        for (Object obj : objectList) {
+
+            if (obj instanceof RecordInfoType) {
+
+                // add recordIdentifiers
+                coll.addRecordIdentifiers(getRecordIdentifiers((RecordInfoType) obj));
+            }
+
+            if (obj instanceof TitleInfoType) {
+                TitleInfoType titleInfoType = (TitleInfoType) obj;
+                List<Object> objectList1 = titleInfoType.getElements();
+                for (Object o : objectList1) {
+                    if (o instanceof Title) {
+                        Title title = (Title) o;
+                        coll.setTitle(title.getValue());
+                    }
+                    if (o instanceof BaseTitleInfoType.SubTitle) {
+                        BaseTitleInfoType.SubTitle subTitle = (BaseTitleInfoType.SubTitle) o;
+                        coll.setSubTitle(subTitle.getValue());
+                    }
+                }
+            }
+
+//            if (obj instanceof RelatedItemType) {
+//                RelatedItem relatedItem = new RelatedItem();
+//
+//                RelatedItemType relatedItemType = (RelatedItemType) obj;
+//                relatedItem.setType(relatedItemType.getType());
+//
+//                List<Object> objectList1 = relatedItemType.getElements();
+//                for (Object o2 : objectList1) {
+//                    if (o2 instanceof RecordInfoType) {
+//                        relatedItem.addRecordIdentifiers(this.getRecordIdentifiers((RecordInfoType) o2));
+//                        coll.addRelatedItem(relatedItem);
+//                    }
+//                }
+//            }
+
+            if (obj instanceof ClassificationType) {
+                Classification classification = new Classification();
+
+                ClassificationType classificationType = (ClassificationType) obj;
+                classification.setAuthority(classification.getAuthority());
+                classification.setValue(classificationType.getValue());
+
+                coll.addClassifications(classification);
+
+            }
+        }
+
+
+        // Todo
+        // page-count
+
+        return coll;
+    }
+
+    private List<Content> retrieveCollContents(Mets mets, String metsUrlString) {
+
+        List<Content> contents = new ArrayList<>();
+
+        List<StructMapType> structMaps = mets.getStructMaps();
+        for (StructMapType structMap : structMaps) {
+            if (structMap.getTYPE().equalsIgnoreCase("LOGICAL")) {
+                DivType div1 = structMap.getDiv();
+                //String type = div1.getTYPE();
+                //String label= div1.getLABEL();
+                List<DivType> divType = div1.getDivs();
+                for (DivType div2 : divType) {
+                    Content content = new Content();
+                    content.setType(div2.getTYPE());
+                    content.setName(div2.getLABEL());
+                    String metsUrl = div2.getMptrs().get(0).getHref();
+                    int i = metsUrl.lastIndexOf("=");
+
+                    String recordIdentifier = metsUrl.substring(i + 1, metsUrl.length());
+
+                    content.setRecordIdentifier(recordIdentifier);
+
+                    Mods contentMods = metsRepo.findModsByRecordIdentifier(recordIdentifier);
+                    Mets contentMets = metsRepo.findMetsByModsId(contentMods.getID());
+
+                    content.setDocid(contentMets.getID());
+
+                    contents.add(content);
+                }
+
+            }
+
+        }
+
+        return contents;
+    }
+
 
     public String getDocumentOutline(String docid) {
         return null;
@@ -316,88 +380,6 @@ public class MongoExporter {
     }
 
 
-    /**
-     * Retrieves the related METS or TEI document if available, else null.
-     *
-     * @param docid The MongoDB id of the related mongoDB object or any of its PIDs.
-     * @param type  The document type to get ("mets", "tei" or "reiEnriched").
-     * @return The METS document as an InputStream or null.
-     */
-//    public InputStream getEmeddedFileDocument(String docid, String type) {
-//
-//        return this.getEmeddedFileDocument(docid, type, null);
-//    }
-
-//    /**
-//     * Retrieves the related METS or TEI document if available, else null.
-//     *
-//     * @param docid   The MongoDB id of the related mongoDB object.
-//     * @param type    The document type to get ("mets" or "tei").
-//     * @param teiType The TEI type ("tei" or "teiType)
-//     * @return The METS document as an InputStream or null.
-//     */
-//    public InputStream getEmeddedFileDocument(String docid, String type, String teiType) {
-//
-//
-//        GridFSDBFile gridFSDBFile = getGridFsDbFile(docid, type, teiType);
-//
-//        if (gridFSDBFile != null)
-//            return gridFSDBFile.getInputStream();
-//
-//        return null;
-////
-////        } else {
-////
-////            // search with alternative pid's
-////
-////            IdHelper idHelper = new IdHelper();
-////            Map<String, String> idMap = idHelper.getPidsFromDB(db, mets_coll_name);
-////
-////
-////
-////            if (idHelper.aleadyInDB(this.getM, docid)) {
-////
-////                List<String> keyValuePair = idHelper.getKeyValuePairFor(idMap, docid);
-////                if (keyValuePair != null) {
-////                    String objId = idHelper.findDocid(keyValuePair, db, mets_coll_name);
-////                    gridFSDBFile = getGridFsDbFile(objId, type, teiType);
-////                    if (gridFSDBFile != null)
-////                        return gridFSDBFile.getInputStream();
-////                }
-////            }
-////        }
-////        return null;
-//    }
-
-//    /**
-//     * Returns the METS or TEI file object for the given object. This is a helper
-//     * for getEmeddedDocument, is creates the query and forwards the request to
-//     * mongoDB.
-//     *
-//     * @param docid   The MongoDB id of the related mongoDB object.
-//     * @param type    The object type e.g. "mets", "tei"
-//     * @param teiType The TEI type, possibilities are {tei | teiEnriched}.
-//     * @return The requested file object.
-//     */
-//    private GridFSDBFile getGridFsDbFile(String docid, String type, String teiType) {
-//
-////        GridFS gridFs = new GridFS(db, mets_coll_name);
-////        BasicDBObject query;
-////
-////        if (teiType == null) {
-////            query = new BasicDBObject("metadata", new BasicDBObject("relatedObjId", docid).
-////                    append("type", type));
-////        } else {
-////
-////            query = new BasicDBObject("metadata", new BasicDBObject("relatedObjId", docid).
-////                    append("type", type).
-////                    append("teiType", teiType));
-////        }
-////
-////        return gridFs.findOne(query);
-//
-//        return null;
-//    }
 
 
 //    public String getDocumentTags(String docid) {
@@ -613,5 +595,6 @@ public class MongoExporter {
 
         return metsRepo.findDocidByRecordIdentifier(recordIdentifier);
     }
+
 
 }

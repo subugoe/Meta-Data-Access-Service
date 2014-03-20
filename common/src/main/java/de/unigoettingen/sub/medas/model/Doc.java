@@ -8,39 +8,30 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "doc", propOrder = {
-        "docid", "recordIdentifier", "relatedItem", "title",
-        "subTitle", "classification", "mets", "tei", "teiEnriched", "preview", "pageCount", "fulltext"
+        "relatedItem", "tei", "teiEnriched", "preview", "pageCount", "fulltext"
 })
 @XmlRootElement(name = "doc")
-public class Doc {
+public class Doc extends Document {
 
-    @XmlElement
-    private String docid;
-    @XmlElementWrapper(name = "recordInfo")
-    @XmlElement
-    private Set<RecordIdentifier> recordIdentifier = new HashSet<>();
-    @XmlElement
-    private String title;
-    @XmlElement
-    private String subTitle;
-    @XmlElement
-    private String mets;
+
     @XmlElement
     private String preview;
     @XmlElement
     private String tei;
     @XmlElement
     private String teiEnriched;
+
+
     @XmlElement
     private String pageCount;
+
     @XmlElement
     private String fulltext;
+
     //@XmlElementWrapper(name = "relatedItems")
     @XmlElement
     private Set<RelatedItem> relatedItem = new HashSet<>();
-    @XmlElementWrapper(name = "classifications")
-    @XmlElement
-    private Set<Classification> classification = new HashSet<>();
+
 
     /**
      * The PPN of the parent item. E. g. the journal a volume belongs to. If
@@ -110,56 +101,6 @@ public class Doc {
         return ddc.split(" ")[0];
     }
 
-    public String getDocid() {
-        return docid;
-    }
-
-    public void setDocid(String docid) {
-        this.docid = docid;
-    }
-
-    public Set<RecordIdentifier> getRecordIdentifier() {
-        return recordIdentifier;
-    }
-
-    public void setRecordIdentifier(Set<RecordIdentifier> recordIdentifier) {
-        this.recordIdentifier = recordIdentifier;
-    }
-
-    public void addRecordIdentifiers(Set<RecordIdentifier> recordIdentifiers) {
-        for (RecordIdentifier recordIdentifier : recordIdentifiers)
-            this.recordIdentifier.add(recordIdentifier);
-    }
-
-    public void addRecordIdentifier(RecordIdentifier recordIdentifier) {
-
-        this.recordIdentifier.add(recordIdentifier);
-    }
-
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getSubTitle() {
-        return subTitle;
-    }
-
-    public void setSubTitle(String subTitle) {
-        this.subTitle = subTitle;
-    }
-
-    public String getMets() {
-        return mets;
-    }
-
-    public void setMets(String mets) {
-        this.mets = mets;
-    }
 
     public String getPreview() {
         return preview;
@@ -213,15 +154,4 @@ public class Doc {
         this.relatedItem.add(relatedItem);
     }
 
-    public Set<Classification> getClassification() {
-        return classification;
-    }
-
-    public void setClassification(Set<Classification> classification) {
-        this.classification = classification;
-    }
-
-    public void addClassifications(Classification classification) {
-        this.classification.add(classification);
-    }
 }

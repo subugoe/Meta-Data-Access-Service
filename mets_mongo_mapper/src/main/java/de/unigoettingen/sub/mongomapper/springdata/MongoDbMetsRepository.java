@@ -42,6 +42,7 @@ public class MongoDbMetsRepository implements MetsRepository {
         return operations.findOne(query, Mets.class);
     }
 
+
     @Override
     public List<Mets> findAllMets() {
         return operations.findAll(Mets.class);
@@ -74,7 +75,7 @@ public class MongoDbMetsRepository implements MetsRepository {
 
     }
 
-    public List<Mets> findAllCollections(Pageable pageable) {
+    public List<Mets> findAllCollections() {
 
         Query query = query(where("isCollection").is(true));
         List<Mets> metsList = operations.find(query, Mets.class);
@@ -82,7 +83,7 @@ public class MongoDbMetsRepository implements MetsRepository {
         return metsList;
     }
 
-    public List<Mets> findAllDocuments(Pageable pageable) {
+    public List<Mets> findAllDocuments() {
 
         Query query = query(where("isCollection").is(false));
         List<Mets> metsList = operations.find(query, Mets.class);

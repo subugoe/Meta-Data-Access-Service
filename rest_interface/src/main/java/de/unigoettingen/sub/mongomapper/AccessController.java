@@ -1,5 +1,7 @@
 package de.unigoettingen.sub.mongomapper;
 
+import de.unigoettingen.sub.medas.model.Coll;
+import de.unigoettingen.sub.medas.model.Colls;
 import de.unigoettingen.sub.medas.model.Doc;
 import de.unigoettingen.sub.medas.model.Docs;
 import de.unigoettingen.sub.mongomapper.access.MongoExporter;
@@ -38,7 +40,7 @@ public class AccessController {
             produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
     @ResponseBody
-    Docs getCollections(@RequestParam(value = "props", required = false) List<String> props,
+    Colls getCollections(@RequestParam(value = "props", required = false) List<String> props,
                         @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
                         @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
                         HttpServletRequest request) {
@@ -48,31 +50,32 @@ public class AccessController {
         }
 
         long start = System.currentTimeMillis();
-        Docs docs = mongoExporter.getCollections(props, skip, limit, request);
-        System.out.println(System.currentTimeMillis()-start);
+        Colls colls = mongoExporter.getCollections(props, skip, limit, request);
+        System.out.println(System.currentTimeMillis() - start);
 
-        return docs;
+        return colls;
     }
 
-//    @RequestMapping(value = "/collections/{docid}", method = RequestMethod.GET,
-//            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
-//    public
-//    @ResponseBody
-//    Doc getCollection(@PathVariable("docid") String docid,
-//                        @RequestParam(value = "props", required = false) List<String> props,
-//                        @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-//                        @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
-//                        HttpServletRequest request) {
-//
-//        if (props == null) {
-//            props = new ArrayList<>();
-//        }
-//
-//        Doc doc = mongoExporter.getDocument(docid, props, request);
-//
-//        return doc;
-//
-//    }
+    @RequestMapping(value = "/collections/{docid}", method = RequestMethod.GET,
+            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
+    public
+    @ResponseBody
+    Coll getCollection(@PathVariable("docid") String docid,
+                       @RequestParam(value = "props", required = false) List<String> props,
+                       @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+                       @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
+                       HttpServletRequest request) {
+
+        if (props == null) {
+            props = new ArrayList<>();
+        }
+
+        long start = System.currentTimeMillis();
+        Coll coll = mongoExporter.getCollection(docid, props, request);
+        System.out.println(System.currentTimeMillis() - start);
+
+        return coll;
+    }
 
     /**
      * Collects information about the documents in the repository.
@@ -103,7 +106,7 @@ public class AccessController {
 
         long start = System.currentTimeMillis();
         Docs docs = mongoExporter.getDocuments(props, skip, limit, request);
-        System.out.println(System.currentTimeMillis()-start);
+        System.out.println(System.currentTimeMillis() - start);
 
         return docs;
     }
@@ -125,9 +128,9 @@ public class AccessController {
     public
     @ResponseBody
     Doc
-    getDocumentAsXML(@PathVariable("docid") String docid,
-                     @RequestParam(value = "props", required = false) List<String> props,
-                     HttpServletRequest request) {
+    getDocument(@PathVariable("docid") String docid,
+                @RequestParam(value = "props", required = false) List<String> props,
+                HttpServletRequest request) {
 
         if (props == null) {
             props = new ArrayList<>();
@@ -135,7 +138,7 @@ public class AccessController {
 
         long start = System.currentTimeMillis();
         Doc doc = mongoExporter.getDocument(docid, props, request);
-        System.out.println(System.currentTimeMillis()-start);
+        System.out.println(System.currentTimeMillis() - start);
 
         return doc;
     }
