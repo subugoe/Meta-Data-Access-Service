@@ -47,26 +47,18 @@ public class MongoExporter {
     private MongoTemplate mongoTemplate;
 
 
-
     // TODO we have currently no collection data in the db. to be continued if we get the data.
     public Colls getCollections(List<String> props, int skip, int limit, HttpServletRequest request) {
 
         Colls colls = new Colls();
-//
-
-
         List<Mets> metsList = metsRepo.findAllCollections();
 
-
         for (Mets mets : metsList) {
-
             String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID() + "/mets";
             colls.addColls(retrieveCollInfo(mets, metsUrl));
         }
 
-
         return colls;
-
     }
 
     public Coll getCollection(String docid, List<String> props, HttpServletRequest request) {
@@ -74,7 +66,7 @@ public class MongoExporter {
         Mets mets = metsRepo.findOneMets(docid);
         String metsUrl = this.getUrlString(request);
         Coll coll = retrieveCollInfo(mets, metsUrl + "/documents/" + mets.getID() + "/mets");
-        coll.setContent(retrieveCollContents(mets, metsUrl +  "/documents/"));
+        coll.setContent(retrieveCollContents(mets, metsUrl + "/documents/"));
         return coll;
     }
 
@@ -109,16 +101,13 @@ public class MongoExporter {
     public Docs getDocuments(List<String> props, int skip, int limit, HttpServletRequest request) {
 
         List<Mets> metsList = metsRepo.findAllDocuments();
-
         Docs docs = new Docs();
 
         for (Mets mets : metsList) {
-
             String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID() + "/mets";
             Doc doc = retrieveDocInfo(mets, metsUrl);
             docs.addDocs(doc);
         }
-
         return docs;
     }
 
@@ -126,14 +115,9 @@ public class MongoExporter {
     public Doc getDocument(String docid,
                            List<String> props, HttpServletRequest request) {
 
-
         Mets mets = metsRepo.findOneMets(docid);
-
         String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID() + "/mets";
-
         Doc doc = retrieveDocInfo(mets, metsUrl);
-
-
         return doc;
     }
 
@@ -144,7 +128,6 @@ public class MongoExporter {
         String server = request.getServerName();
         int port = request.getServerPort();
         String contextpath = request.getContextPath();
-
         StringBuffer strb = new StringBuffer();
 
         if (schema != null)
@@ -156,24 +139,20 @@ public class MongoExporter {
         if (contextpath != null)
             strb.append(contextpath);
 
-
         return strb.toString();
     }
 
     private Doc retrieveDocInfo(Mets mets, String metsUrlString) {
 
+        int pagenumber = 0;
 
-        //List<Doc> docList = new ArrayList<>();
         List<MdSecType> dmdSecs = mets.getDmdSecs();
-
 
         // TODO currently just the first mdSec element will be examined - is this sufficient?
         // TODO currently just the first mods element will be examined - is this sufficient?
 
         Mods mods = dmdSecs.get(0).getMdWrap().getXmlData().getMods().get(0);
-
         List<Object> objectList = mods.getElements();
-
         Doc doc = new Doc();
 
         // add docid
@@ -196,10 +175,12 @@ public class MongoExporter {
                 for (Object o : objectList1) {
                     if (o instanceof Title) {
                         Title title = (Title) o;
+                        // add title
                         doc.setTitle(title.getValue());
                     }
                     if (o instanceof BaseTitleInfoType.SubTitle) {
                         BaseTitleInfoType.SubTitle subTitle = (BaseTitleInfoType.SubTitle) o;
+                        // add subTitle
                         doc.setSubTitle(subTitle.getValue());
                     }
                 }
@@ -215,6 +196,7 @@ public class MongoExporter {
                 for (Object o2 : objectList1) {
                     if (o2 instanceof RecordInfoType) {
                         relatedItem.addRecordIdentifiers(this.getRecordIdentifiers((RecordInfoType) o2));
+                        // add relatedItem
                         doc.addRelatedItem(relatedItem);
                     }
                 }
@@ -226,14 +208,49 @@ public class MongoExporter {
                 ClassificationType classificationType = (ClassificationType) obj;
                 classification.setAuthority(classification.getAuthority());
                 classification.setValue(classificationType.getValue());
-
+                // add classification
                 doc.addClassifications(classification);
+
+            }
+
+            if (obj instanceof PhysicalDescriptionType) {
+                PhysicalDescriptionType physicalDescriptionType = (PhysicalDescriptionType) obj;
+
+                List<Object> objectList1 = physicalDescriptionType.getElements();
+                for (Object o3 : objectList1) {
+                    if (o3 instanceof PhysicalDescriptionType.Extent) {
+                        PhysicalDescriptionType.Extent extent = (PhysicalDescriptionType.Extent) o3;
+                        String extend = extent.getValue();
+                        String[] extendArray = extend.split(" ");
+                        // required extend format: "200 pages"
+                        pagenumber = Integer.valueOf(extendArray[0]);
+                        String type = extendArray[1];
+                        if (type.equals("pages")) {
+                            // add relatedItem
+                            doc.setPageCount(pagenumber);
+                        }
+                    }
+                }
+            }
+
+            if (obj instanceof PartType) {
+                PartType partType = (PartType) obj;
+                doc.setPartOrder(partType.getOrder());
+
+                // TODO possibly use the more precise number: part -> detail -> number value
 
             }
         }
 
-        // Todo
-        // page-count
+        if (pagenumber == 0) {
+            List<StructMapType> structMapTypeList = mets.getStructMaps();
+            for (StructMapType structMapType : structMapTypeList) {
+                if (structMapType.getTYPE().equalsIgnoreCase("PHYSICAL")) {
+                    // add relatedItem
+                    doc.setPageCount(structMapType.getDiv().getDivs().size());
+                }
+            }
+        }
 
         return doc;
     }
@@ -274,29 +291,16 @@ public class MongoExporter {
                 for (Object o : objectList1) {
                     if (o instanceof Title) {
                         Title title = (Title) o;
+                        // add title
                         coll.setTitle(title.getValue());
                     }
                     if (o instanceof BaseTitleInfoType.SubTitle) {
                         BaseTitleInfoType.SubTitle subTitle = (BaseTitleInfoType.SubTitle) o;
+                        // add subTitle
                         coll.setSubTitle(subTitle.getValue());
                     }
                 }
             }
-
-//            if (obj instanceof RelatedItemType) {
-//                RelatedItem relatedItem = new RelatedItem();
-//
-//                RelatedItemType relatedItemType = (RelatedItemType) obj;
-//                relatedItem.setType(relatedItemType.getType());
-//
-//                List<Object> objectList1 = relatedItemType.getElements();
-//                for (Object o2 : objectList1) {
-//                    if (o2 instanceof RecordInfoType) {
-//                        relatedItem.addRecordIdentifiers(this.getRecordIdentifiers((RecordInfoType) o2));
-//                        coll.addRelatedItem(relatedItem);
-//                    }
-//                }
-//            }
 
             if (obj instanceof ClassificationType) {
                 Classification classification = new Classification();
@@ -304,7 +308,7 @@ public class MongoExporter {
                 ClassificationType classificationType = (ClassificationType) obj;
                 classification.setAuthority(classification.getAuthority());
                 classification.setValue(classificationType.getValue());
-
+                // add classification
                 coll.addClassifications(classification);
 
             }
@@ -380,8 +384,6 @@ public class MongoExporter {
     }
 
 
-
-
 //    public String getDocumentTags(String docid) {
 //        return null;
 //    }
@@ -400,7 +402,7 @@ public class MongoExporter {
 //    }
 
 
-//    public String isInDB(String pid) {
+    //    public String isInDB(String pid) {
 //
 //
 ////        IdHelper idHelper = new IdHelper();
@@ -526,7 +528,7 @@ public class MongoExporter {
                 RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) o2;
 
                 String source = recordIdentifier.getSource();
-                Set<String> value = recordIdentifier.getValue();
+                String value = recordIdentifier.getValue();
                 recordIdentifiers.add(new RecordIdentifier(value, source));
             }
         }
@@ -534,8 +536,8 @@ public class MongoExporter {
         return recordIdentifiers;
     }
 
-    private Set<Set<String>> getRecordIdentifier(Mods mods) {
-        Set<Set<String>> recordIdentifierList = new HashSet<>();
+    private Set<String> getRecordIdentifier(Mods mods) {
+        Set<String> recordIdentifierList = new HashSet<>();
 
         List<Object> modsList = mods.getElements();
         for (Object modsElement : modsList) {
@@ -573,7 +575,7 @@ public class MongoExporter {
                         for (Object recordInfoElement : recordInfoList) {
                             if (recordInfoElement instanceof RecordInfoType.RecordIdentifier) {
                                 RecordInfoType.RecordIdentifier recordIdentifier = (RecordInfoType.RecordIdentifier) recordInfoElement;
-                                recordIdentifierList.addAll(recordIdentifier.getValue());
+                                recordIdentifierList.add(recordIdentifier.getValue());
                             }
 
                         }

@@ -232,7 +232,7 @@ public class RecordInfoType {
     public static class RecordIdentifier {
 
         @XmlValue
-        protected Set<String> value;
+        protected String value;
 
         @XmlAttribute(name = "source")
         protected String source;
@@ -245,7 +245,7 @@ public class RecordInfoType {
          *     {@link String }
          *     
          */
-        public Set<String> getValue() {
+        public String getValue() {
             return value;
         }
 
@@ -257,7 +257,7 @@ public class RecordInfoType {
          *     {@link String }
          *     
          */
-        public void setValue(Set<String> value) {
+        public void setValue(String value) {
             this.value = value;
         }
 

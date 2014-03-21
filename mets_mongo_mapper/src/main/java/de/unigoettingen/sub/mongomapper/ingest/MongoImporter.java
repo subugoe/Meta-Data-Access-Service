@@ -199,9 +199,7 @@ public class MongoImporter {
                         List<Object> elements = ((RecordInfoType) obj).getElements();
                         for (Object o : elements) {
                             if (o instanceof RecordInfoType.RecordIdentifier) {
-                                Set<String> value = ((RecordInfoType.RecordIdentifier) o).getValue();
-
-                                for (String recId : value) {
+                                String recId = ((RecordInfoType.RecordIdentifier) o).getValue();
 
                                     Mods m = metsRepo.findModsByRecordIdentifier(recId);
 
@@ -211,13 +209,13 @@ public class MongoImporter {
 
                                         String docid = resultsMets.getID();
 
-                                        ShortDocInfo shortDocInfo = new ShortDocInfo(docid, value);
+                                        ShortDocInfo shortDocInfo = new ShortDocInfo(docid, recId);
 
-                                        System.out.println(shortDocInfo);
+                                        // System.out.println(shortDocInfo);
 
                                         return shortDocInfo;
                                     }
-                                }
+
 
                             }
                         }

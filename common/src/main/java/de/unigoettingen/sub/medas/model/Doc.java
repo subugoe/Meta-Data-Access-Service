@@ -1,5 +1,6 @@
 package de.unigoettingen.sub.medas.model;
 
+import java.math.BigInteger;
 import java.util.*;
 import javax.xml.bind.annotation.*;
 
@@ -8,7 +9,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "doc", propOrder = {
-        "relatedItem", "tei", "teiEnriched", "preview", "pageCount", "fulltext"
+        "relatedItem", "tei", "teiEnriched", "partOrder", "preview", "pageCount", "fulltext"
 })
 @XmlRootElement(name = "doc")
 public class Doc extends Document {
@@ -21,9 +22,11 @@ public class Doc extends Document {
     @XmlElement
     private String teiEnriched;
 
+    @XmlElement
+    private BigInteger partOrder;
 
     @XmlElement
-    private String pageCount;
+    private int pageCount;
 
     @XmlElement
     private String fulltext;
@@ -40,14 +43,14 @@ public class Doc extends Document {
      *
      * @return The PPN of the parent, or <code>null</code>
      */     // TODO there are possibly several recordIdentifiers
-    public Set<Set<String>> getHostPPN() {
+    public Set<String> getHostPPN() {
 
 
         if (!relatedItem.iterator().hasNext()) {
             return null;
         }
 
-        Set<Set<String>> identifiers = new HashSet<>();
+        Set<String> identifiers = new HashSet<>();
 
         Iterator<RelatedItem> iter = relatedItem.iterator();
         while (iter.hasNext()) {
@@ -126,12 +129,20 @@ public class Doc extends Document {
         this.teiEnriched = teiEnriched;
     }
 
-    public String getPageCount() {
+    public int getPageCount() {
         return pageCount;
     }
 
-    public void setPageCount(String pageCount) {
+    public void setPageCount(int pageCount) {
         this.pageCount = pageCount;
+    }
+
+    public BigInteger getPartOrder() {
+        return partOrder;
+    }
+
+    public void setPartOrder(BigInteger partOrder) {
+        this.partOrder = partOrder;
     }
 
     public String getFulltext() {

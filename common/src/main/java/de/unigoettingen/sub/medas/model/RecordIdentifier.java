@@ -15,22 +15,22 @@ public class RecordIdentifier {
     public RecordIdentifier() {
     }
 
-    public RecordIdentifier(Set<String> value, String source) {
+    public RecordIdentifier(String value, String source) {
         this.value = value;
         this.source = source;
     }
 
     @XmlValue
-    private Set<String> value;
+    private String value;
 
     @XmlAttribute(name = "source")
     private String source;
 
-    public Set<String> getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(Set<String> value) {
+    public void setValue(String value) {
         this.value = value;
     }
 

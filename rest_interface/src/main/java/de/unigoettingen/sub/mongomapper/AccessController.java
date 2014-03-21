@@ -36,6 +36,16 @@ public class AccessController {
     private MongoExporter mongoExporter;
 
 
+    /**
+     * Collects a list of collections and returns a basic set of information (docid, recordInfo -> recordIdentifier,
+     * title, subTitle, classifications, mets-url).
+     *
+     * @param props
+     * @param skip
+     * @param limit
+     * @param request
+     * @return
+     */
     @RequestMapping(value = "/collections", method = RequestMethod.GET,
             produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
@@ -56,14 +66,22 @@ public class AccessController {
         return colls;
     }
 
+    /**
+     * Collects the information for a special collection and returns a basic set of information (docid, recordInfo -> recordIdentifier,
+     * title, subTitle, classifications, mets-url) and additional information about the content of this collection (docid, name, type,
+     * recordIdentifier).
+     *
+     * @param docid
+     * @param props
+     * @param request
+     * @return
+     */
     @RequestMapping(value = "/collections/{docid}", method = RequestMethod.GET,
             produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
     @ResponseBody
     Coll getCollection(@PathVariable("docid") String docid,
                        @RequestParam(value = "props", required = false) List<String> props,
-                       @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                       @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
                        HttpServletRequest request) {
 
         if (props == null) {
@@ -78,7 +96,9 @@ public class AccessController {
     }
 
     /**
-     * Collects information about the documents in the repository.
+     * Collects information about the documents in the repository and returns a basic set of information (docid,
+     * recordInfo -> recordIdentifier, title, subTitle, classifications, mets-url).
+     *
      * <p/>
      * request: /documents ? props=id & props=...}
      * header:  Accept: application/xml
@@ -113,7 +133,11 @@ public class AccessController {
 
 
     /**
-     * Collects information about the documents in the repository.
+     * Collects the information for a special document in the repository and returns a basic set of information
+     * (docid, recordInfo -> recordIdentifier, title, subTitle, classifications, mets-url, relatedItem ->
+     * recordInfo -> recordIdentifier) and additional information about the content of this document (docid, name,
+     * type, recordIdentifier).
+     *
      * <p/>
      * request: /documents ? props=id & props=...}
      * header:  Accept: application/json, application/xml
