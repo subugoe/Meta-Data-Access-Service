@@ -22,7 +22,7 @@ public class RelatedItem {
     private String docidOfThis;
 
     @XmlElementWrapper(name = "recordInfo")
-    private Set<RecordIdentifier> recordIdentifier = new HashSet<>();
+    private List<RecordIdentifier> recordIdentifier = new ArrayList<>();
 
     public String getType() {
         return type;
@@ -33,11 +33,11 @@ public class RelatedItem {
     }
 
 
-    public Set<RecordIdentifier> getRecordIdentifier() {
+    public List<RecordIdentifier> getRecordIdentifier() {
         return recordIdentifier;
     }
 
-    public void setRecordIdentifier(Set<RecordIdentifier> recordIdentifier) {
+    public void setRecordIdentifier(List<RecordIdentifier> recordIdentifier) {
         this.recordIdentifier = recordIdentifier;
     }
 
@@ -46,7 +46,7 @@ public class RelatedItem {
     }
 
 
-    public void addRecordIdentifiers(Set<RecordIdentifier> recordIdentifiers) {
+    public void addRecordIdentifiers(List<RecordIdentifier> recordIdentifiers) {
 
         for (RecordIdentifier recordIdentifier : recordIdentifiers)
             this.recordIdentifier.add(recordIdentifier);

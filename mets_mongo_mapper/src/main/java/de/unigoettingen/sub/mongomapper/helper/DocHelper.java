@@ -90,13 +90,18 @@ public class DocHelper {
                 List<Object> objectList1 = relatedItemType.getElements();
                 for (Object o2 : objectList1) {
                     if (o2 instanceof RecordInfoType) {
-                        relatedItem.addRecordIdentifiers(this.getRecordIdentifiers((RecordInfoType) o2));
-                        // add relatedItem
-                        doc.addRelatedItem(relatedItem);
+                        List<RecordIdentifier> recordIdentifierList = this.getRecordIdentifiers((RecordInfoType) o2);
+                        if (recordIdentifierList != null && recordIdentifierList.size() > 0) {
+                            relatedItem.addRecordIdentifiers(recordIdentifierList);
+                            // add relatedItem
+                            doc.addRelatedItem(relatedItem);
+                        }  else {
+                            logger.info("missing recordIdentifier in relatedItem for document with docid " + metsId);
+                        }
 
 
                         // add docid to relatedItem
-                        Set<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
+                        List<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
                         for (RecordIdentifier recordIdentifier : recordIdentifiers) {
                             ShortDocInfo shortDocInfo = this.findDocidByRecordIdentifier(recordIdentifier.getValue());
                             if (shortDocInfo != null) {
@@ -134,7 +139,12 @@ public class DocHelper {
                         String extend = extent.getValue();
                         String[] extendArray = extend.split(" ");
                         // required extend format: "200 pages"
+                        try {
                         pagenumber = Integer.valueOf(extendArray[0]);
+                        } catch (NumberFormatException e) {
+                            logger.error("Expected pagenumber in PhysicalDescriptionType.Extent for docid " + metsId + " is not a number" );
+                            pagenumber = 0;
+                        }
                         String type = extendArray[1];
                         if (type.equals("pages")) {
                             // add pagenumber
@@ -154,13 +164,16 @@ public class DocHelper {
             }
         }
 
-        if (pagenumber == 0) {
-            List<StructMapType> structMapTypeList = mets.getStructMaps();
-            for (StructMapType structMapType : structMapTypeList) {
-                if (structMapType.getTYPE().equalsIgnoreCase("PHYSICAL")) {
-                    // add relatedItem
+        // add contentCount
+        List<StructMapType> structMapTypeList = mets.getStructMaps();
+        for (StructMapType structMapType : structMapTypeList) {
+            if (structMapType.getTYPE().equalsIgnoreCase("PHYSICAL")) {
+                // add relatedItem
+                doc.setContentCount(structMapType.getDiv().getDivs().size());
+
+                if (pagenumber == 0)
                     doc.setPageCount(structMapType.getDiv().getDivs().size());
-                }
+
             }
         }
 
@@ -170,8 +183,13 @@ public class DocHelper {
 
     public Doc retrieveFullDocInfo(Mets mets, HttpServletRequest request) {
 
+        long start = System.currentTimeMillis();
         Doc doc = retrieveBasicDocInfo(mets, request);
+        System.out.println("retrieveBasicDocInfo: " + (System.currentTimeMillis() - start));
+
+        start = System.currentTimeMillis();
         doc.setContent(retrieveDocContents(mets));
+        System.out.println("retrieveDocContents: " + (System.currentTimeMillis() - start));
 
         return doc;
     }
@@ -270,10 +288,10 @@ public class DocHelper {
         return identifier;
     }
 
-    public Set<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType) {
+    public List<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType) {
 
         List<Object> objectList2 = recordInfoType.getElements();
-        Set<RecordIdentifier> recordIdentifiers = new HashSet<>();
+        List<RecordIdentifier> recordIdentifiers = new ArrayList<>();
 
         for (Object o2 : objectList2) {
             if (o2 instanceof RecordInfoType.RecordIdentifier) {

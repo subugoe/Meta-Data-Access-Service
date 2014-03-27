@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.*;
 @XmlType(name = "doc", propOrder = {
         "docid", "recordIdentifier", "identifier", "title",
         "subTitle", "classification", "mets",
-        "relatedItem", "pageCount", "partOrder", "content"
+        "relatedItem", "pageCount", "contentCount", "partOrder", "content"
         //"tei", "teiEnriched", "preview", "fulltext",
 })
 @XmlRootElement(name = "doc")
@@ -30,11 +30,11 @@ public class Doc {
 
     @XmlElementWrapper(name = "recordInfo")
     @XmlElement
-    protected Set<RecordIdentifier> recordIdentifier = new HashSet<>();
+    protected List<RecordIdentifier> recordIdentifier = new ArrayList<>();
 
     @XmlElementWrapper(name = "identifier")
     @XmlElement
-    protected Set<Identifier> identifier = new HashSet<>();
+    protected List<Identifier> identifier = new ArrayList<>();
 
     @XmlElement
     protected String title;
@@ -49,7 +49,7 @@ public class Doc {
 
     //@XmlElementWrapper(name = "relatedItems")
     @XmlElement
-    private Set<RelatedItem> relatedItem = new HashSet<>();
+    private List<RelatedItem> relatedItem = new ArrayList<>();
 
     //@XmlElementWrapper(name = "contents")
     @XmlElement
@@ -57,6 +57,9 @@ public class Doc {
 
     @XmlElement
     private int pageCount;
+
+    @XmlElement
+    private int contentCount;
 
     @XmlElement
     private BigInteger partOrder;
@@ -182,6 +185,15 @@ public class Doc {
         this.pageCount = pageCount;
     }
 
+
+    public int getContentCount() {
+        return contentCount;
+    }
+
+    public void setContentCount(int contentCount) {
+        this.contentCount = contentCount;
+    }
+
     public BigInteger getPartOrder() {
         return partOrder;
     }
@@ -198,11 +210,11 @@ public class Doc {
 //        this.fulltext = fulltext;
 //    }
 
-    public Set<RelatedItem> getRelatedItem() {
+    public List<RelatedItem> getRelatedItem() {
         return relatedItem;
     }
 
-    public void setRelatedItem(Set<RelatedItem> relatedItem) {
+    public void setRelatedItem(List<RelatedItem> relatedItem) {
         this.relatedItem = relatedItem;
     }
 
@@ -228,15 +240,15 @@ public class Doc {
         return null;
     }
 
-    public Set<RecordIdentifier> getRecordIdentifier() {
+    public List<RecordIdentifier> getRecordIdentifier() {
         return recordIdentifier;
     }
 
-    public void setRecordIdentifier(Set<RecordIdentifier> recordIdentifier) {
+    public void setRecordIdentifier(List<RecordIdentifier> recordIdentifier) {
         this.recordIdentifier = recordIdentifier;
     }
 
-    public void addRecordIdentifiers(Set<RecordIdentifier> recordIdentifiers) {
+    public void addRecordIdentifiers(List<RecordIdentifier> recordIdentifiers) {
         for (RecordIdentifier recordIdentifier : recordIdentifiers)
             this.recordIdentifier.add(recordIdentifier);
     }
@@ -247,15 +259,15 @@ public class Doc {
     }
 
 
-    public Set<Identifier> getIdentifier() {
+    public List<Identifier> getIdentifier() {
         return identifier;
     }
 
-    public void setIdentifier(Set<Identifier> identifier) {
+    public void setIdentifier(List<Identifier> identifier) {
         this.identifier = identifier;
     }
 
-    public void addIdentifiers(Set<Identifier> identifiers) {
+    public void addIdentifiers(List<Identifier> identifiers) {
 
         this.identifier.addAll(identifiers);
     }

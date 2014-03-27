@@ -63,7 +63,7 @@ public class MongoImporter {
      *                     via the (recordInfo) recordIdentifier element. Possibilities values:
      *                     reject:     Rejects the request, the file will not be stored.
      *                     replace:    The new METS file will replace an existing document in mongoDB (default).
-     * @param appUrlString The application URL (schema://host:port/).
+     * @param request      The HttpServletRequest object.
      */
     public void storeMetsDocument(MultipartFile metsFile, String handling, HttpServletRequest request) {
 

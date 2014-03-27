@@ -132,7 +132,9 @@ public class MongoExporter {
         Mets mets = null;
 
         try {
+            long start = System.currentTimeMillis();
             mets = metsRepo.findOneMets(docid);
+            System.out.println("findOneMets: " + (System.currentTimeMillis() - start));
         } catch (IllegalArgumentException e) {
             logger.info("The requested docid [" + docid + "] is an invalid ObjectId");
         }
@@ -409,7 +411,7 @@ public class MongoExporter {
             for (Object obj : objectList) {
                 if (obj instanceof RecordInfoType) {
 
-                    Set<RecordIdentifier> recordIdentifiers = this.docHelper.getRecordIdentifiers((RecordInfoType) obj);
+                    List<RecordIdentifier> recordIdentifiers = this.docHelper.getRecordIdentifiers((RecordInfoType) obj);
                     if (!recordIdentifiers.isEmpty()) {
                         if (recordIdentifiers.iterator().hasNext()) {
                             RecordIdentifier recordIdentifier = recordIdentifiers.iterator().next();
