@@ -24,27 +24,14 @@ public interface MetsRepository  extends Repository<Mets, Long> {
     //List<Mets> findAllCollections();
     //List<Mets> findAllDocuments();
 
-//    List<Mods>findAllModsWithoutRelatedItem ();
+
     Mets findMetsByModsId(String docid);
     Mets saveMets(Mets mets);
     void removeMets(String docid);
     //void findAndModifyMets(String docid, boolean isCollection);
 
 
-    //--- Mods section
-    Mods findFirstMods(String docid);
-    Mods findModsByRecordIdentifier(String recordIdentifier);
-    Mods saveMods(Mods mods);
-    void removeMods(String docid);
 
-
-    //--- Doc section
-    Doc saveDoc(Doc doc);
-    List<Doc> findAllDocs();
-    Doc findAndRemoveDocForMets(String docid);
-
-    //--- allgemein
-    ShortDocInfo findDocidByRecordIdentifier(String ppn);
 
 
 }

@@ -6,7 +6,9 @@ import de.unigoettingen.sub.medas.model.Doc;
 import de.unigoettingen.sub.medas.model.ShortDocInfo;
 
 import de.unigoettingen.sub.mongomapper.helper.DocHelper;
+import de.unigoettingen.sub.mongomapper.springdata.MongoDbDocRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
+import de.unigoettingen.sub.mongomapper.springdata.MongoDbModsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,20 +37,19 @@ public class MongoImporter {
 
     private final Logger logger = LoggerFactory.getLogger(MongoImporter.class);
 
-//    private String filename;
-//    private String handling;
-//    private String appUrlString;
 
-
-    //---
 
     @Autowired
     private DocHelper docHelper;
 
     @Autowired()
     private MongoDbMetsRepository metsRepo;
-    //private boolean isCollection = true;
 
+    @Autowired()
+    private MongoDbModsRepository modsRepo;
+
+    @Autowired()
+    private MongoDbDocRepository docRepo;
 
     public MongoImporter() {
     }
@@ -141,7 +142,7 @@ public class MongoImporter {
 
     private void removeReferencedDocDocuments(String docid) {
 
-        metsRepo.findAndRemoveDocForMets(docid);
+        docRepo.findAndRemoveDocForMets(docid);
     }
 
     private void removeReferencedModsDocuments(String docid) {
@@ -151,7 +152,7 @@ public class MongoImporter {
         for (MdSecType mdSec : dmdSecs) {
             List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();
             for (Mods mods : modsList) {
-                metsRepo.removeMods(mods.getID());
+                modsRepo.removeMods(mods.getID());
             }
         }
 
@@ -176,7 +177,7 @@ public class MongoImporter {
             List<Mods> modsList = xmlData.getMods();
 
             for (Mods mods : modsList) {
-                metsRepo.saveMods(mods);
+                modsRepo.saveMods(mods);
             }
         }
     }
@@ -185,7 +186,7 @@ public class MongoImporter {
     private void saveDoc(Mets mets, HttpServletRequest request) {
 
         Doc doc = this.docHelper.retrieveBasicDocInfo(mets, request);
-        metsRepo.saveDoc(doc);
+        docRepo.saveDoc(doc);
     }
 
 
@@ -232,7 +233,7 @@ public class MongoImporter {
 //
 //                                        // System.out.println(shortDocInfo);
 
-                                        return metsRepo.findDocidByRecordIdentifier(recId);
+                                        return docHelper.findDocidByRecordIdentifier(recId);
                                   //  }
 
 

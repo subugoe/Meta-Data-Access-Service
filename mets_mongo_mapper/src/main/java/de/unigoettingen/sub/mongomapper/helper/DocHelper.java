@@ -3,6 +3,7 @@ package de.unigoettingen.sub.mongomapper.helper;
 import de.unigoettingen.sub.medas.metsmods.jaxb.*;
 import de.unigoettingen.sub.medas.model.*;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
+import de.unigoettingen.sub.mongomapper.springdata.MongoDbModsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class DocHelper {
 
     @Autowired
     private MongoDbMetsRepository metsRepo;
+
+    @Autowired
+    private MongoDbModsRepository modsRepo;
 
     public Doc retrieveBasicDocInfo(Mets mets, HttpServletRequest request) {
 
@@ -94,7 +98,7 @@ public class DocHelper {
                         // add docid to relatedItem
                         Set<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
                         for (RecordIdentifier recordIdentifier : recordIdentifiers) {
-                            ShortDocInfo shortDocInfo = metsRepo.findDocidByRecordIdentifier(recordIdentifier.getValue());
+                            ShortDocInfo shortDocInfo = this.findDocidByRecordIdentifier(recordIdentifier.getValue());
                             if (shortDocInfo != null) {
                                 recordIdentifier.setRelatedDocid(shortDocInfo.getDocid());
                             } else {
@@ -232,7 +236,7 @@ public class DocHelper {
             String recordIdentifier = metsUrl.substring(i + 1, metsUrl.length());
             content.setRecordIdentifier(recordIdentifier);
 
-            Mods contentMods = metsRepo.findModsByRecordIdentifier(recordIdentifier);
+            Mods contentMods = modsRepo.findModsByRecordIdentifier(recordIdentifier);
 
             if (contentMods != null) {
                 Mets contentMets = metsRepo.findMetsByModsId(contentMods.getID());
@@ -371,7 +375,7 @@ public class DocHelper {
 
     public ShortDocInfo isRecordInDB(String recordIdentifier) {
 
-        return metsRepo.findDocidByRecordIdentifier(recordIdentifier);
+        return findDocidByRecordIdentifier(recordIdentifier);
     }
 
 
@@ -389,4 +393,25 @@ public class DocHelper {
 //            }
 //        }
 //    }
+
+
+    public ShortDocInfo findDocidByRecordIdentifier(String recId) {
+
+//        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
+//                where("_class").is("RecordInfoType$RecordIdentifier").and("value").is(ppn))));
+//        Mods mods = operations.findOne(query, Mods.class);
+
+        Mods mods = modsRepo.findModsByRecordIdentifier(recId);
+
+        Mets mets;
+
+        if (mods != null) {
+            mets = metsRepo.findMetsByModsId(mods.getID());
+            if (mets != null)
+                return new ShortDocInfo(mets.getID(), recId);
+        }
+
+        return null;
+
+    }
 }

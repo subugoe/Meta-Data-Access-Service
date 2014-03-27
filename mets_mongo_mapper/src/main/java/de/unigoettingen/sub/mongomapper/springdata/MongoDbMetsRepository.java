@@ -38,7 +38,6 @@ public class MongoDbMetsRepository implements MetsRepository {
         this.operations = operations;
     }
 
-    //--- Mets section
 
 
     @Override
@@ -49,10 +48,9 @@ public class MongoDbMetsRepository implements MetsRepository {
     }
 
 
-    public Mets findOneMetsWithRecordIderntifier(String recordIdentifier) {
-        Mods mods = this.findModsByRecordIdentifier(recordIdentifier);
-        return this.findMetsByModsId(mods.getID());
-    }
+//    public Mets findOneMetsWithRecordIderntifier(String recordIdentifier, String modsDocid) {
+//        return this.findMetsByModsId(modsDocid);
+//    }
 
     @Override
     public List<Mets> findAllMets() {
@@ -153,101 +151,10 @@ public class MongoDbMetsRepository implements MetsRepository {
 //    }
 
 
-    //--- Mods section
-
-    @Override
-    public Mods findFirstMods(String docid) {
-
-        Query query = query(where("id").is(new ObjectId(docid)));
-        return operations.findOne(query, Mods.class);
-    }
-
-    @Override
-    public Mods findModsByRecordIdentifier(String ppn) {
-
-        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
-                where("_class").is("de.unigoettingen.sub.medas.metsmods.jaxb.RecordInfoType$RecordIdentifier").and("value").is(ppn))));
-        return operations.findOne(query, Mods.class);
-
-    }
 
 
-    @Override
-    public Mods saveMods(Mods mods) {
-        operations.save(mods);
-        return mods;
-    }
-
-    @Override
-    public void removeMods(String docid) {
-
-        Query query = query(where("_id").is(new ObjectId(docid)));
-        operations.remove(query, Mods.class);
-    }
-
-    //--- Doc
-
-    public Doc saveDoc(Doc doc) {
-        operations.save(doc);
-        return doc;
-    }
-
-    public List<Doc> findAllDocs() {
-
-        //long start = System.currentTimeMillis();
-        List<Doc> docList = operations.findAll(Doc.class);
-        //System.out.println("findAllDocs: " + (System.currentTimeMillis()-start));
-
-        // retrieve docid of relatedItem
-        // TODO is the docid required for a relatedItem?
-        //start = System.currentTimeMillis();
-//        for (Doc doc : docList) {
-//            Set<RelatedItem> relatedItems = doc.getRelatedItem();
-//            for (RelatedItem relatedItem : relatedItems) {
-//                Set<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
-//                for (RecordIdentifier recordIdentifier : recordIdentifiers) {
-//                    ShortDocInfo shortDocInfo = this.findDocidByRecordIdentifier(recordIdentifier.getValue());
-//                    if (shortDocInfo != null) {
-//                        recordIdentifier.setRelatedDocid(shortDocInfo.getDocid());
-//                    }  else {
-//                        logger.error("No record found for reordIdentifier " + recordIdentifier.getValue());
-//                    }
-//                }
-//            }
-//        }
-        //System.out.println("add docid to all relatedItems: " + (System.currentTimeMillis()-start));
-
-        return docList;
-    }
-
-    public Doc findAndRemoveDocForMets(String docid) {
-        Query query = query(where("_id").is(new ObjectId(docid)));
-        return operations.findAndRemove(query, Doc.class);
-    }
 
 
-    //--- allgemein
-
-    @Override
-    public ShortDocInfo findDocidByRecordIdentifier(String recId) {
-
-//        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
-//                where("_class").is("RecordInfoType$RecordIdentifier").and("value").is(ppn))));
-//        Mods mods = operations.findOne(query, Mods.class);
-
-        Mods mods = this.findModsByRecordIdentifier(recId);
-
-        Mets mets;
-
-        if (mods != null) {
-            mets = this.findMetsByModsId(mods.getID());
-            if (mets != null)
-                return new ShortDocInfo(mets.getID(), recId);
-        }
-
-        return null;
-
-    }
 
 
 }

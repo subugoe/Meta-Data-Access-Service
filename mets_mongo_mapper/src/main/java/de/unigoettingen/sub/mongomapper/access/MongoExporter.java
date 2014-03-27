@@ -6,7 +6,9 @@ import de.unigoettingen.sub.medas.model.*;
 
 import de.unigoettingen.sub.medas.model.ShortDocInfo;
 import de.unigoettingen.sub.mongomapper.helper.DocHelper;
+import de.unigoettingen.sub.mongomapper.springdata.MongoDbDocRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
+import de.unigoettingen.sub.mongomapper.springdata.MongoDbModsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,12 @@ public class MongoExporter {
 
     @Autowired
     private MongoDbMetsRepository metsRepo;
+
+    @Autowired
+    private MongoDbDocRepository docRepo;
+
+    @Autowired
+    private MongoDbModsRepository modsRepo;
 
     @Autowired
     private DocHelper docHelper;
@@ -112,7 +120,7 @@ public class MongoExporter {
      */
     public Docs getDocuments(List<String> props, int skip, int limit, HttpServletRequest request) {
 
-        Docs docs = new Docs(metsRepo.findAllDocs());
+        Docs docs = new Docs(docRepo.findAllDocs());
 
         return docs;
     }
@@ -121,7 +129,13 @@ public class MongoExporter {
     public Doc getDocument(String docid,
                            List<String> props, HttpServletRequest request) {
 
-        Mets mets = metsRepo.findOneMets(docid);
+        Mets mets = null;
+
+        try {
+            mets = metsRepo.findOneMets(docid);
+        } catch (IllegalArgumentException e) {
+            logger.info("The requested docid [" + docid + "] is an invalid ObjectId");
+        }
 
         if (mets == null)
             return null;
@@ -132,7 +146,8 @@ public class MongoExporter {
 
     public Doc getDocumentWithRecordIdentifier(String recordIdentifier, List<String> props, HttpServletRequest request) {
 
-        Mets mets = metsRepo.findOneMetsWithRecordIderntifier(recordIdentifier);
+        Mods mods = modsRepo.findModsByRecordIdentifier(recordIdentifier);
+        Mets mets = metsRepo.findMetsByModsId(mods.getID());
 
         if (mets == null)
             return null;
@@ -366,7 +381,7 @@ public class MongoExporter {
     }
 
     private void removeReferencedDocDocuments(String docid) {
-        metsRepo.findAndRemoveDocForMets(docid);
+        docRepo.findAndRemoveDocForMets(docid);
     }
 
     private void removeReferencedModsDocuments(String docid) {
@@ -376,7 +391,7 @@ public class MongoExporter {
         for (MdSecType mdSec : dmdSecs) {
             List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();
             for (Mods mods : modsList) {
-                metsRepo.removeMods(mods.getID());
+                modsRepo.removeMods(mods.getID());
             }
         }
     }
