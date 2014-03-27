@@ -89,6 +89,20 @@ public class DocHelper {
                         relatedItem.addRecordIdentifiers(this.getRecordIdentifiers((RecordInfoType) o2));
                         // add relatedItem
                         doc.addRelatedItem(relatedItem);
+
+
+                        // add docid to relatedItem
+                        Set<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
+                        for (RecordIdentifier recordIdentifier : recordIdentifiers) {
+                            ShortDocInfo shortDocInfo = metsRepo.findDocidByRecordIdentifier(recordIdentifier.getValue());
+                            if (shortDocInfo != null) {
+                                recordIdentifier.setRelatedDocid(shortDocInfo.getDocid());
+                            } else {
+                                logger.error("No record found for reordIdentifier " + recordIdentifier.getValue());
+                            }
+                        }
+
+
                     }
                 }
             }
@@ -148,7 +162,6 @@ public class DocHelper {
 
         return doc;
     }
-
 
 
     public Doc retrieveFullDocInfo(Mets mets, HttpServletRequest request) {
@@ -293,7 +306,7 @@ public class DocHelper {
         return recordIdentifierList;
     }
 
-    public  Set<String> getRelatedItemRecordIdentifier(Mods mods) {
+    public Set<String> getRelatedItemRecordIdentifier(Mods mods) {
         Set<String> recordIdentifierList = new HashSet<>();
 
         List<Object> modsList = mods.getElements();
@@ -330,8 +343,7 @@ public class DocHelper {
     }
 
 
-
-    public  String getUrlString(HttpServletRequest request) {
+    public String getUrlString(HttpServletRequest request) {
 
         String schema = request.getScheme();
         String server = request.getServerName();
@@ -363,18 +375,18 @@ public class DocHelper {
     }
 
 
-    public void setDocidForRelatedItems(Docs docs) {
-        for (Doc doc : docs.getDocs()) {
-            for (RelatedItem relatedItem : doc.getRelatedItem()) {
-                for (RecordIdentifier recordIdentifier : relatedItem.getRecordIdentifier()) {
-                    String recId = recordIdentifier.getValue();
-                    ShortDocInfo shortDocInfo = metsRepo.findDocidByRecordIdentifier(recId);
-                    if (shortDocInfo != null && shortDocInfo.getDocid() != null)
-                        recordIdentifier.setRe  latedDocid(shortDocInfo.getDocid());
-                    else
-                        logger.error("could not find docid for recordidentifier: " + recId + " (record is possibly not in the db");
-                }
-            }
-        }
-    }
+//    public void setDocidForRelatedItems(Docs docs) {
+//        for (Doc doc : docs.getDocs()) {
+//            for (RelatedItem relatedItem : doc.getRelatedItem()) {
+//                for (RecordIdentifier recordIdentifier : relatedItem.getRecordIdentifier()) {
+//                    String recId = recordIdentifier.getValue();
+//                    ShortDocInfo shortDocInfo = metsRepo.findDocidByRecordIdentifier(recId);
+//                    if (shortDocInfo != null && shortDocInfo.getDocid() != null)
+//                        recordIdentifier.setRelatedDocid(shortDocInfo.getDocid());
+//                    else
+//                        logger.error("could not find docid for recordidentifier: " + recId + " (record is possibly not in the db");
+//                }
+//            }
+//        }
+//    }
 }

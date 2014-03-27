@@ -23,6 +23,8 @@ public class Docs {
         this.docs = docList;
     }
 
+
+
     @XmlElement(name = "doc")
     public List<Doc> getDocs() {
         return docs;

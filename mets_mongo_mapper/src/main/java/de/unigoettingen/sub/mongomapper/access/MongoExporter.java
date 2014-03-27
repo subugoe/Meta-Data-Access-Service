@@ -113,7 +113,6 @@ public class MongoExporter {
     public Docs getDocuments(List<String> props, int skip, int limit, HttpServletRequest request) {
 
         Docs docs = new Docs(metsRepo.findAllDocs());
-        docHelper.setDocidForRelatedItems(docs);
 
         return docs;
     }
