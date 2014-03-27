@@ -1,11 +1,12 @@
 package de.unigoettingen.sub.mongomapper.springdata;
 
 
-import de.unigoettingen.sub.jaxb.Mets;
-import de.unigoettingen.sub.jaxb.Mods;
+import de.unigoettingen.sub.medas.metsmods.jaxb.Mets;
+import de.unigoettingen.sub.medas.metsmods.jaxb.Mods;
+import de.unigoettingen.sub.medas.model.Doc;
+import de.unigoettingen.sub.medas.model.ShortDocInfo;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Repository;
 
 
 import java.util.List;
-import java.util.Set;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -43,6 +43,11 @@ public class MongoDbMetsRepository implements MetsRepository {
     }
 
 
+    public Mets findOneMetsWithRecordIderntifier(String recordIdentifier) {
+        Mods mods = this.findModsByRecordIdentifier(recordIdentifier);
+        return this.findMetsByModsId(mods.getID());
+    }
+
     @Override
     public List<Mets> findAllMets() {
         return operations.findAll(Mets.class);
@@ -58,7 +63,7 @@ public class MongoDbMetsRepository implements MetsRepository {
     public List<Mods> findAllModsWithRelatedItem() {
 
         Query query = query(where("elements").elemMatch(new Criteria().andOperator(
-                where("_class").is("de.unigoettingen.sub.jaxb.RelatedItemType").and("type").is("host"))));
+                where("_class").is("RelatedItemType").and("type").is("host"))));
         List<Mods> modsList = operations.find(query, Mods.class);
 
 //        Set<Mets> metsSet = new HashSet<>();
@@ -75,27 +80,27 @@ public class MongoDbMetsRepository implements MetsRepository {
 
     }
 
-    public List<Mets> findAllCollections() {
+//    public List<Mets> findAllCollections() {
+//
+//        Query query = query(where("isCollection").is(true));
+//        List<Mets> metsList = operations.find(query, Mets.class);
+//
+//        return metsList;
+//    }
 
-        Query query = query(where("isCollection").is(true));
-        List<Mets> metsList = operations.find(query, Mets.class);
-
-        return metsList;
-    }
-
-    public List<Mets> findAllDocuments() {
-
-        Query query = query(where("isCollection").is(false));
-        List<Mets> metsList = operations.find(query, Mets.class);
-
-        return metsList;
-    }
+//    public List<Mets> findAllDocuments() {
+//
+//        Query query = query(where("isCollection").is(false));
+//        List<Mets> metsList = operations.find(query, Mets.class);
+//
+//        return metsList;
+//    }
 
 
 //    @Override
 //    public List<Mods>findAllModsWithoutRelatedItem () {
 //
-//        Query query = query(where("elements._class").is("de.unigoettingen.sub.jaxb.RelatedItemType").not());
+//        Query query = query(where("elements._class").is("RelatedItemType").not());
 //        List<Mods> modsList = operations.find(query, Mods.class);
 //
 //        Set<Mets> metsSet = new HashSet<>();
@@ -120,7 +125,6 @@ public class MongoDbMetsRepository implements MetsRepository {
     }
 
 
-
     @Override
     public Mets saveMets(Mets mets) {
         operations.save(mets);
@@ -134,14 +138,13 @@ public class MongoDbMetsRepository implements MetsRepository {
     }
 
 
-
-    @Override
-    public void findAndModifyMets(String docid, boolean isCollection) {
-        Query query = query(where("_id").is(new ObjectId(docid)));
-        Update update = new Update();
-        update.set("isCollection", isCollection);
-        operations.findAndModify(query, update, Mets.class);
-    }
+//    @Override
+//    public void findAndModifyMets(String docid, boolean isCollection) {
+//        Query query = query(where("_id").is(new ObjectId(docid)));
+//        Update update = new Update();
+//        update.set("isCollection", isCollection);
+//        operations.findAndModify(query, update, Mets.class);
+//    }
 
 
     //--- Mods section
@@ -157,7 +160,7 @@ public class MongoDbMetsRepository implements MetsRepository {
     public Mods findModsByRecordIdentifier(String ppn) {
 
         Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
-                where("_class").is("de.unigoettingen.sub.jaxb.RecordInfoType$RecordIdentifier").and("value").is(ppn))));
+                where("_class").is("de.unigoettingen.sub.medas.metsmods.jaxb.RecordInfoType$RecordIdentifier").and("value").is(ppn))));
         return operations.findOne(query, Mods.class);
 
     }
@@ -176,26 +179,45 @@ public class MongoDbMetsRepository implements MetsRepository {
         operations.remove(query, Mods.class);
     }
 
+    //--- Doc
+
+    public Doc saveDoc(Doc doc) {
+        operations.save(doc);
+        return doc;
+    }
+
+    public List<Doc> findAllDocs() {
+        return operations.findAll(Doc.class);
+    }
+
+    public Doc findAndRemoveDocForMets(String docid) {
+        Query query = query(where("_id").is(new ObjectId(docid)));
+        return operations.findAndRemove(query, Doc.class);
+    }
+
 
     //--- allgemein
 
     @Override
-    public String findDocidByRecordIdentifier(String ppn) {
+    public ShortDocInfo findDocidByRecordIdentifier(String recId) {
 
 //        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
-//                where("_class").is("de.unigoettingen.sub.jaxb.RecordInfoType$RecordIdentifier").and("value").is(ppn))));
+//                where("_class").is("RecordInfoType$RecordIdentifier").and("value").is(ppn))));
 //        Mods mods = operations.findOne(query, Mods.class);
 
-        Mods mods = this.findModsByRecordIdentifier(ppn);
+        Mods mods = this.findModsByRecordIdentifier(recId);
 
         Mets mets;
 
         if (mods != null) {
             mets = this.findMetsByModsId(mods.getID());
             if (mets != null)
-                return mets.getID();
+                return new ShortDocInfo(mets.getID(), recId);
         }
+
         return null;
 
     }
+
+
 }

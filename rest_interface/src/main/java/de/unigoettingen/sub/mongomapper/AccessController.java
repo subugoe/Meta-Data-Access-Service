@@ -1,10 +1,9 @@
 package de.unigoettingen.sub.mongomapper;
 
-import de.unigoettingen.sub.medas.model.Coll;
-import de.unigoettingen.sub.medas.model.Colls;
-import de.unigoettingen.sub.medas.model.Doc;
-import de.unigoettingen.sub.medas.model.Docs;
+import de.unigoettingen.sub.medas.metsmods.jaxb.Mets;
+import de.unigoettingen.sub.medas.model.*;
 import de.unigoettingen.sub.mongomapper.access.MongoExporter;
+import de.unigoettingen.sub.mongomapper.helper.DocHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,65 +34,64 @@ public class AccessController {
     @Autowired
     private MongoExporter mongoExporter;
 
+//    /**
+//     * Collects a list of collections and returns a basic set of information (docid, recordInfo -> recordIdentifier,
+//     * title, subTitle, classifications, mets-url).
+//     *
+//     * @param props
+//     * @param skip
+//     * @param limit
+//     * @param request
+//     * @return
+//     */
+//    @RequestMapping(value = "/collections", method = RequestMethod.GET,
+//            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
+//    public
+//    @ResponseBody
+//    Docs getCollections(@RequestParam(value = "props", required = false) List<String> props,
+//                        @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
+//                        @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
+//                        HttpServletRequest request) {
+//
+//        if (props == null) {
+//            props = new ArrayList<>();
+//        }
+//
+//        long start = System.currentTimeMillis();
+//        Docs docs = mongoExporter.getCollections(props, skip, limit, request);
+//        System.out.println(System.currentTimeMillis() - start);
+//
+//        return docs;
+//    }
 
-    /**
-     * Collects a list of collections and returns a basic set of information (docid, recordInfo -> recordIdentifier,
-     * title, subTitle, classifications, mets-url).
-     *
-     * @param props
-     * @param skip
-     * @param limit
-     * @param request
-     * @return
-     */
-    @RequestMapping(value = "/collections", method = RequestMethod.GET,
-            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
-    public
-    @ResponseBody
-    Colls getCollections(@RequestParam(value = "props", required = false) List<String> props,
-                        @RequestParam(value = "skip", required = false, defaultValue = "0") int skip,
-                        @RequestParam(value = "limit", required = false, defaultValue = "0") int limit,
-                        HttpServletRequest request) {
-
-        if (props == null) {
-            props = new ArrayList<>();
-        }
-
-        long start = System.currentTimeMillis();
-        Colls colls = mongoExporter.getCollections(props, skip, limit, request);
-        System.out.println(System.currentTimeMillis() - start);
-
-        return colls;
-    }
-
-    /**
-     * Collects the information for a special collection and returns a basic set of information (docid, recordInfo -> recordIdentifier,
-     * title, subTitle, classifications, mets-url) and additional information about the content of this collection (docid, name, type,
-     * recordIdentifier).
-     *
-     * @param docid
-     * @param props
-     * @param request
-     * @return
-     */
-    @RequestMapping(value = "/collections/{docid}", method = RequestMethod.GET,
-            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
-    public
-    @ResponseBody
-    Coll getCollection(@PathVariable("docid") String docid,
-                       @RequestParam(value = "props", required = false) List<String> props,
-                       HttpServletRequest request) {
-
-        if (props == null) {
-            props = new ArrayList<>();
-        }
-
-        long start = System.currentTimeMillis();
-        Coll coll = mongoExporter.getCollection(docid, props, request);
-        System.out.println(System.currentTimeMillis() - start);
-
-        return coll;
-    }
+//    /**
+//     * Collects the information for a special collection and returns a basic set of information (docid, recordInfo -> recordIdentifier,
+//     * title, subTitle, classifications, mets-url) and additional information about the content of this collection (docid, name, type,
+//     * recordIdentifier).
+//     *
+//     * @param docid
+//     * @param props
+//     * @param request
+//     * @return
+//     */
+//    @RequestMapping(value = "/collections/{docid}", method = RequestMethod.GET,
+//            produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
+//    public
+//    @ResponseBody
+//    Doc getCollection(@PathVariable("docid") String docid,
+//                       @RequestParam(value = "props", required = false) List<String> props,
+//                       HttpServletRequest request) {
+//
+//        if (props == null) {
+//            props = new ArrayList<>();
+//        }
+//
+//        long start = System.currentTimeMillis();
+//        Doc doc = mongoExporter.getCollection(docid, props, request);
+//        System.out.println(System.currentTimeMillis() - start);
+//
+//        return doc;
+//    }
 
     /**
      * Collects information about the documents in the repository and returns a basic set of information (docid,
@@ -161,10 +159,10 @@ public class AccessController {
         }
 
         long start = System.currentTimeMillis();
-        Doc doc = mongoExporter.getDocument(docid, props, request);
+        Doc document = mongoExporter.getDocument(docid, props, request);
         System.out.println(System.currentTimeMillis() - start);
 
-        return doc;
+        return document;
     }
 
 
@@ -444,24 +442,22 @@ public class AccessController {
     /**
      * Checks, if an object with the given pid is already in the db.
      *
-     * @param pid   The pid of the document to search.
+     * @param docid   The pid of the document to search.
      * @param model
      * @return The docid of the document or null if it doesn't exist.
      */
-    @RequestMapping(value = "/documents/{pid}/exist", method = RequestMethod.GET)
+    @RequestMapping(value = "/documents/{docid}/exist", method = RequestMethod.GET)
     public
     @ResponseBody
-    String isPidInDB(@PathVariable("pid") String pid, Model model) {
+    String isDocInDB(@PathVariable("docid") String docid, Model model) {
 
 
-        String docid = mongoExporter.isInDB(pid);
+        Mets mets = mongoExporter.isDocInDB(docid);
 
-        if (docid == null) {
-            System.out.println("null");
+        if (mets == null) {
             return null;
         } else {
-            System.out.println(docid);
-            return docid;
+            return mets.getID();
         }
     }
 

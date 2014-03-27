@@ -37,7 +37,7 @@
     <bean id="jaxb2Marshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
         <property name="classesToBeBound">
             <list>
-                <value>de.unigoettingen.sub.jaxb.Mets</value>
+                <value>Mets</value>
                 &lt;!&ndash;<value>org.springframework.oxm.jaxb.Flights</value>&ndash;&gt;
             </list>
         </property>

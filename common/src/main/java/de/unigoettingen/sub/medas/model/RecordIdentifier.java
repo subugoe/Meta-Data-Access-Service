@@ -26,6 +26,9 @@ public class RecordIdentifier {
     @XmlAttribute(name = "source")
     private String source;
 
+    @XmlAttribute(name = "relatedDocid")
+    private String relatedDocid;
+
     public String getValue() {
         return value;
     }
@@ -40,5 +43,13 @@ public class RecordIdentifier {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getRelatedDocid() {
+        return relatedDocid;
+    }
+
+    public void setRelatedDocid(String relatedDocid) {
+        this.relatedDocid = relatedDocid;
     }
 }

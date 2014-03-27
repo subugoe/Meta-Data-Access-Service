@@ -1,10 +1,11 @@
 package de.unigoettingen.sub.mongomapper.ingest;
 
 
-import de.unigoettingen.sub.jaxb.*;
-import de.unigoettingen.sub.medas.model.RelatedItem;
-import de.unigoettingen.sub.mongomapper.helper.ShortDocInfo;
+import de.unigoettingen.sub.medas.metsmods.jaxb.*;
+import de.unigoettingen.sub.medas.model.Doc;
+import de.unigoettingen.sub.medas.model.ShortDocInfo;
 
+import de.unigoettingen.sub.mongomapper.helper.DocHelper;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,13 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by jpanzer.
@@ -34,17 +35,19 @@ public class MongoImporter {
 
     private final Logger logger = LoggerFactory.getLogger(MongoImporter.class);
 
-    private String filename;
-    private String handling;
-    private String appUrlString;
+//    private String filename;
+//    private String handling;
+//    private String appUrlString;
 
 
     //---
 
+    @Autowired
+    private DocHelper docHelper;
 
     @Autowired()
     private MongoDbMetsRepository metsRepo;
-    private boolean isCollection = true;
+    //private boolean isCollection = true;
 
 
     public MongoImporter() {
@@ -61,11 +64,11 @@ public class MongoImporter {
      *                     replace:    The new METS file will replace an existing document in mongoDB (default).
      * @param appUrlString The application URL (schema://host:port/).
      */
-    public void storeMetsDocument(MultipartFile metsFile, String handling, String appUrlString) {
+    public void storeMetsDocument(MultipartFile metsFile, String handling, HttpServletRequest request) {
 
-        this.appUrlString = appUrlString;
-        this.filename = metsFile.getOriginalFilename();
-        this.handling = handling;
+
+//        this.filename = metsFile.getOriginalFilename();
+//        this.handling = handling;
 
 
         // TODO execution of validate fails, because of the used mets schema in METSWrapper.validate()
@@ -102,7 +105,8 @@ public class MongoImporter {
 
                 saveMods(mets);
                 saveMets(mets);
-                addType(mets);
+                saveDoc(mets, request);
+                //addType(mets);
 
 
 
@@ -126,11 +130,18 @@ public class MongoImporter {
     }
 
 
+
     private void removeMetsDocument(ShortDocInfo shortDocInfo) {
         this.logger.info("removeMets Mets document with recordIdentifier: " + shortDocInfo.getRecordIdentifier());
 
         removeReferencedModsDocuments(shortDocInfo.getDocid());
+        removeReferencedDocDocuments(shortDocInfo.getDocid());
         metsRepo.removeMets(shortDocInfo.getDocid());
+    }
+
+    private void removeReferencedDocDocuments(String docid) {
+
+        metsRepo.findAndRemoveDocForMets(docid);
     }
 
     private void removeReferencedModsDocuments(String docid) {
@@ -170,11 +181,19 @@ public class MongoImporter {
         }
     }
 
-    private void addType(Mets mets) {
 
-        metsRepo.findAndModifyMets(mets.getID(), this.isCollection);
+    private void saveDoc(Mets mets, HttpServletRequest request) {
 
+        Doc doc = this.docHelper.retrieveBasicDocInfo(mets, request);
+        metsRepo.saveDoc(doc);
     }
+
+
+//    private void addType(Mets mets) {
+//
+//        metsRepo.findAndModifyMets(mets.getID(), this.isCollection);
+//
+//    }
 
 
 
@@ -187,7 +206,7 @@ public class MongoImporter {
      */
     private ShortDocInfo checkIfExist(Mets mets) {
 
-        this.isCollection = true;
+        //this.isCollection = true;
 
         List<MdSecType> dmdSecs = mets.getDmdSecs();
         for (MdSecType mdSec : dmdSecs) {
@@ -200,32 +219,33 @@ public class MongoImporter {
                         for (Object o : elements) {
                             if (o instanceof RecordInfoType.RecordIdentifier) {
                                 String recId = ((RecordInfoType.RecordIdentifier) o).getValue();
+//
+//                                    Mods m = metsRepo.findModsByRecordIdentifier(recId);
+//
+//                                    if (m != null) {
+//
+//                                        Mets resultsMets = metsRepo.findMetsByModsId(m.getID());
+//
+//                                        String docid = resultsMets.getID();
+//
+//                                        ShortDocInfo shortDocInfo = new ShortDocInfo(docid, recId);
+//
+//                                        // System.out.println(shortDocInfo);
 
-                                    Mods m = metsRepo.findModsByRecordIdentifier(recId);
-
-                                    if (m != null) {
-
-                                        Mets resultsMets = metsRepo.findMetsByModsId(m.getID());
-
-                                        String docid = resultsMets.getID();
-
-                                        ShortDocInfo shortDocInfo = new ShortDocInfo(docid, recId);
-
-                                        // System.out.println(shortDocInfo);
-
-                                        return shortDocInfo;
-                                    }
+                                        return metsRepo.findDocidByRecordIdentifier(recId);
+                                  //  }
 
 
                             }
                         }
-                    } else if (obj instanceof RelatedItemType) {
-                        RelatedItemType relatedItemType = ((RelatedItemType) obj);
-                        if (relatedItemType.getType().equalsIgnoreCase("host")) {
-                            this.isCollection = false;
-                        }
-
                     }
+//                    else if (obj instanceof RelatedItemType) {
+//                        RelatedItemType relatedItemType = ((RelatedItemType) obj);
+//                        if (relatedItemType.getType().equalsIgnoreCase("host")) {
+//                            this.isCollection = false;
+//                        }
+//
+//                    }
                 }
             }
         }

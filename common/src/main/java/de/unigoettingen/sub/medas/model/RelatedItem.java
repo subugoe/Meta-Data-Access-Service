@@ -18,6 +18,8 @@ public class RelatedItem {
     @XmlAttribute(name = "type")
     private String type; //TODO enum
 
+    @XmlAttribute(name = "type")
+    private String docidOfThis;
 
     @XmlElementWrapper(name = "recordInfo")
     private Set<RecordIdentifier> recordIdentifier = new HashSet<>();
@@ -48,5 +50,13 @@ public class RelatedItem {
 
         for (RecordIdentifier recordIdentifier : recordIdentifiers)
             this.recordIdentifier.add(recordIdentifier);
+    }
+
+    public String getDocidOfThis() {
+        return docidOfThis;
+    }
+
+    public void setDocidOfThis(String docidOfThis) {
+        this.docidOfThis = docidOfThis;
     }
 }

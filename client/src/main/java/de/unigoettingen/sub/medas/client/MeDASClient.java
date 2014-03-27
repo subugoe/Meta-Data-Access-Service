@@ -4,6 +4,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import de.unigoettingen.sub.medas.model.Doc;
 import de.unigoettingen.sub.medas.model.Docs;
+
 import javax.ws.rs.core.MediaType;
 
 
@@ -25,7 +26,7 @@ public class MeDASClient {
         WebResource webResource = client.resource(BASE_URI);
         webResource = webResource.path(path);
         Doc response = (Doc) webResource.accept(MediaType.APPLICATION_XML).get(Doc.class);
-        System.out.println("doc " + response.getDocid());
+        System.out.println("doc " + response.getRelatedMetsDocid());
         System.out.println("title " + response.getTitle());
         System.out.println("related "+response.getRelatedItem().size() );
         System.out.println("type " + response.getRelatedItem().iterator().next().getRecordIdentifier().iterator().next().getSource());

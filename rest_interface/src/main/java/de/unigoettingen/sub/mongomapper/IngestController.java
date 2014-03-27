@@ -47,7 +47,7 @@ public class IngestController {
                        @RequestParam(value = "handling", defaultValue = "replace") String handling,
                        HttpServletRequest request) {
 
-        mongoImporter.storeMetsDocument(file, handling, this.getUrlString(request));
+        mongoImporter.storeMetsDocument(file, handling, request);
     }
 
 
@@ -92,25 +92,5 @@ public class IngestController {
 //    }
 
 
-    public String getUrlString(HttpServletRequest request) {
 
-        String schema = request.getScheme();
-        String server = request.getServerName();
-        int port = request.getServerPort();
-        String contextpath = request.getContextPath();
-
-        StringBuffer strb = new StringBuffer();
-
-        if (schema != null)
-            strb.append(schema + "://");
-        if (server != null)
-            strb.append(server);
-        if (port > 0)
-            strb.append(":" + port);
-        if (contextpath != null)
-            strb.append(contextpath);
-
-
-        return strb.toString();
-    }
 }

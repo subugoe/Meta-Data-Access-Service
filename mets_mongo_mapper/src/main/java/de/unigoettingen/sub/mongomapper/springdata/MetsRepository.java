@@ -1,14 +1,13 @@
 package de.unigoettingen.sub.mongomapper.springdata;
 
 
-import de.unigoettingen.sub.jaxb.Mets;
-import de.unigoettingen.sub.jaxb.Mods;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import de.unigoettingen.sub.medas.metsmods.jaxb.Mets;
+import de.unigoettingen.sub.medas.metsmods.jaxb.Mods;
+import de.unigoettingen.sub.medas.model.Doc;
+import de.unigoettingen.sub.medas.model.ShortDocInfo;
 import org.springframework.data.repository.Repository;
 
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -22,14 +21,14 @@ public interface MetsRepository  extends Repository<Mets, Long> {
     List<Mets> findAllMets();
     List<Mods> findAllModsWithRelatedItem();
 
-    List<Mets> findAllCollections();
-    List<Mets> findAllDocuments();
+    //List<Mets> findAllCollections();
+    //List<Mets> findAllDocuments();
 
 //    List<Mods>findAllModsWithoutRelatedItem ();
     Mets findMetsByModsId(String docid);
     Mets saveMets(Mets mets);
     void removeMets(String docid);
-    void findAndModifyMets(String docid, boolean isCollection);
+    //void findAndModifyMets(String docid, boolean isCollection);
 
 
     //--- Mods section
@@ -38,8 +37,14 @@ public interface MetsRepository  extends Repository<Mets, Long> {
     Mods saveMods(Mods mods);
     void removeMods(String docid);
 
+
+    //--- Doc section
+    Doc saveDoc(Doc doc);
+    List<Doc> findAllDocs();
+    Doc findAndRemoveDocForMets(String docid);
+
     //--- allgemein
-    String findDocidByRecordIdentifier(String ppn);
+    ShortDocInfo findDocidByRecordIdentifier(String ppn);
 
 
 }
