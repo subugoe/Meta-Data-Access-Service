@@ -218,6 +218,15 @@ public class Doc {
         this.content = content;
     }
 
+    public String getRecordIdentifier(String identifierType) {
+
+        for (RecordIdentifier recordIdentifier : this.recordIdentifier) {
+            if (recordIdentifier.getSource().equalsIgnoreCase(identifierType))
+                return recordIdentifier.getValue();
+        }
+
+        return null;
+    }
 
     public Set<RecordIdentifier> getRecordIdentifier() {
         return recordIdentifier;

@@ -26,7 +26,7 @@ public class MeDASClient {
         WebResource webResource = client.resource(BASE_URI);
         webResource = webResource.path(path);
         Doc response = (Doc) webResource.accept(MediaType.APPLICATION_XML).get(Doc.class);
-        System.out.println("doc " + response.getRelatedMetsDocid());
+        System.out.println("doc " + response.getRecordIdentifier("gbv-ppn"));
         System.out.println("title " + response.getTitle());
         System.out.println("related "+response.getRelatedItem().size() );
         System.out.println("type " + response.getRelatedItem().iterator().next().getRecordIdentifier().iterator().next().getSource());

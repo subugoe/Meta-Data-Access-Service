@@ -2,20 +2,7 @@
 
 ## Über das Projekt:
 
-Das Projekt MeDAS ist mit der Entwicklung eines Metadaten Servers beschäftigt. Derzeit auf ein Mets nach Mongo Mappings ausgerichtet. Das Mets Mapping erfolgt 1:1, d.h. ein Mets-Dokument wird auf ein Mongo-Dokument abgebildet. Die Felder *_id*, *ids*, *docinfo* und *namespaces* im MongoDB Dokument werden zur einfacheren indentifizierung, Beschreibung und Übertragung der Namespaces hinzugefügt, sie haben kein direktes Pendant im Mets-Dokument. Die  METS -> Mongo Abbildung wird wie folgt vorgenommen:
-
-- **_id**: *Feld hat **kein äquvalent** in Mets*, enthält die docid in Mongo. Immer enthalten.
-- **ids**: *Feld hat **kein äquvalent** in Mets*, enthält die PIDs des Mets-Dokuments. Immer enthalten.
-- **root**         ->   **mets**: Enthält Attribute des Root-Mets-Element. Optional.
-- **docinfo**: *Feld hat **kein äquvalent** in Mets*, enthält eine Zusammenfassung von wichtigen Informationen (pid, title, subTitle, mets-url, tei-url, teiEnriched-url, ). Immer enthalten.
-- **aus root**     ->   **namespaces**: Enthält die Namespacedeklarationen aus dem Mets-Dokument. Optionale.
-- **metsHdr**      ->   **metsHdr**: Informationen über das Mets-Dokument.
-- **dmdSec**       ->   **dmdSec**: Enthält die beschreibenden Metadaten aus dem Mets-Dokument. Optional.
-- **amdSec**       ->   **amdSec**: Informationen, die für die Verwaltung und Verwendung wichtig sind. Enthält administrative (bzgl. Bereich Technik, Rechte, Entstehung und Änderungshistorie, ) Metadaten aus dem Mets-Dokument. Optional.
-- **fileSec**      ->   **fileSec**: Listet Dateien mit Zugriffspfaden.
-- **structMap**    ->   **structMap**: Bildet die physische und logische Struktur ab.
-- **structLink**   ->   **structLink**: Verbindet die Elemente der einzelnen Sektionen.
-- **behaviorSec**  ->   **behaviorSec**: Verbindet das beschriebende Objekt der Teile davon mit Diensten.
+Das Projekt MeDAS ist mit der Entwicklung eines Metadaten Servers beschäftigt, der METS/MODS Daten verwaltet und eine 'einfache 'Schnittstelle auf die Daten bietet. In einem ersten Schritt werden die Daten in MongoDB gespeichert, wobei die "dmdSec" auf eine eigene Mongo-Kollektion "mods" abgebildet wird. Zudem werden ausgewählte Felder in eine "lookup" Kollektion abgebildet, was den KOmfort und die Performance bei suchen wesentlich unterstützt. Als alternativen sollen auch Elasticsearch und Riak getestet werden.
 
 
 ## Entwicklungsumgebung
