@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/subugoe/Meta-Data-Access-Service.svg?branch=master)](https://travis-ci.org/subugoe/Meta-Data-Access-Service)
+
 # Meta Data Access Service (MeDAS)
 
 ## Über das Projekt:
