@@ -1,11 +1,13 @@
 package de.unigoettingen.sub.mongomapper.ingest;
 
 
+import com.sun.org.apache.regexp.internal.recompile;
 import de.unigoettingen.sub.medas.metsmods.jaxb.*;
 import de.unigoettingen.sub.medas.model.Doc;
 import de.unigoettingen.sub.medas.model.ShortDocInfo;
 
 import de.unigoettingen.sub.mongomapper.helper.DocHelper;
+import de.unigoettingen.sub.mongomapper.helper.DocidLookupService;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbDocRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbModsRepository;
@@ -21,7 +23,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by jpanzer.
@@ -38,6 +43,8 @@ public class MongoImporter {
     private final Logger logger = LoggerFactory.getLogger(MongoImporter.class);
 
 
+    @Autowired
+    DocidLookupService lookupService;
 
     @Autowired
     private DocHelper docHelper;
@@ -58,12 +65,12 @@ public class MongoImporter {
     /**
      * Processes a Mets structure and store these to mongoDB.
      *
-     * @param metsFile     The METS file to store in mongodb.
-     * @param handling     If a document is already in the db it will be replaced. The existence test will be performed
-     *                     via the (recordInfo) recordIdentifier element. Possibilities values:
-     *                     reject:     Rejects the request, the file will not be stored.
-     *                     replace:    The new METS file will replace an existing document in mongoDB (default).
-     * @param request      The HttpServletRequest object.
+     * @param metsFile The METS file to store in mongodb.
+     * @param handling If a document is already in the db it will be replaced. The existence test will be performed
+     *                 via the (recordInfo) recordIdentifier element. Possibilities values:
+     *                 reject:     Rejects the request, the file will not be stored.
+     *                 replace:    The new METS file will replace an existing document in mongoDB (default).
+     * @param request  The HttpServletRequest object.
      */
     public void storeMetsDocument(MultipartFile metsFile, String handling, HttpServletRequest request) {
 
@@ -100,15 +107,16 @@ public class MongoImporter {
                     }
 
                     removeMetsDocument(shortDocInfo);
-
                     mets.setID(shortDocInfo.getDocid());
+
+                } else {
+                    lookupService.addDocid(shortDocInfo.getRecordIdentifier(), shortDocInfo.getSource(), shortDocInfo.getDocid());
                 }
 
                 saveMods(mets);
                 saveMets(mets);
                 saveDoc(mets, request);
                 //addType(mets);
-
 
 
             } catch (JAXBException e) {
@@ -129,7 +137,6 @@ public class MongoImporter {
 
 
     }
-
 
 
     private void removeMetsDocument(ShortDocInfo shortDocInfo) {
@@ -197,7 +204,6 @@ public class MongoImporter {
 //    }
 
 
-
     /**
      * The method checks if the document is in the DB, and returns the docid and recordIdentifier packed as a
      * ShortDocInfo object or null if not in the db. The test will be performed with the recordIdentifier.
@@ -206,8 +212,6 @@ public class MongoImporter {
      * @return The docid if already stored, otherwise null.
      */
     private ShortDocInfo checkIfExist(Mets mets) {
-
-        //this.isCollection = true;
 
         List<MdSecType> dmdSecs = mets.getDmdSecs();
         for (MdSecType mdSec : dmdSecs) {
@@ -220,33 +224,15 @@ public class MongoImporter {
                         for (Object o : elements) {
                             if (o instanceof RecordInfoType.RecordIdentifier) {
                                 String recId = ((RecordInfoType.RecordIdentifier) o).getValue();
-//
-//                                    Mods m = metsRepo.findModsByRecordIdentifier(recId);
-//
-//                                    if (m != null) {
-//
-//                                        Mets resultsMets = metsRepo.findMetsByModsId(m.getID());
-//
-//                                        String docid = resultsMets.getID();
-//
-//                                        ShortDocInfo shortDocInfo = new ShortDocInfo(docid, recId);
-//
-//                                        // System.out.println(shortDocInfo);
+                                String source = ((RecordInfoType.RecordIdentifier) o).getSource();
 
-                                        return docHelper.findDocidByRecordIdentifier(recId);
-                                  //  }
-
-
+                                String docid = lookupService.findDocid(recId, source);
+                                if (docid != null)
+                                    return new ShortDocInfo(docid, recId, source);
                             }
                         }
                     }
-//                    else if (obj instanceof RelatedItemType) {
-//                        RelatedItemType relatedItemType = ((RelatedItemType) obj);
-//                        if (relatedItemType.getType().equalsIgnoreCase("host")) {
-//                            this.isCollection = false;
-//                        }
-//
-//                    }
+
                 }
             }
         }

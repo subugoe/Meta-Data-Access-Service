@@ -3,7 +3,8 @@ package de.unigoettingen.sub.mongomapper;
 import de.unigoettingen.sub.medas.metsmods.jaxb.Mets;
 import de.unigoettingen.sub.medas.model.*;
 import de.unigoettingen.sub.mongomapper.access.MongoExporter;
-import de.unigoettingen.sub.mongomapper.helper.DocHelper;
+import de.unigoettingen.sub.mongomapper.helper.DocidLookupService;
+import de.unigoettingen.sub.mongomapper.helper.IdentifierNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ public class AccessController {
 
     private final Logger logger = LoggerFactory.getLogger(AccessController.class);
 
+    @Autowired
+    private DocidLookupService lookupService;
 
     @Autowired
     private MongoExporter mongoExporter;
@@ -96,7 +99,7 @@ public class AccessController {
     /**
      * Collects information about the documents in the repository and returns a basic set of information (docid,
      * recordInfo -> recordIdentifier, title, subTitle, classifications, mets-url).
-     *
+     * <p/>
      * <p/>
      * request: /documents ? props=id & props=...}
      * header:  Accept: application/xml
@@ -135,7 +138,7 @@ public class AccessController {
      * (docid, recordInfo -> recordIdentifier, title, subTitle, classifications, mets-url, relatedItem ->
      * recordInfo -> recordIdentifier) and additional information about the content of this document (docid, name,
      * type, recordIdentifier).
-     *
+     * <p/>
      * <p/>
      * request: /documents ? props=id & props=...}
      * header:  Accept: application/json, application/xml
@@ -442,7 +445,7 @@ public class AccessController {
     /**
      * Checks, if an object with the given pid is already in the db.
      *
-     * @param docid   The pid of the document to search.
+     * @param docid The pid of the document to search.
      * @param model
      * @return The docid of the document or null if it doesn't exist.
      */
@@ -505,4 +508,61 @@ public class AccessController {
 //        return mav;
 //    }
 
+
+    @RequestMapping(value = "/documents/all", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    List<String>
+    getAllTest() {
+
+        return lookupService.findAllDocids();
+    }
+
+
+    @RequestMapping(value = "/documents/set/{docid}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String
+    setTest(@PathVariable("docid") String docid) {
+
+        lookupService.addDocid(docid, "ppn", "value:" + docid);
+
+        return docid;
+    }
+
+    @RequestMapping(value = "/documents/get/{docid}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String
+    getTest(@PathVariable("docid") String docid) {
+
+        return lookupService.findDocid(docid, "ppn");
+
+    }
+
+    @RequestMapping(value = "/documents/update/{docid}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String
+    updateTest(@PathVariable("docid") String docid) {
+
+        try {
+            lookupService.updateDocid(docid, "ppn", "new:value:" + docid);
+        } catch (IdentifierNotFoundException e) {
+            return null;
+        }
+        return docid;
+    }
+
+
+    @RequestMapping(value = "/documents/delete/{docid}", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    String
+    deleteTest(@PathVariable("docid") String docid) {
+
+        lookupService.deleteDocid(docid, "ppn");
+
+        return docid;
+    }
 }

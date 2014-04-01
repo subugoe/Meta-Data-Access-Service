@@ -489,7 +489,10 @@ public class Doc {
 
     public String getPrimaryRecordIdentifier() {
 
-        return this.recordIdentifier.get(0).getValue();
+        //return this.recordIdentifier.get(0).getValue();
+
+        return this.getDocid();
+
     }
 
 

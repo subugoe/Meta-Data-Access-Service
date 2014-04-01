@@ -8,12 +8,15 @@ import java.util.Set;
 public class ShortDocInfo {
 
     private String docid;
-    private String recordIdentifiers;
+    private String recordIdentifier;
+    private String source;
 
-    public ShortDocInfo(String docid, String recordIdentifiers) {
+    public ShortDocInfo(String docid, String recordIdentifier, String source) {
         this.docid = docid;
-        this.recordIdentifiers = recordIdentifiers;
+        this.recordIdentifier = recordIdentifier;
+        this.source = source;
     }
+
 
     public String getDocid() {
         return docid;
@@ -24,12 +27,18 @@ public class ShortDocInfo {
     }
 
     public String getRecordIdentifier() {
-        return recordIdentifiers;
+        return recordIdentifier;
     }
 
-    public void setRecordIdentifiers(String recordIdentifiers) {
-        this.recordIdentifiers = recordIdentifiers;
+    public void setRecordIdentifier(String recordIdentifier) {
+        this.recordIdentifier = recordIdentifier;
     }
 
+    public String getSource() {
+        return source;
+    }
 
+    public void setSource(String source) {
+        this.source = source;
+    }
 }
