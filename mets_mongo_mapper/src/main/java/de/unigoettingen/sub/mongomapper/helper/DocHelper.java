@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sun.reflect.generics.tree.MethodTypeSignature;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -22,6 +23,9 @@ import java.util.Set;
 public class DocHelper {
 
     private final Logger logger = LoggerFactory.getLogger(DocHelper.class);
+
+    @Autowired
+    DocidLookupService lookupService;
 
     @Autowired
     private MongoDbMetsRepository metsRepo;
@@ -55,12 +59,12 @@ public class DocHelper {
             if (obj instanceof RecordInfoType) {
 
                 // add recordIdentifiers
-                doc.addRecordIdentifiers(getRecordIdentifiers((RecordInfoType) obj));
+                doc.addRecordIdentifiers(getRecordIdentifiers((RecordInfoType) obj,metsId));
             }
 
             if (obj instanceof IdentifierType) {
 
-                // add recordIdentifiers
+                // add identifiers
                 doc.addIdentifier(getIdentifier((IdentifierType) obj));
             }
 
@@ -90,7 +94,7 @@ public class DocHelper {
                 List<Object> objectList1 = relatedItemType.getElements();
                 for (Object o2 : objectList1) {
                     if (o2 instanceof RecordInfoType) {
-                        List<RecordIdentifier> recordIdentifierList = this.getRecordIdentifiers((RecordInfoType) o2);
+                        List<RecordIdentifier> recordIdentifierList = this.getRecordIdentifiers((RecordInfoType) o2, metsId);
                         if (recordIdentifierList != null && recordIdentifierList.size() > 0) {
                             relatedItem.addRecordIdentifiers(recordIdentifierList);
                             // add relatedItem
@@ -103,7 +107,7 @@ public class DocHelper {
                         // add docid to relatedItem
                         List<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
                         for (RecordIdentifier recordIdentifier : recordIdentifiers) {
-                            ShortDocInfo shortDocInfo = this.findDocidByRecordIdentifier(recordIdentifier.getValue());
+                            ShortDocInfo shortDocInfo = this.findDocidByRecordIdentifier(recordIdentifier.getValue(), recordIdentifier.getSource());
                             if (shortDocInfo != null) {
                                 recordIdentifier.setRelatedDocid(shortDocInfo.getDocid());
                             } else {
@@ -288,7 +292,7 @@ public class DocHelper {
         return identifier;
     }
 
-    public List<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType) {
+    public List<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType, String docid) {
 
         List<Object> objectList2 = recordInfoType.getElements();
         List<RecordIdentifier> recordIdentifiers = new ArrayList<>();
@@ -300,7 +304,7 @@ public class DocHelper {
 
                 String source = recordIdentifier.getSource();
                 String value = recordIdentifier.getValue();
-                recordIdentifiers.add(new RecordIdentifier(value, source));
+                recordIdentifiers.add(new RecordIdentifier(value, source, docid));
             }
         }
 
@@ -391,9 +395,9 @@ public class DocHelper {
         return metsRepo.findOneMets(docid);
     }
 
-    public ShortDocInfo isRecordInDB(String recordIdentifier) {
+    public ShortDocInfo isRecordInDB(String recordIdentifier, String source) {
 
-        return findDocidByRecordIdentifier(recordIdentifier);
+        return findDocidByRecordIdentifier(recordIdentifier, source);
     }
 
 
@@ -413,23 +417,26 @@ public class DocHelper {
 //    }
 
 
-    public ShortDocInfo findDocidByRecordIdentifier(String recId) {
+    public ShortDocInfo findDocidByRecordIdentifier(String recordIdentifier, String source) {
 
 //        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
 //                where("_class").is("RecordInfoType$RecordIdentifier").and("value").is(ppn))));
 //        Mods mods = operations.findOne(query, Mods.class);
 
-        Mods mods = modsRepo.findModsByRecordIdentifier(recId);
+//        Mods mods = modsRepo.findModsByRecordIdentifier(recId);
+//
+//        Mets mets;
+//
+//        if (mods != null) {
+//            mets = metsRepo.findMetsByModsId(mods.getID());
+//            if (mets != null)
+//                return new ShortDocInfo(mets.getID(), recId);
+//        }
 
-        Mets mets;
+        String docid = lookupService.findDocid(source+":"+recordIdentifier);
+        ShortDocInfo shortDocInfo = new ShortDocInfo(docid, recordIdentifier, source);
 
-        if (mods != null) {
-            mets = metsRepo.findMetsByModsId(mods.getID());
-            if (mets != null)
-                return new ShortDocInfo(mets.getID(), recId);
-        }
-
-        return null;
+        return shortDocInfo;
 
     }
 }

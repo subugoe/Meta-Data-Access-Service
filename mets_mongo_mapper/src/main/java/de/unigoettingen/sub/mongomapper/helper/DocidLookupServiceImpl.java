@@ -29,10 +29,10 @@ public class DocidLookupServiceImpl implements DocidLookupService {
 
 
     @Override
-    public String findDocid(String recordIdentifier, String source) {
+    public String findDocid(String recordIdentifier) {
 
-        String key = buildKey(recordIdentifier, source);
-        return (String) redisTemplate.opsForHash().get(lookupStore, key);
+        //String key = buildKey(recordIdentifier, source);
+        return (String) redisTemplate.opsForHash().get(lookupStore, recordIdentifier);
     }
 
     @Override

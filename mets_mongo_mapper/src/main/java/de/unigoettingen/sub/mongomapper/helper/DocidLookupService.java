@@ -9,7 +9,7 @@ public interface DocidLookupService {
 
     public void addDocid(String recordIdentifier, String source, String docid);
 
-    public String findDocid(String identifier, String source);
+    public String findDocid(String identifier);
 
     public List<String> findAllDocids();
 

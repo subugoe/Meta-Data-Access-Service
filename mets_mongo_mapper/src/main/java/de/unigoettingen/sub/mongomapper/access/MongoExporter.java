@@ -6,6 +6,7 @@ import de.unigoettingen.sub.medas.model.*;
 
 import de.unigoettingen.sub.medas.model.ShortDocInfo;
 import de.unigoettingen.sub.mongomapper.helper.DocHelper;
+import de.unigoettingen.sub.mongomapper.helper.DocidLookupService;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbDocRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbModsRepository;
@@ -21,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import java.math.BigInteger;
 import java.util.*;
 
 /**
@@ -42,6 +42,9 @@ public class MongoExporter {
 
     private ApplicationContext context;
 
+
+    @Autowired
+    DocidLookupService lookupService;
 
     @Autowired
     private MongoDbMetsRepository metsRepo;
@@ -126,10 +129,12 @@ public class MongoExporter {
     }
 
 
-    public Doc getDocument(String docid,
+    public Doc getDocument(String recordIdentifier,
                            List<String> props, HttpServletRequest request) {
 
         Mets mets = null;
+
+        String docid = lookupService.findDocid(recordIdentifier);
 
         try {
             long start = System.currentTimeMillis();
@@ -411,11 +416,11 @@ public class MongoExporter {
             for (Object obj : objectList) {
                 if (obj instanceof RecordInfoType) {
 
-                    List<RecordIdentifier> recordIdentifiers = this.docHelper.getRecordIdentifiers((RecordInfoType) obj);
+                    List<RecordIdentifier> recordIdentifiers = this.docHelper.getRecordIdentifiers((RecordInfoType) obj, docid);
                     if (!recordIdentifiers.isEmpty()) {
                         if (recordIdentifiers.iterator().hasNext()) {
                             RecordIdentifier recordIdentifier = recordIdentifiers.iterator().next();
-                            this.removeMetsDocument(new ShortDocInfo(docid, recordIdentifier.getValue()));
+                            this.removeMetsDocument(new ShortDocInfo(docid, recordIdentifier.getValue(), recordIdentifier.getSource()));
                             return;
                         }
 
@@ -431,8 +436,8 @@ public class MongoExporter {
         return this.docHelper.isDocInDB(docid);
     }
 
-    public ShortDocInfo isRecordInDB(String recordIdentifier) {
-        return this.docHelper.isRecordInDB(recordIdentifier);
+    public ShortDocInfo isRecordInDB(String recordIdentifier, String source) {
+        return this.docHelper.isRecordInDB(recordIdentifier, source);
     }
 
 }

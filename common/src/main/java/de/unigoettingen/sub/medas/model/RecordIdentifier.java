@@ -15,9 +15,10 @@ public class RecordIdentifier {
     public RecordIdentifier() {
     }
 
-    public RecordIdentifier(String value, String source) {
+    public RecordIdentifier(String value, String source, String docid) {
         this.value = value;
         this.source = source;
+        this.relatedDocid = docid;
     }
 
     @XmlValue

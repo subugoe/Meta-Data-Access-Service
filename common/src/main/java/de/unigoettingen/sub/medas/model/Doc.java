@@ -249,8 +249,9 @@ public class Doc {
     }
 
     public void addRecordIdentifiers(List<RecordIdentifier> recordIdentifiers) {
-        for (RecordIdentifier recordIdentifier : recordIdentifiers)
+        for (RecordIdentifier recordIdentifier : recordIdentifiers)    {
             this.recordIdentifier.add(recordIdentifier);
+        }
     }
 
     public void addRecordIdentifier(RecordIdentifier recordIdentifier) {

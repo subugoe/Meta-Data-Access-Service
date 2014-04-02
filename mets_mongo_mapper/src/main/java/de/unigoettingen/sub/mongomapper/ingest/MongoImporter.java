@@ -4,6 +4,7 @@ package de.unigoettingen.sub.mongomapper.ingest;
 import com.sun.org.apache.regexp.internal.recompile;
 import de.unigoettingen.sub.medas.metsmods.jaxb.*;
 import de.unigoettingen.sub.medas.model.Doc;
+import de.unigoettingen.sub.medas.model.RecordIdentifier;
 import de.unigoettingen.sub.medas.model.ShortDocInfo;
 
 import de.unigoettingen.sub.mongomapper.helper.DocHelper;
@@ -75,7 +76,7 @@ public class MongoImporter {
     public void storeMetsDocument(MultipartFile metsFile, String handling, HttpServletRequest request) {
 
 
-//        this.filename = metsFile.getOriginalFilename();
+        String filename = metsFile.getOriginalFilename();
 //        this.handling = handling;
 
 
@@ -106,17 +107,16 @@ public class MongoImporter {
                         return;
                     }
 
+                    System.out.println(shortDocInfo.getRecordIdentifier() + ":" + shortDocInfo.getDocid() + " exist in db.");
+
                     removeMetsDocument(shortDocInfo);
                     mets.setID(shortDocInfo.getDocid());
 
-                } else {
-                    lookupService.addDocid(shortDocInfo.getRecordIdentifier(), shortDocInfo.getSource(), shortDocInfo.getDocid());
                 }
 
                 saveMods(mets);
                 saveMets(mets);
-                saveDoc(mets, request);
-                //addType(mets);
+                saveDoc(mets, request, filename);
 
 
             } catch (JAXBException e) {
@@ -190,9 +190,14 @@ public class MongoImporter {
     }
 
 
-    private void saveDoc(Mets mets, HttpServletRequest request) {
+    private void saveDoc(Mets mets, HttpServletRequest request, String filename) {
 
         Doc doc = this.docHelper.retrieveBasicDocInfo(mets, request);
+
+        for (RecordIdentifier recId : doc.getRecordIdentifier()) {
+            lookupService.addDocid(recId.getValue(), recId.getSource(), recId.getRelatedDocid());
+        }
+
         docRepo.saveDoc(doc);
     }
 
@@ -226,7 +231,7 @@ public class MongoImporter {
                                 String recId = ((RecordInfoType.RecordIdentifier) o).getValue();
                                 String source = ((RecordInfoType.RecordIdentifier) o).getSource();
 
-                                String docid = lookupService.findDocid(recId, source);
+                                String docid = lookupService.findDocid(source+":"+recId);
                                 if (docid != null)
                                     return new ShortDocInfo(docid, recId, source);
                             }

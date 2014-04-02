@@ -140,7 +140,7 @@ public class AccessController {
      * type, recordIdentifier).
      * <p/>
      * <p/>
-     * request: /documents ? props=id & props=...}
+     * request: /documents/{recordIdentifier} ? props=id & props=...}
      * header:  Accept: application/json, application/xml
      *
      * @param props   Reduce the docinfo to a required infoset. Possible values for
@@ -149,11 +149,11 @@ public class AccessController {
      * @param request The HttpServletRequest object.
      * @return A List of documents with a set of desciptive information, encoded in XML.
      */
-    @RequestMapping(value = "/documents/{docid}", method = RequestMethod.GET, produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
+    @RequestMapping(value = "/documents/{recordIdentifier}", method = RequestMethod.GET, produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
     @ResponseBody
     Doc
-    getDocument(@PathVariable("docid") String docid,
+    getDocument(@PathVariable("recordIdentifier") String recordIdentifier,
                 @RequestParam(value = "props", required = false) List<String> props,
                 HttpServletRequest request) {
 
@@ -162,7 +162,7 @@ public class AccessController {
         }
 
         long start = System.currentTimeMillis();
-        Doc document = mongoExporter.getDocument(docid, props, request);
+        Doc document = mongoExporter.getDocument(recordIdentifier, props, request);
         System.out.println(System.currentTimeMillis() - start);
 
         return document;
@@ -518,51 +518,51 @@ public class AccessController {
         return lookupService.findAllDocids();
     }
 
+//
+//    @RequestMapping(value = "/documents/set/{docid}", method = RequestMethod.GET)
+//    public
+//    @ResponseBody
+//    String
+//    setTest(@PathVariable("docid") String docid) {
+//
+//        lookupService.addDocid(docid, "ppn", "value:" + docid);
+//
+//        return docid;
+//    }
 
-    @RequestMapping(value = "/documents/set/{docid}", method = RequestMethod.GET)
+    @RequestMapping(value = "/documents/get/{recId}", method = RequestMethod.GET)
     public
     @ResponseBody
     String
-    setTest(@PathVariable("docid") String docid) {
+    getTest(@PathVariable("recId") String recId) {
 
-        lookupService.addDocid(docid, "ppn", "value:" + docid);
-
-        return docid;
-    }
-
-    @RequestMapping(value = "/documents/get/{docid}", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String
-    getTest(@PathVariable("docid") String docid) {
-
-        return lookupService.findDocid(docid, "ppn");
+        return recId + lookupService.findDocid(recId);
 
     }
-
-    @RequestMapping(value = "/documents/update/{docid}", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String
-    updateTest(@PathVariable("docid") String docid) {
-
-        try {
-            lookupService.updateDocid(docid, "ppn", "new:value:" + docid);
-        } catch (IdentifierNotFoundException e) {
-            return null;
-        }
-        return docid;
-    }
-
-
-    @RequestMapping(value = "/documents/delete/{docid}", method = RequestMethod.GET)
-    public
-    @ResponseBody
-    String
-    deleteTest(@PathVariable("docid") String docid) {
-
-        lookupService.deleteDocid(docid, "ppn");
-
-        return docid;
-    }
+//
+//    @RequestMapping(value = "/documents/update/{docid}", method = RequestMethod.GET)
+//    public
+//    @ResponseBody
+//    String
+//    updateTest(@PathVariable("docid") String docid) {
+//
+//        try {
+//            lookupService.updateDocid(docid, "ppn", "new:value:" + docid);
+//        } catch (IdentifierNotFoundException e) {
+//            return null;
+//        }
+//        return docid;
+//    }
+//
+//
+//    @RequestMapping(value = "/documents/delete/{docid}", method = RequestMethod.GET)
+//    public
+//    @ResponseBody
+//    String
+//    deleteTest(@PathVariable("docid") String docid) {
+//
+//        lookupService.deleteDocid(docid, "ppn");
+//
+//        return docid;
+//    }
 }

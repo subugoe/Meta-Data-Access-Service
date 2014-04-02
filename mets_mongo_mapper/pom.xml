@@ -13,39 +13,6 @@
 
     <dependencies>
 
-
-        <!--<dependency>
-            <groupId>com.mysema.querydsl</groupId>
-            <artifactId>querydsl-apt</artifactId>
-            <version>3.2.4</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.mysema.querydsl</groupId>
-            <artifactId>querydsl-mongodb</artifactId>
-            <version>3.2.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.mycila</groupId>
-            <artifactId>mycila-xmltool</artifactId>
-            <version>4.0.ga</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mongodb.morphia</groupId>
-            <artifactId>morphia</artifactId>
-            <version>0.106</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.morphia</groupId>
-            <artifactId>morphia</artifactId>
-            <version>0.104</version>
-        </dependency>
--->
-
         <dependency>
             <groupId>medas</groupId>
             <artifactId>common</artifactId>
