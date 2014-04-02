@@ -50,47 +50,4 @@ public class IngestController {
         mongoImporter.storeMetsDocument(file, handling, request);
     }
 
-
-//    /**
-//     * Takes the given TEI file and stores it in relation to the document with docid.
-//     * A repeated ingest will replace the current TEI or enriched TEI file.
-//     * <p/>
-//     * Request: /documents/{docid}/ingest/{teiType}
-//     *
-//     * @param file    The TEI file to store in mongodb.
-//     * @param docid   The MongoDB id of the related mongoDB object, or any PID.
-//     * @param request The HttpServletRequest object.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/ingest/tei", method = RequestMethod.POST)
-//    public
-//    @ResponseBody
-//    void ingestTeiDoc(@RequestParam("file") MultipartFile file,
-//                      @PathVariable("docid") String docid,
-//                      HttpServletRequest request) {
-//
-//        //mongoImporter.processTeiAndStore(file, docid, "tei", "tei", this.getUrlString(request));
-//    }
-//
-//    /**
-//     * Takes the given enriched TEI file and stores it in relation to the document with docid.
-//     * A repeated ingest will replace the current TEI or enriched TEI file.
-//     * <p/>
-//     * Request: /documents/{docid}/ingest/{teiType}
-//     *
-//     * @param file    The enriched TEI file to store in mongodb.
-//     * @param docid   The MongoDB id of the related mongoDB object, or any PID.
-//     * @param request The HttpServletRequest object.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/ingest/teiEnriched", method = RequestMethod.POST)
-//    public
-//    @ResponseBody
-//    void ingestTeiEnrichedDoc(@RequestParam("file") MultipartFile file,
-//                              @PathVariable("docid") String docid,
-//                              HttpServletRequest request) {
-//
-//        //mongoImporter.processTeiAndStore(file, docid, "tei", "teiEnriched", this.getUrlString(request));
-//    }
-
-
-
 }

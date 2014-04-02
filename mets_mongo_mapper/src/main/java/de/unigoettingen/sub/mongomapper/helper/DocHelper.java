@@ -230,19 +230,6 @@ public class DocHelper {
 
         content.setId(div.getID());
 
-//        List<Object> objects = div.getDMDIDS();
-//        if (objects != null && objects.size() > 0) {
-//            for (Object obj : objects)
-//                System.out.println(obj.getClass());
-////                content.addAdmId((String) obj);
-//        }
-//
-//        objects = div.getADMIDS();
-//        if (objects != null && objects.size() > 0)
-//            for (Object obj : objects)
-//                System.out.println(obj.getClass());
-//        //              content.addAdmId((String) obj);
-
         content.setType(div.getTYPE());
         content.setLabel(div.getLABEL());
         content.setOrder(div.getORDER());
@@ -401,37 +388,9 @@ public class DocHelper {
     }
 
 
-//    public void setDocidForRelatedItems(Docs docs) {
-//        for (Doc doc : docs.getDocs()) {
-//            for (RelatedItem relatedItem : doc.getRelatedItem()) {
-//                for (RecordIdentifier recordIdentifier : relatedItem.getRecordIdentifier()) {
-//                    String recId = recordIdentifier.getValue();
-//                    ShortDocInfo shortDocInfo = metsRepo.findDocidByRecordIdentifier(recId);
-//                    if (shortDocInfo != null && shortDocInfo.getDocid() != null)
-//                        recordIdentifier.setRelatedDocid(shortDocInfo.getDocid());
-//                    else
-//                        logger.error("could not find docid for recordidentifier: " + recId + " (record is possibly not in the db");
-//                }
-//            }
-//        }
-//    }
 
 
     public ShortDocInfo findDocidByRecordIdentifier(String recordIdentifier, String source) {
-
-//        Query query = query(where("elements.elements").elemMatch(new Criteria().andOperator(
-//                where("_class").is("RecordInfoType$RecordIdentifier").and("value").is(ppn))));
-//        Mods mods = operations.findOne(query, Mods.class);
-
-//        Mods mods = modsRepo.findModsByRecordIdentifier(recId);
-//
-//        Mets mets;
-//
-//        if (mods != null) {
-//            mets = metsRepo.findMetsByModsId(mods.getID());
-//            if (mets != null)
-//                return new ShortDocInfo(mets.getID(), recId);
-//        }
 
         String docid = lookupService.findDocid(source+":"+recordIdentifier);
         ShortDocInfo shortDocInfo = new ShortDocInfo(docid, recordIdentifier, source);

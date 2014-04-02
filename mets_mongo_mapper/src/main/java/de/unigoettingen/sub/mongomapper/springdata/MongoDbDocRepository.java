@@ -35,28 +35,7 @@ public class MongoDbDocRepository implements DocRepository {
 
     public List<Doc> findAllDocs() {
 
-        //long start = System.currentTimeMillis();
         List<Doc> docList = operations.findAll(Doc.class);
-        //System.out.println("findAllDocs: " + (System.currentTimeMillis()-start));
-
-        // retrieve docid of relatedItem
-        // TODO is the docid required for a relatedItem?
-        //start = System.currentTimeMillis();
-//        for (Doc doc : docList) {
-//            Set<RelatedItem> relatedItems = doc.getRelatedItem();
-//            for (RelatedItem relatedItem : relatedItems) {
-//                Set<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
-//                for (RecordIdentifier recordIdentifier : recordIdentifiers) {
-//                    ShortDocInfo shortDocInfo = this.findDocidByRecordIdentifier(recordIdentifier.getValue());
-//                    if (shortDocInfo != null) {
-//                        recordIdentifier.setRelatedDocid(shortDocInfo.getDocid());
-//                    }  else {
-//                        logger.error("No record found for reordIdentifier " + recordIdentifier.getValue());
-//                    }
-//                }
-//            }
-//        }
-        //System.out.println("add docid to all relatedItems: " + (System.currentTimeMillis()-start));
 
         return docList;
     }

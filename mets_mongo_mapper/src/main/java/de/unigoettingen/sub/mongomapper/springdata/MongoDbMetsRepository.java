@@ -57,11 +57,6 @@ public class MongoDbMetsRepository implements MetsRepository {
         return operations.findAll(Mets.class);
     }
 
-//    @Override
-//    public List<Mets> findMetsByDocid() {
-//
-//        return operations.findAll(Mets.class);
-//    }
 
     @Override
     public List<Mods> findAllModsWithRelatedItem() {
@@ -70,56 +65,11 @@ public class MongoDbMetsRepository implements MetsRepository {
                 where("_class").is("RelatedItemType").and("type").is("host"))));
         List<Mods> modsList = operations.find(query, Mods.class);
 
-//        Set<Mets> metsSet = new HashSet<>();
-
-//        if (modsList != null) {
-//            for (Mods mods : modsList) {
-//
-//                Mets mets = this.findMetsByModsId(mods.getID());
-//                if (mets != null)
-//                    metsSet.add(mets);
-//            }
-//        }
         return modsList;
 
     }
 
-//    public List<Mets> findAllCollections() {
-//
-//        Query query = query(where("isCollection").is(true));
-//        List<Mets> metsList = operations.find(query, Mets.class);
-//
-//        return metsList;
-//    }
 
-//    public List<Mets> findAllDocuments() {
-//
-//        Query query = query(where("isCollection").is(false));
-//        List<Mets> metsList = operations.find(query, Mets.class);
-//
-//        return metsList;
-//    }
-
-
-//    @Override
-//    public List<Mods>findAllModsWithoutRelatedItem () {
-//
-//        Query query = query(where("elements._class").is("RelatedItemType").not());
-//        List<Mods> modsList = operations.find(query, Mods.class);
-//
-//        Set<Mets> metsSet = new HashSet<>();
-//
-////        if (modsList != null) {
-////            for (Mods mods : modsList) {
-////
-////                Mets mets = this.findMetsByModsId(mods.getID());
-////                if (mets != null)
-////                    metsSet.add(mets);
-////            }
-////        }
-//        return modsList;
-//
-//    }
 
     @Override
     public Mets findMetsByModsId(String docid) {
@@ -140,21 +90,6 @@ public class MongoDbMetsRepository implements MetsRepository {
         Query query = query(where("_id").is(new ObjectId(docid)));
         operations.remove(query, Mets.class);
     }
-
-
-//    @Override
-//    public void findAndModifyMets(String docid, boolean isCollection) {
-//        Query query = query(where("_id").is(new ObjectId(docid)));
-//        Update update = new Update();
-//        update.set("isCollection", isCollection);
-//        operations.findAndModify(query, update, Mets.class);
-//    }
-
-
-
-
-
-
 
 
 }

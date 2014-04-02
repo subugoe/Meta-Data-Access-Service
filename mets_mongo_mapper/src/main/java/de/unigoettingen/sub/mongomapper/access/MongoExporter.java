@@ -36,13 +36,6 @@ public class MongoExporter {
     private final Logger logger = LoggerFactory.getLogger(MongoExporter.class);
 
 
-    private DB db = null;
-    private DBCollection coll = null;
-    private MongoClient mongoClient = null;
-
-    private ApplicationContext context;
-
-
     @Autowired
     DocidLookupService lookupService;
 
@@ -57,42 +50,6 @@ public class MongoExporter {
 
     @Autowired
     private DocHelper docHelper;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
-
-//    // TODO we have currently no collection data in the db. to be continued if we get the data.
-//    public Docs getCollections(List<String> props, int skip, int limit, HttpServletRequest request) {
-//
-//        Docs docs = new Docs();
-//        List<Mets> metsList = metsRepo.findAllCollections();
-//
-//        for (Mets mets : metsList) {
-//            String metsUrl = this.getUrlString(request) + "/documents/" + mets.getID() + "/mets";
-//            docs.addDocuments(retrieveCollInfo(mets, metsUrl));
-//        }
-//
-//        return docs;
-//    }
-
-//    public Doc getCollection(String docid, List<String> props, HttpServletRequest request) {
-//
-//        Mets mets = metsRepo.findOneMets(docid);
-//
-//        String metsUrl = this.getUrlString(request);
-//
-//        long start = System.currentTimeMillis();
-//        Doc doc = retrieveCollInfo(mets, metsUrl + "/documents/" + mets.getID() + "/mets");
-//        System.out.println(System.currentTimeMillis()-start);
-//
-//        start = System.currentTimeMillis();
-//        doc.setContent(retrieveCollContents(mets, metsUrl + "/documents/"));
-//        System.out.println(System.currentTimeMillis() - start);
-//
-//        return doc;
-//    }
-
 
     /**
      * Collects information about the documents in the repository.
@@ -137,9 +94,7 @@ public class MongoExporter {
         String docid = lookupService.findDocid(recordIdentifier);
 
         try {
-            long start = System.currentTimeMillis();
             mets = metsRepo.findOneMets(docid);
-            System.out.println("findOneMets: " + (System.currentTimeMillis() - start));
         } catch (IllegalArgumentException e) {
             logger.info("The requested docid [" + docid + "] is an invalid ObjectId");
         }
@@ -163,109 +118,6 @@ public class MongoExporter {
     }
 
 
-//    private Coll retrieveCollInfo(Mets mets, String metsUrlString) {
-//
-//
-//        //List<Doc> docList = new ArrayList<>();
-//        List<MdSecType> dmdSecs = mets.getDmdSecs();
-//
-//
-//        // TODO currently just the first mdSec element will be examined - is this sufficient?
-//        // TODO currently just the first mods element will be examined - is this sufficient?
-//
-//        Mods mods = dmdSecs.get(0).getMdWrap().getXmlData().getMods().get(0);
-//
-//        List<Object> objectList = mods.getElements();
-//
-//        Coll coll = new Coll();
-//
-//        // add docid
-//        coll.setDocid(mets.getID());
-//
-//        // add metsURL
-//        coll.setMets(metsUrlString);
-//
-//        for (Object obj : objectList) {
-//
-//            if (obj instanceof RecordInfoType) {
-//
-//                // add recordIdentifiers
-//                coll.addRecordIdentifiers(getRecordIdentifiers((RecordInfoType) obj));
-//            }
-//
-//            if (obj instanceof TitleInfoType) {
-//                TitleInfoType titleInfoType = (TitleInfoType) obj;
-//                List<Object> objectList1 = titleInfoType.getElements();
-//                for (Object o : objectList1) {
-//                    if (o instanceof Title) {
-//                        Title title = (Title) o;
-//                        // add title
-//                        coll.setTitle(title.getValue());
-//                    }
-//                    if (o instanceof BaseTitleInfoType.SubTitle) {
-//                        BaseTitleInfoType.SubTitle subTitle = (BaseTitleInfoType.SubTitle) o;
-//                        // add subTitle
-//                        coll.setSubTitle(subTitle.getValue());
-//                    }
-//                }
-//            }
-//
-//            if (obj instanceof ClassificationType) {
-//                Classification classification = new Classification();
-//
-//                ClassificationType classificationType = (ClassificationType) obj;
-//                classification.setAuthority(classification.getAuthority());
-//                classification.setValue(classificationType.getValue());
-//                // add classification
-//                coll.addClassifications(classification);
-//
-//            }
-//        }
-//
-//        return coll;
-//    }
-
-//    private List<Coll.Content> retrieveCollContents(Mets mets, String metsUrlString) {
-//
-//        List<Coll.Content> contents = new ArrayList<>();
-//
-//        List<StructMapType> structMaps = mets.getStructMaps();
-//        for (StructMapType structMap : structMaps) {
-//            if (structMap.getTYPE().equalsIgnoreCase("LOGICAL")) {
-//                DivType div1 = structMap.getDiv();
-//                List<DivType> divType = div1.getDivs();
-//
-//                for (DivType div2 : divType) {
-//
-//                    Coll.Content content = new Coll.Content();
-//
-//                    content.setType(div2.getTYPE());
-//                    content.setName(div2.getLABEL());
-//
-//                    String metsUrl = div2.getMptrs().get(0).getHref();
-//                    int i = metsUrl.lastIndexOf("=");
-//                    String recordIdentifier = metsUrl.substring(i + 1, metsUrl.length());
-//
-//                    content.setRecordIdentifier(recordIdentifier);
-//
-//                    Mods contentMods = metsRepo.findModsByRecordIdentifier(recordIdentifier);
-//
-//                    if (contentMods != null) {
-////                        Mets contentMets = metsRepo.findMetsByModsId(contentMods.getID());
-////                        if (contentMets != null) {
-//                            //content.setDocid(contentMets.getID());
-//                            contents.add(content);
-////                        }
-//                    } else {
-//                        System.out.println("Mods document for recordIdentifier " + recordIdentifier +  " could not found in the DB");
-//                        logger.error("Mods document for recordIdentifier " + recordIdentifier +  " could not found in the DB");
-//                    }
-//                }
-//            }
-//        }
-//
-//        return contents;
-//    }
 
 
     public String getDocumentOutline(String docid) {
@@ -293,68 +145,7 @@ public class MongoExporter {
     }
 
 
-//    public String getDocumentTags(String docid) {
-//        return null;
-//    }
-//
-//    public String getPageTags(String docid, int pageNumber) {
-//        return null;
-//    }
-//
-//
-//    public String getFacets(String docid) {
-//        return null;
-//    }
-//
-//    public String getDocumentKml(String docid) {
-//        return null;
-//    }
 
-
-    //    public String isInDB(String pid) {
-//
-//
-////        IdHelper idHelper = new IdHelper();
-////        String docid = idHelper.findDocid(pid, db, mets_coll_name);
-////        this.mongoClient.close();
-////
-////        return docid;
-//
-//        return "";
-//    }
-//
-//
-//    public String isFileInDB(String filename) {
-//
-////        IdHelper idHelper = new IdHelper();
-////        String docid = idHelper.checkIfExist(filename, db, mets_coll_name);
-////
-////        this.mongoClient.close();
-////
-////        return docid;
-//
-//        return null;
-//    }
-//
-//    public String convertToUTF8(String s) {
-//        String out = null;
-//        try {
-//            out = new String(s.getBytes("UTF-8"), "ISO-8859-1");
-//        } catch (java.io.UnsupportedEncodingException e) {
-//            return null;
-//        }
-//        return out;
-//    }
-//
-//    public String convertFromUTF8(String s) {
-//        String out = null;
-//        try {
-//            out = new String(s.getBytes("ISO-8859-1"), "UTF-8");
-//        } catch (java.io.UnsupportedEncodingException e) {
-//            return null;
-//        }
-//        return out;
-//    }
     public void getMetsDocument(String docid, ServletOutputStream outputStream) {
 
         Mets resultsMets = metsRepo.findOneMets(docid);
@@ -436,8 +227,6 @@ public class MongoExporter {
         return this.docHelper.isDocInDB(docid);
     }
 
-    public ShortDocInfo isRecordInDB(String recordIdentifier, String source) {
-        return this.docHelper.isRecordInDB(recordIdentifier, source);
-    }
+
 
 }

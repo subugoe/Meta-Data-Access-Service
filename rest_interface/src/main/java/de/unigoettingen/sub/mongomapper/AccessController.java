@@ -185,38 +185,6 @@ public class AccessController {
     }
 
 
-//    /**
-//     * Returns the full text of a single page.
-//     *
-//     * @param docid  The MongoDB id of the related mongoDB object, or any PID.
-//     * @param pageno The pagenumber of the requested page.
-//     * @param model  The Spring-Model objekt, required for transmission of parameters within the request scope.
-//     * @return A special representation (e.g. PDF, HTML) for the requested page.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/text/{pageno}", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String getDocumentPageText(@PathVariable("docid") String docid,
-//                               @PathVariable("pageno") String pageno, Model model) {
-//
-//        return mongoExporter.getDocumentRepresentation(docid, pageno);
-//    }
-
-//    /**
-//     * Returns a page representation of a document.
-//     *
-//     * @param docid The MongoDB id of the related mongoDB object, or any PID.
-//     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
-//     * @return A special representation (e.g. PDF, HTML) for the requested document.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/text", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String getDocumentPage(@PathVariable("docid") String docid, Model model) {
-//
-//        return mongoExporter.getDocumentRepresentation(docid);
-//    }
-
 
     /**
      * Searchterm based search in a special document.
@@ -346,101 +314,6 @@ public class AccessController {
     }
 
 
-//    /**
-//     * Returns the related TEI document.
-//     * <p/>
-//     * request: /documents/{docid}/tei?type={tei | enriched}
-//     *
-//     * @param docid    The MongoDB id of the related mongoDB object, or any PID.
-//     * @param teiType  The TEI type, possibillities are tei (default) or teiEnriched.
-//     * @param response The HttpServletResponse object.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/tei", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    void getDocumentTEI(@PathVariable("docid") String docid,
-//                        @RequestParam(value = "teiType", defaultValue = "tei") String teiType,
-//                        HttpServletResponse response) {
-//
-//        response.setContentType("application/xml");
-//
-//        InputStream in = mongoExporter.getEmeddedFileDocument(docid, "tei", teiType);
-//
-//        try {
-//            if (in != null) {
-//                FileCopyUtils.copy(in, response.getOutputStream());
-//                response.flushBuffer();
-//            } else {
-//                // TODO better return required, e.g. a redirect to an error page
-//                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Requested tei document is not available for Id: " + docid);
-//            }
-//        } catch (IOException e) {
-//            logger.error("Error on writing tei file to the output stream.");
-//            //throw new RuntimeException("IOError on writing mets file to the output stream.");
-//        }
-//    }
-
-
-//    /**
-//     * Retrieves a list of values for a special tag used in the document, e.g. tei:persName, tei:placeName
-//     *
-//     * @param docid The MongoDB id of the related mongoDB object, or any PID.
-//     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
-//     * @return A document with special tag info.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/tags", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String getDocumentTags(@PathVariable("docid") String docid, Model model) {
-//
-//        return mongoExporter.getDocumentTags(docid);
-//    }
-
-//    /**
-//     * Retrieves a list of values for a special tag used on a page, e.g. tei:persName, tei:placeName
-//     *
-//     * @param docid      The MongoDB id of the related mongoDB object, or any PID.
-//     * @param pageNumber The page number of the for which to get the tags.
-//     * @param model      The Spring-Model objekt, required for transmission of parameters within the request scope.
-//     * @return A document with special tag info.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/tags/{pageNumber}", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String getDocumentTags(@PathVariable("docid") String docid, @PathVariable("pageNumber") int pageNumber, Model model) {
-//
-//        return mongoExporter.getPageTags(docid, pageNumber);
-//    }
-
-//    /**
-//     * Retrieves a list of possible tags.
-//     *
-//     * @param docid The MongoDB id of the related mongoDB object, or any PID.
-//     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
-//     * @return A document with tag info.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/facets", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String getFacets(@PathVariable("docid") String docid, Model model) {
-//
-//        return mongoExporter.getFacets(docid);
-//    }
-
-//    /**
-//     * Returns the KML for places, contained in the document (KML: geographic annotation).
-//     *
-//     * @param docid The MongoDB id of the related mongoDB object, or any PID.
-//     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
-//     * @return A document with KML info.
-//     */
-//    @RequestMapping(value = "/documents/{docid}/kml", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String getDocumentKml(@PathVariable("docid") String docid, Model model) {
-//
-//        return mongoExporter.getDocumentKml(docid);
-//    }
 
     /**
      * Checks, if an object with the given pid is already in the db.
@@ -465,49 +338,6 @@ public class AccessController {
     }
 
 
-//    /**
-//     * Checks, if an METS file is already in the db.
-//     *
-//     * @param filename The name of the file for which to check.
-//     * @param model
-//     * @return The docid of the document or null if it doesn't exist.
-//     */
-//    @RequestMapping(value = "/documents/{filename}/exist", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String isFileInDB(@PathVariable("filename") String filename, Model model) {
-//
-//        String docid = mongoExporter.isFileInDB(filename);
-//
-//        if (docid == null) {
-//            System.out.println("docid==null für -> " + filename);
-//            writeFileNameToFile(filename);
-//            return "";
-//        }
-//       // else
-//       //     return docid;
-//        return "";
-//    }
-
-//    private void writeFileNameToFile(String filename) {
-//
-//        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("/Users/jpanzer/Documents/data/digizeit/out.txt", true)))) {
-//            out.println(filename);
-//        }catch (IOException e) {
-//            //exception handling left as an exercise for the reader
-//        }
-//
-//
-//    }
-
-
-//    @ExceptionHandler(NoSuchRequestHandlingMethodException.class)
-//    public ModelAndView handleException(NoSuchRequestHandlingMethodException ex) {
-//        ModelAndView mav = new ModelAndView();
-//        logger.error("Exception found: " + ex);
-//        return mav;
-//    }
-
 
     @RequestMapping(value = "/documents/all", method = RequestMethod.GET)
     public
@@ -518,17 +348,7 @@ public class AccessController {
         return lookupService.findAllDocids();
     }
 
-//
-//    @RequestMapping(value = "/documents/set/{docid}", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String
-//    setTest(@PathVariable("docid") String docid) {
-//
-//        lookupService.addDocid(docid, "ppn", "value:" + docid);
-//
-//        return docid;
-//    }
+
 
     @RequestMapping(value = "/documents/get/{recId}", method = RequestMethod.GET)
     public
@@ -539,30 +359,5 @@ public class AccessController {
         return recId + lookupService.findDocid(recId);
 
     }
-//
-//    @RequestMapping(value = "/documents/update/{docid}", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String
-//    updateTest(@PathVariable("docid") String docid) {
-//
-//        try {
-//            lookupService.updateDocid(docid, "ppn", "new:value:" + docid);
-//        } catch (IdentifierNotFoundException e) {
-//            return null;
-//        }
-//        return docid;
-//    }
-//
-//
-//    @RequestMapping(value = "/documents/delete/{docid}", method = RequestMethod.GET)
-//    public
-//    @ResponseBody
-//    String
-//    deleteTest(@PathVariable("docid") String docid) {
-//
-//        lookupService.deleteDocid(docid, "ppn");
-//
-//        return docid;
-//    }
+
 }

@@ -21,8 +21,7 @@ public interface MetsRepository  extends Repository<Mets, Long> {
     List<Mets> findAllMets();
     List<Mods> findAllModsWithRelatedItem();
 
-    //List<Mets> findAllCollections();
-    //List<Mets> findAllDocuments();
+
 
 
     Mets findMetsByModsId(String docid);
