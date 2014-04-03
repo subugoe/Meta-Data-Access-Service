@@ -40,12 +40,18 @@ public class DocService {
 
     protected String getPrimaryId(Map<String, String> ids) {
 
-        if (ids.containsKey("purl")) {
+        if (ids.containsKey("purl") ) {
             String id = ids.get("purl");
             String hash = DigestUtils.md5DigestAsHex(id.getBytes());
-            return "purl:hash:" + hash; //lookupService.findDocid(hash);
+            return "purl:md5hash:" + hash; //lookupService.findDocid(hash);
         } else if (ids.containsKey("gbv-ppn")) {
-            return "gbv-ppn:" + ids.get("gbv-ppn"); //lookupService.findDocid("gbv-ppn:" + ids.get("gbv-ppn"));
+            String id = ids.get("gbv-ppn");
+            String hash = DigestUtils.md5DigestAsHex(id.getBytes());
+            return "gbv-ppn:md5hash:" + hash;
+        } else if (ids.containsKey("ppn")) {
+            String id = ids.get("ppn");
+            String hash = DigestUtils.md5DigestAsHex(id.getBytes());
+            return "ppn:md5hash:" + hash;
         }
         // TODO other types
 
@@ -72,7 +78,7 @@ public class DocService {
 
                     if (obj instanceof IdentifierType) {
                         IdentifierType id = (IdentifierType) obj;
-                        ids.put(id.getType(), id.getValue());
+                        ids.put(id.getType().toLowerCase(), id.getValue());
                     }
 
 
@@ -82,7 +88,7 @@ public class DocService {
                             if (o instanceof RecordInfoType.RecordIdentifier) {
                                 String recId = ((RecordInfoType.RecordIdentifier) o).getValue();
                                 String source = ((RecordInfoType.RecordIdentifier) o).getSource();
-                                ids.put(source, recId);
+                                ids.put(source.toLowerCase(), recId);
                             }
                         }
                     }
@@ -125,7 +131,7 @@ public class DocService {
         doc.setId(primaryId);
 
         // add metsURL
-        String metsUrl = this.getUrlString(request) + "/documents/" + metsId + "/mets";
+        String metsUrl = this.getUrlString(request) + "/documents/" + primaryId + "/mets";
         doc.setMets(metsUrl);
 
         for (Object obj : objectList) {
