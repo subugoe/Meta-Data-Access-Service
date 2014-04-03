@@ -6,6 +6,7 @@ import de.unigoettingen.sub.medas.model.Doc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -156,7 +157,10 @@ public class MongoImporter extends DocService {
     }
 
 
+    @CacheEvict(value = "MedasCache", key = "#p0", allEntries = false)
     private void saveDoc(Mets mets, Map<String, String> ids, HttpServletRequest request) {
+
+        System.out.println("cache test, in saveDoc");
 
         String primaryId = this.getPrimaryId(ids);
         Doc doc = retrieveBasicDocInfo(mets, primaryId, request);

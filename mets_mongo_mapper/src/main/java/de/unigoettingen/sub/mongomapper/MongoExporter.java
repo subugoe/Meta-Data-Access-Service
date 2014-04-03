@@ -6,6 +6,7 @@ import de.unigoettingen.sub.medas.model.*;
 import de.unigoettingen.sub.medas.model.ShortDocInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletOutputStream;
@@ -64,9 +65,11 @@ public class MongoExporter extends DocService {
     }
 
 
-
+    //@Cacheable(value = "MedasCache", key = "#p0")
     public Doc getDocument(String id,
                            List<String> props, HttpServletRequest request) {
+
+        System.out.println("cache test, in getDocument");
 
         Mets mets = null;
 
