@@ -1,6 +1,5 @@
 package de.unigoettingen.sub.mongomapper;
 
-import de.unigoettingen.sub.mongomapper.ingest.MongoImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,6 @@
 package de.unigoettingen.sub.medas.model;
 
 import javax.xml.bind.annotation.*;
-import java.util.Set;
 
 /**
  * Created by jpanzer on 04.03.14.
@@ -12,13 +11,15 @@ import java.util.Set;
 })
 public class RecordIdentifier {
 
+    @XmlTransient
+    private final String DEFAULT_TYPE = "gbv-ppn";
+
     public RecordIdentifier() {
     }
 
-    public RecordIdentifier(String value, String source, String docid) {
+    public RecordIdentifier(String value, String source) {
         this.value = value;
         this.source = source;
-        this.relatedDocid = docid;
     }
 
     @XmlValue
@@ -26,9 +27,6 @@ public class RecordIdentifier {
 
     @XmlAttribute(name = "source")
     private String source;
-
-    @XmlAttribute(name = "relatedDocid")
-    private String relatedDocid;
 
     public String getValue() {
         return value;
@@ -44,13 +42,7 @@ public class RecordIdentifier {
 
     public void setSource(String source) {
         this.source = source;
+
     }
 
-    public String getRelatedDocid() {
-        return relatedDocid;
-    }
-
-    public void setRelatedDocid(String relatedDocid) {
-        this.relatedDocid = relatedDocid;
-    }
 }

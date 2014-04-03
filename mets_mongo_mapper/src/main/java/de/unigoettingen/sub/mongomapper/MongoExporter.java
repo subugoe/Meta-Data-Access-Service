@@ -1,20 +1,11 @@
-package de.unigoettingen.sub.mongomapper.access;
+package de.unigoettingen.sub.mongomapper;
 
-import com.mongodb.*;
 import de.unigoettingen.sub.medas.metsmods.jaxb.*;
 import de.unigoettingen.sub.medas.model.*;
 
 import de.unigoettingen.sub.medas.model.ShortDocInfo;
-import de.unigoettingen.sub.mongomapper.helper.DocHelper;
-import de.unigoettingen.sub.mongomapper.helper.DocidLookupService;
-import de.unigoettingen.sub.mongomapper.springdata.MongoDbDocRepository;
-import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
-import de.unigoettingen.sub.mongomapper.springdata.MongoDbModsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletOutputStream;
@@ -22,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -31,25 +24,10 @@ import java.util.*;
  * 12/2013
  */
 @Component
-public class MongoExporter {
+public class MongoExporter extends DocService {
 
     private final Logger logger = LoggerFactory.getLogger(MongoExporter.class);
 
-
-    @Autowired
-    DocidLookupService lookupService;
-
-    @Autowired
-    private MongoDbMetsRepository metsRepo;
-
-    @Autowired
-    private MongoDbDocRepository docRepo;
-
-    @Autowired
-    private MongoDbModsRepository modsRepo;
-
-    @Autowired
-    private DocHelper docHelper;
 
     /**
      * Collects information about the documents in the repository.
@@ -86,36 +64,40 @@ public class MongoExporter {
     }
 
 
-    public Doc getDocument(String recordIdentifier,
+
+    public Doc getDocument(String id,
                            List<String> props, HttpServletRequest request) {
 
         Mets mets = null;
 
-        String docid = lookupService.findDocid(recordIdentifier);
+
+        //String decodedUrl = decodeUrl(purl);
+
+        String docid = lookupService.findDocid(id);
 
         try {
             mets = metsRepo.findOneMets(docid);
         } catch (IllegalArgumentException e) {
-            logger.info("The requested docid [" + docid + "] is an invalid ObjectId");
+            logger.info("Could not find a document with docid: [" + docid + "] and id: ["+ id +"].");
         }
 
         if (mets == null)
             return null;
 
-        return this.docHelper.retrieveFullDocInfo(mets, request);
+        return retrieveFullDocInfo(mets, id, request);
     }
 
 
-    public Doc getDocumentWithRecordIdentifier(String recordIdentifier, List<String> props, HttpServletRequest request) {
-
-        Mods mods = modsRepo.findModsByRecordIdentifier(recordIdentifier);
-        Mets mets = metsRepo.findMetsByModsId(mods.getID());
-
-        if (mets == null)
-            return null;
-
-        return this.docHelper.retrieveFullDocInfo(mets, request);
-    }
+//    public Doc getDocumentWithRecordIdentifier(String recordIdentifier, List<String> props, HttpServletRequest request) {
+//
+//        Mods mods = modsRepo.findModsByRecordIdentifier(recordIdentifier);
+//        Mets mets = metsRepo.findMetsByModsId(mods.getID());
+//
+//        if (mets == null)
+//            return null;
+//
+//        return retrieveFullDocInfo(mets, request);
+//    }
 
 
 
@@ -146,8 +128,9 @@ public class MongoExporter {
 
 
 
-    public void getMetsDocument(String docid, ServletOutputStream outputStream) {
+    public void getMetsDocument(String id, ServletOutputStream outputStream) {
 
+        String docid = lookupService.findDocid(id);
         Mets resultsMets = metsRepo.findOneMets(docid);
 
         if (resultsMets != null) {
@@ -207,7 +190,7 @@ public class MongoExporter {
             for (Object obj : objectList) {
                 if (obj instanceof RecordInfoType) {
 
-                    List<RecordIdentifier> recordIdentifiers = this.docHelper.getRecordIdentifiers((RecordInfoType) obj, docid);
+                    List<RecordIdentifier> recordIdentifiers = getRecordIdentifiers((RecordInfoType) obj, docid);
                     if (!recordIdentifiers.isEmpty()) {
                         if (recordIdentifiers.iterator().hasNext()) {
                             RecordIdentifier recordIdentifier = recordIdentifiers.iterator().next();
@@ -224,9 +207,21 @@ public class MongoExporter {
 
 
     public Mets isDocInDB(String docid) {
-        return this.docHelper.isDocInDB(docid);
+        return isDocInDB(docid);
     }
 
 
+    private String decodeUrl(String url) {
+
+        try {
+            return URLDecoder.decode(url, "UTF-8");
+
+
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Could not decode the String: " + url);
+        }
+
+        return null;
+    }
 
 }

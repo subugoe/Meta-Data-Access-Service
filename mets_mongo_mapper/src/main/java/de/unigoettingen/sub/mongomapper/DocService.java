@@ -1,39 +1,113 @@
-package de.unigoettingen.sub.mongomapper.helper;
+package de.unigoettingen.sub.mongomapper;
 
 import de.unigoettingen.sub.medas.metsmods.jaxb.*;
 import de.unigoettingen.sub.medas.model.*;
+import de.unigoettingen.sub.mongomapper.helper.DocidLookupService;
+import de.unigoettingen.sub.mongomapper.springdata.MongoDbDocRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbMetsRepository;
 import de.unigoettingen.sub.mongomapper.springdata.MongoDbModsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import sun.reflect.generics.tree.MethodTypeSignature;
+import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.*;
 
 /**
- * Created by jpanzer on 26.03.14.
+ * Created by jpanzer on 02.04.14.
  */
-@Component
-public class DocHelper {
+@Service
+public class DocService {
 
-    private final Logger logger = LoggerFactory.getLogger(DocHelper.class);
-
-    @Autowired
-    DocidLookupService lookupService;
+    private final Logger logger = LoggerFactory.getLogger(DocService.class);
 
     @Autowired
-    private MongoDbMetsRepository metsRepo;
+    protected DocidLookupService lookupService;
 
-    @Autowired
-    private MongoDbModsRepository modsRepo;
+    @Autowired()
+    protected MongoDbMetsRepository metsRepo;
 
-    public Doc retrieveBasicDocInfo(Mets mets, HttpServletRequest request) {
+    @Autowired()
+    protected MongoDbModsRepository modsRepo;
+
+    @Autowired()
+    protected MongoDbDocRepository docRepo;
+
+
+    protected String getPrimaryId(Map<String, String> ids) {
+
+        if (ids.containsKey("purl")) {
+            String id = ids.get("purl");
+            String hash = DigestUtils.md5DigestAsHex(id.getBytes());
+            return "purl:hash:" + hash; //lookupService.findDocid(hash);
+        } else if (ids.containsKey("gbv-ppn")) {
+            return "gbv-ppn:" + ids.get("gbv-ppn"); //lookupService.findDocid("gbv-ppn:" + ids.get("gbv-ppn"));
+        }
+        // TODO other types
+
+        return null;
+    }
+
+    /**
+     * The method checks if the document is in the DB, and returns the docid and recordIdentifier packed as a
+     * ShortDocInfo object or null if not in the db. The test will be performed with the recordIdentifier.
+     *
+     * @param mets The Mets document to check.
+     * @return The docid if already stored, otherwise null.
+     */
+    protected Map<String, String> getIdentifiers(Mets mets) {
+
+        Map<String, String> ids = new HashMap<>();
+
+        List<MdSecType> dmdSecs = mets.getDmdSecs();
+        for (MdSecType mdSec : dmdSecs) {
+            List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();
+            for (Mods mods : modsList) {
+                List<Object> objectList = mods.getElements();
+                for (Object obj : objectList) {
+
+                    if (obj instanceof IdentifierType) {
+                        IdentifierType id = (IdentifierType) obj;
+                        ids.put(id.getType(), id.getValue());
+                    }
+
+
+                    if (obj instanceof RecordInfoType) {
+                        List<Object> elements = ((RecordInfoType) obj).getElements();
+                        for (Object o : elements) {
+                            if (o instanceof RecordInfoType.RecordIdentifier) {
+                                String recId = ((RecordInfoType.RecordIdentifier) o).getValue();
+                                String source = ((RecordInfoType.RecordIdentifier) o).getSource();
+                                ids.put(source, recId);
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return ids;
+    }
+
+    protected String encodeUrl(String url) {
+
+        try {
+            return URLEncoder.encode(url, "UTF-8");
+
+
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Could not encode the String: " + url);
+        }
+
+        return null;
+    }
+
+    protected Doc retrieveBasicDocInfo(Mets mets, String primaryId, HttpServletRequest request) {
 
         int pagenumber = 0;
         String metsId = mets.getID();
@@ -48,7 +122,7 @@ public class DocHelper {
         Doc doc = new Doc();
 
         // add docid, the same as in original mets documente (related)
-        doc.setDocid(metsId);
+        doc.setId(primaryId);
 
         // add metsURL
         String metsUrl = this.getUrlString(request) + "/documents/" + metsId + "/mets";
@@ -100,20 +174,20 @@ public class DocHelper {
                             // add relatedItem
                             doc.addRelatedItem(relatedItem);
                         }  else {
-                            logger.info("missing recordIdentifier in relatedItem for document with docid " + metsId);
+                            logger.info("Missing recordIdentifier in relatedItem for document docid: " + metsId);
                         }
 
 
-                        // add docid to relatedItem
-                        List<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
-                        for (RecordIdentifier recordIdentifier : recordIdentifiers) {
-                            ShortDocInfo shortDocInfo = this.findDocidByRecordIdentifier(recordIdentifier.getValue(), recordIdentifier.getSource());
-                            if (shortDocInfo != null) {
-                                recordIdentifier.setRelatedDocid(shortDocInfo.getDocid());
-                            } else {
-                                logger.error("No record found for reordIdentifier " + recordIdentifier.getValue());
-                            }
-                        }
+//                        // add docid to relatedItem
+//                        List<RecordIdentifier> recordIdentifiers = relatedItem.getRecordIdentifier();
+//                        for (RecordIdentifier recordIdentifier : recordIdentifiers) {
+//                            ShortDocInfo shortDocInfo = this.findDocidByRecordIdentifier(recordIdentifier.getValue(), recordIdentifier.getSource());
+//                            if (shortDocInfo != null) {
+//                                recordIdentifier.setId(shortDocInfo.getDocid());
+//                            } else {
+//                                logger.error("No record found for reordIdentifier " + recordIdentifier.getValue());
+//                            }
+//                        }
 
 
                     }
@@ -144,7 +218,7 @@ public class DocHelper {
                         String[] extendArray = extend.split(" ");
                         // required extend format: "200 pages"
                         try {
-                        pagenumber = Integer.valueOf(extendArray[0]);
+                            pagenumber = Integer.valueOf(extendArray[0]);
                         } catch (NumberFormatException e) {
                             logger.error("Expected pagenumber in PhysicalDescriptionType.Extent for docid " + metsId + " is not a number" );
                             pagenumber = 0;
@@ -185,20 +259,16 @@ public class DocHelper {
     }
 
 
-    public Doc retrieveFullDocInfo(Mets mets, HttpServletRequest request) {
+    protected Doc retrieveFullDocInfo(Mets mets, String primaryId, HttpServletRequest request) {
 
-        long start = System.currentTimeMillis();
-        Doc doc = retrieveBasicDocInfo(mets, request);
-        System.out.println("retrieveBasicDocInfo: " + (System.currentTimeMillis() - start));
+        Doc doc = retrieveBasicDocInfo(mets, primaryId, request);
 
-        start = System.currentTimeMillis();
         doc.setContent(retrieveDocContents(mets));
-        System.out.println("retrieveDocContents: " + (System.currentTimeMillis() - start));
 
         return doc;
     }
 
-    private List<Doc.Content> retrieveDocContents(Mets mets) {
+    protected List<Doc.Content> retrieveDocContents(Mets mets) {
 
         List<Doc.Content> contents = new ArrayList<>();
 
@@ -213,7 +283,7 @@ public class DocHelper {
         return contents;
     }
 
-    private List<Doc.Content> evaluateDivs(List<DivType> divs) {
+    protected List<Doc.Content> evaluateDivs(List<DivType> divs) {
 
         List<Doc.Content> contents = new ArrayList<>();
         for (DivType div : divs) {
@@ -223,7 +293,7 @@ public class DocHelper {
         return contents;
     }
 
-    private List<Doc.Content> evaluateDiv(DivType div) {
+    protected List<Doc.Content> evaluateDiv(DivType div) {
 
         List<Doc.Content> contents = new ArrayList<>();
         Doc.Content content = new Doc.Content();
@@ -243,14 +313,22 @@ public class DocHelper {
             String metsUrl = mptrs.get(0).getHref();
             int i = metsUrl.lastIndexOf("=");
             String recordIdentifier = metsUrl.substring(i + 1, metsUrl.length());
-            content.setRecordIdentifier(recordIdentifier);
+
+            RecordIdentifier recId = new RecordIdentifier();
+
+            // TODO Since the recordIdentifier is derived from the URL, there is no source attribute! Default is "gbv-ppn"
+            recId.setSource("default");
+            recId.setValue(recordIdentifier);
+            //recId.setId(lookupService.findDocid(recId.getSource() + ":" + recId.getValue()));
+
+            //content.setRecordIdentifier(recId.getId());
 
             Mods contentMods = modsRepo.findModsByRecordIdentifier(recordIdentifier);
 
             if (contentMods != null) {
                 Mets contentMets = metsRepo.findMetsByModsId(contentMods.getID());
                 if (contentMets != null) {
-                    content.setDocid(contentMets.getID());
+                    content.setId(contentMets.getID());
                 } else {
                     content.setError("Mets document for recordIdentifier " + recordIdentifier + " could not found in the DB");
                     logger.error("Mods document for recordIdentifier " + recordIdentifier + " could not found in the DB");
@@ -270,7 +348,7 @@ public class DocHelper {
         return contents;
     }
 
-    private Identifier getIdentifier(IdentifierType identifierType) {
+    protected Identifier getIdentifier(IdentifierType identifierType) {
         Identifier identifier = new Identifier();
 
         identifier.setValue(identifierType.getValue());
@@ -279,7 +357,7 @@ public class DocHelper {
         return identifier;
     }
 
-    public List<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType, String docid) {
+    protected List<RecordIdentifier> getRecordIdentifiers(RecordInfoType recordInfoType, String docid) {
 
         List<Object> objectList2 = recordInfoType.getElements();
         List<RecordIdentifier> recordIdentifiers = new ArrayList<>();
@@ -291,14 +369,14 @@ public class DocHelper {
 
                 String source = recordIdentifier.getSource();
                 String value = recordIdentifier.getValue();
-                recordIdentifiers.add(new RecordIdentifier(value, source, docid));
+                recordIdentifiers.add(new RecordIdentifier(value, source));
             }
         }
 
         return recordIdentifiers;
     }
 
-    public Set<String> getRecordIdentifier(Mods mods) {
+    protected Set<String> getRecordIdentifier(Mods mods) {
         Set<String> recordIdentifierList = new HashSet<>();
 
         List<Object> modsList = mods.getElements();
@@ -319,7 +397,7 @@ public class DocHelper {
         return recordIdentifierList;
     }
 
-    public Set<String> getRelatedItemRecordIdentifier(Mods mods) {
+    protected Set<String> getRelatedItemRecordIdentifier(Mods mods) {
         Set<String> recordIdentifierList = new HashSet<>();
 
         List<Object> modsList = mods.getElements();
@@ -350,13 +428,13 @@ public class DocHelper {
         return recordIdentifierList;
     }
 
-    public RecordIdentifier getRcordIdentifier(RelatedItem relatedItem) {
+    protected RecordIdentifier getRcordIdentifier(RelatedItem relatedItem) {
 
         return null;
     }
 
 
-    public String getUrlString(HttpServletRequest request) {
+    protected String getUrlString(HttpServletRequest request) {
 
         String schema = request.getScheme();
         String server = request.getServerName();
@@ -378,7 +456,7 @@ public class DocHelper {
     }
 
 
-    public Mets isDocInDB(String docid) {
+    protected Mets isDocInDB(String docid) {
         return metsRepo.findOneMets(docid);
     }
 
@@ -390,7 +468,7 @@ public class DocHelper {
 
 
 
-    public ShortDocInfo findDocidByRecordIdentifier(String recordIdentifier, String source) {
+    protected ShortDocInfo findDocidByRecordIdentifier(String recordIdentifier, String source) {
 
         String docid = lookupService.findDocid(source+":"+recordIdentifier);
         ShortDocInfo shortDocInfo = new ShortDocInfo(docid, recordIdentifier, source);

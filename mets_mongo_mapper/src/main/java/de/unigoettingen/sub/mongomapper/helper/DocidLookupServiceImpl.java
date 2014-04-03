@@ -20,19 +20,18 @@ public class DocidLookupServiceImpl implements DocidLookupService {
     private RedisTemplate<String, String> redisTemplate;
 
     @Override
-    public void addDocid(String recordIdentifier, String source, String docid) {
+    public void addDocid(String purl, String docid) {
 
-        String key = buildKey(recordIdentifier, source);
-        redisTemplate.opsForHash().put(lookupStore, key, docid);
+        redisTemplate.opsForHash().put(lookupStore, purl, docid);
 
     }
 
 
     @Override
-    public String findDocid(String recordIdentifier) {
+    public String findDocid(String purl) {
 
         //String key = buildKey(recordIdentifier, source);
-        return (String) redisTemplate.opsForHash().get(lookupStore, recordIdentifier);
+        return (String) redisTemplate.opsForHash().get(lookupStore, purl);
     }
 
     @Override
@@ -47,42 +46,51 @@ public class DocidLookupServiceImpl implements DocidLookupService {
     }
 
     @Override
-    public void deleteDocid(String recordIdentifier, String source) {
-        String key = buildKey(recordIdentifier, source);
-        redisTemplate.opsForHash().delete(lookupStore, key);
+    public List<String> findAllKeys() {
+        List<String> docids = new ArrayList<>();
+
+        for (Object obj : redisTemplate.opsForHash().keys(lookupStore)) {
+            docids.add((String)obj);
+        }
+
+        return docids;
     }
 
     @Override
-    public void updateDocid(String recordIdentifier, String source, String docid) throws IdentifierNotFoundException {
+    public void deleteDocid(String purl) {
 
-        String key = buildKey(recordIdentifier, source);
-
-        if (!redisTemplate.opsForHash().hasKey(lookupStore, key))
-            throw new IdentifierNotFoundException("No docid found for recordIdentifier: " + key);
-
-        redisTemplate.opsForHash().put(lookupStore, key, docid);
+        redisTemplate.opsForHash().delete(lookupStore, purl);
     }
 
     @Override
-    public boolean containsDocid(String docid) {
+    public void updateDocid(String purl, String docid) throws IdentifierNotFoundException {
+
+        if (!redisTemplate.opsForHash().hasKey(lookupStore, purl))
+            throw new IdentifierNotFoundException("No docid found for identifier: " + purl);
+
+        redisTemplate.opsForHash().put(lookupStore, purl, docid);
+    }
+
+    @Override
+    public boolean containsDocid(String purl) {
 
         for (Object obj : redisTemplate.opsForHash().values(lookupStore)) {
-            if (docid.equalsIgnoreCase((String)obj))
+            if (purl.equalsIgnoreCase((String)obj))
                 return true;
         }
         return false;
     }
 
-
-    private String buildKey(String recordIdentifier, String source) {
-
-        if (recordIdentifier == null || recordIdentifier.equals(""))
-            return null;
-
-        if (source != null || source != "")
-            return source + ":" + recordIdentifier;
-        else
-            return recordIdentifier;
-
-    }
+//
+//    private String buildKey(String recordIdentifier, String source) {
+//
+//        if (recordIdentifier == null || recordIdentifier.equals(""))
+//            return null;
+//
+//        if (source != null || source != "")
+//            return source + ":" + recordIdentifier;
+//        else
+//            return recordIdentifier;
+//
+//    }
 }

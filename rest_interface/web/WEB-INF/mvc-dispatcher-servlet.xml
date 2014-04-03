@@ -78,7 +78,7 @@
                             <property name="classesToBeBound">
                                 <list>
                                     <value>de.unigoettingen.sub.medas.model.Doc</value>
-                                    <value>de.unigoettingen.sub.medas.model.Coll</value>
+                                    <!--<value>de.unigoettingen.sub.medas.model.Coll</value>-->
                                 </list>
                             </property>
                         </bean>

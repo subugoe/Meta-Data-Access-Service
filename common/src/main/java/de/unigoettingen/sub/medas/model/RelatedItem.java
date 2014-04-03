@@ -10,7 +10,7 @@ import java.util.Set;
  * @author jdo
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "relatedItem", propOrder = {
+@XmlType(name = "", propOrder = {
         "recordIdentifier"
 })
 public class RelatedItem {
@@ -22,7 +22,6 @@ public class RelatedItem {
 //    private String docidOfThis;
 
     @XmlElementWrapper(name = "recordInfo")
-    @XmlElement
     private List<RecordIdentifier> recordIdentifier = new ArrayList<>();
 
     public String getType() {
@@ -53,11 +52,4 @@ public class RelatedItem {
             this.recordIdentifier.add(recordIdentifier);
     }
 
-//    public String getDocidOfThis() {
-//        return docidOfThis;
-//    }
-//
-//    public void setDocidOfThis(String docidOfThis) {
-//        this.docidOfThis = docidOfThis;
-//    }
 }

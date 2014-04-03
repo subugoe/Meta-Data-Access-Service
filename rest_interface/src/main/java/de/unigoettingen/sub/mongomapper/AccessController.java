@@ -2,9 +2,7 @@ package de.unigoettingen.sub.mongomapper;
 
 import de.unigoettingen.sub.medas.metsmods.jaxb.Mets;
 import de.unigoettingen.sub.medas.model.*;
-import de.unigoettingen.sub.mongomapper.access.MongoExporter;
 import de.unigoettingen.sub.mongomapper.helper.DocidLookupService;
-import de.unigoettingen.sub.mongomapper.helper.IdentifierNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,11 +147,11 @@ public class AccessController {
      * @param request The HttpServletRequest object.
      * @return A List of documents with a set of desciptive information, encoded in XML.
      */
-    @RequestMapping(value = "/documents/{recordIdentifier}", method = RequestMethod.GET, produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
+    @RequestMapping(value = "/documents/{id}", method = RequestMethod.GET, produces = {"application/json; charset=UTF-8", "application/xml; charset=UTF-8"})
     public
     @ResponseBody
     Doc
-    getDocument(@PathVariable("recordIdentifier") String recordIdentifier,
+    getDocument(@PathVariable("id") String id,
                 @RequestParam(value = "props", required = false) List<String> props,
                 HttpServletRequest request) {
 
@@ -161,8 +159,9 @@ public class AccessController {
             props = new ArrayList<>();
         }
 
+
         long start = System.currentTimeMillis();
-        Doc document = mongoExporter.getDocument(recordIdentifier, props, request);
+        Doc document = mongoExporter.getDocument(id, props, request);
         System.out.println(System.currentTimeMillis() - start);
 
         return document;
@@ -183,7 +182,6 @@ public class AccessController {
 
         return mongoExporter.getDocumentOutline(docid);
     }
-
 
 
     /**
@@ -274,19 +272,19 @@ public class AccessController {
      * <p/>
      * request: /documents/{docid}/mets
      *
-     * @param docid    The MongoDB id of the related mongoDB object.
+     * @param id    The MongoDB id of the related mongoDB object.
      * @param response The HttpServletResponse object.
      */
-    @RequestMapping(value = "/documents/{docid}/mets", method = RequestMethod.GET)
+    @RequestMapping(value = "/documents/{id}/mets", method = RequestMethod.GET)
     public
     @ResponseBody
-    void getDocumentMets(@PathVariable("docid") String docid,
+    void getDocumentMets(@PathVariable("id") String id,
                          HttpServletResponse response) {
 
         response.setContentType("application/xml");
 
         try {
-            mongoExporter.getMetsDocument(docid, response.getOutputStream());
+            mongoExporter.getMetsDocument(id, response.getOutputStream());
             response.flushBuffer();
         } catch (IOException e) {
             e.printStackTrace();
@@ -314,7 +312,6 @@ public class AccessController {
     }
 
 
-
     /**
      * Checks, if an object with the given pid is already in the db.
      *
@@ -338,25 +335,32 @@ public class AccessController {
     }
 
 
-
-    @RequestMapping(value = "/documents/all", method = RequestMethod.GET)
+    @RequestMapping(value = "/documents/allDocids", method = RequestMethod.GET)
     public
     @ResponseBody
     List<String>
-    getAllTest() {
+    getAllDocids() {
 
         return lookupService.findAllDocids();
     }
 
+    @RequestMapping(value = "/documents/allKeys", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    List<String>
+    getAllKeys() {
+
+        return lookupService.findAllKeys();
+    }
 
 
-    @RequestMapping(value = "/documents/get/{recId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/documents/get/{purl}", method = RequestMethod.GET)
     public
     @ResponseBody
     String
-    getTest(@PathVariable("recId") String recId) {
+    getTest(@PathVariable("purl") String purl) {
 
-        return recId + lookupService.findDocid(recId);
+        return purl +":"+ lookupService.findDocid(purl);
 
     }
 

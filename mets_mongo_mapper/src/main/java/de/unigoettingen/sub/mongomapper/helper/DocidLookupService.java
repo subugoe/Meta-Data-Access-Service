@@ -7,15 +7,16 @@ import java.util.List;
  */
 public interface DocidLookupService {
 
-    public void addDocid(String recordIdentifier, String source, String docid);
+    public void addDocid(String purl, String docid);
 
-    public String findDocid(String identifier);
+    public String findDocid(String purl);
 
     public List<String> findAllDocids();
+    public List<String> findAllKeys();
 
-    public void deleteDocid(String identifier, String source);
+    public void deleteDocid(String purl);
 
-    public void updateDocid(String recordIdentifier, String source, String docid) throws IdentifierNotFoundException;
+    public void updateDocid(String purl, String docid) throws IdentifierNotFoundException;
 
     public boolean containsDocid(String docid);
 }

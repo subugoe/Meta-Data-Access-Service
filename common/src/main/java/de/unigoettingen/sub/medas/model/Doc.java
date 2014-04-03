@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "doc", propOrder = {
-        "docid", "recordIdentifier", "identifier", "title",
+        "id", "recordIdentifier", "identifier", "title",
         "subTitle", "classification", "mets",
         "relatedItem", "pageCount", "contentCount", "partOrder", "content"
         //"tei", "teiEnriched", "preview", "fulltext",
@@ -22,7 +22,7 @@ public class Doc {
 
     @XmlElement
     @Id
-    protected String docid;
+    protected String id;
 
 //    @XmlElement
 //    protected String relatedMetsDocid;
@@ -169,12 +169,12 @@ public class Doc {
 //    }
 
 
-    public String getDocid() {
-        return docid;
+    public String getId() {
+        return id;
     }
 
-    public void setDocid(String docid) {
-        this.docid = docid;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public int getPageCount() {
@@ -331,12 +331,11 @@ public class Doc {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "docid", "id", "type", "label", "order", "orderlabel", "loctype", "href", "recordIdentifier", "partOrder",
+            "id", "recordIdentifier", "type", "label", "order", "orderlabel", "loctype", "href", "partOrder",
             "pageCount", "error" //, "dmdIds", "admIds",
     })
     public static class Content {
 
-        private String docid;
 
         private String id;
         //        List<String> dmdIds = new ArrayList<>();
@@ -365,13 +364,6 @@ public class Doc {
         }
 
 
-        public String getDocid() {
-            return docid;
-        }
-
-        public void setDocid(String docid) {
-            this.docid = docid;
-        }
 
         public String getRecordIdentifier() {
             return recordIdentifier;
@@ -487,14 +479,6 @@ public class Doc {
 
     }
 
-
-    public String getPrimaryRecordIdentifier() {
-
-        //return this.recordIdentifier.get(0).getValue();
-
-        return this.getDocid();
-
-    }
 
 
 }
