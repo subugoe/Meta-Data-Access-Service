@@ -1,6 +1,8 @@
 package de.unigoettingen.sub.medas.model;
 
+import de.unigoettingen.sub.medas.metsmods.jaxb.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.util.DigestUtils;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -249,7 +251,7 @@ public class Doc {
     }
 
     public void addRecordIdentifiers(List<RecordIdentifier> recordIdentifiers) {
-        for (RecordIdentifier recordIdentifier : recordIdentifiers)    {
+        for (RecordIdentifier recordIdentifier : recordIdentifiers) {
             this.recordIdentifier.add(recordIdentifier);
         }
     }
@@ -316,15 +318,47 @@ public class Doc {
     }
 
 
+    public String getPrimaryId() {
 
+        Map<String, String> ids = this.getIdentifiers();
 
-//    public String getRelatedMetsDocid() {
-//        return relatedMetsDocid;
-//    }
-//
-//    public void setRelatedMetsDocid(String relatedMetsDocid) {
-//        this.relatedMetsDocid = relatedMetsDocid;
-//    }
+        if (ids.containsKey("purl")) {
+            String id = ids.get("purl");
+            String hash = DigestUtils.md5DigestAsHex(id.getBytes());
+            return "purl:md5hash:" + hash; //lookupService.findDocid(hash);
+        } else if (ids.containsKey("gbv-ppn")) {
+            String id = ids.get("gbv-ppn");
+            String hash = DigestUtils.md5DigestAsHex(id.getBytes());
+            return "gbv-ppn:md5hash:" + hash;
+        } else if (ids.containsKey("ppn")) {
+            String id = ids.get("ppn");
+            String hash = DigestUtils.md5DigestAsHex(id.getBytes());
+            return "ppn:md5hash:" + hash;
+        }
+        // TODO other types
+
+        return null;
+    }
+
+    private Map<String, String> getIdentifiers() {
+
+        Map<String, String> ids = new HashMap<>();
+
+        List<Identifier> identifiers = this.getIdentifier();
+        for (Identifier id : identifiers) {
+            ids.put(id.getType().toLowerCase(), id.getValue());
+        }
+
+        List<RecordIdentifier> recordIdentifiers = this.getRecordIdentifier();
+        for (RecordIdentifier id : recordIdentifiers) {
+            String recId = id.getValue();
+            String source = id.getSource();
+            ids.put(source.toLowerCase(), recId);
+        }
+
+        return ids;
+    }
+
 
     /**
      * Created by jpanzer on 17.03.14.
@@ -362,7 +396,6 @@ public class Doc {
         public void setType(String type) {
             this.type = type;
         }
-
 
 
         public String getRecordIdentifier() {
@@ -478,7 +511,6 @@ public class Doc {
         }
 
     }
-
 
 
 }
