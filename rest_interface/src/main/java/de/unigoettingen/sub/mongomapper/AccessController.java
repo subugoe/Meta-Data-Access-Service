@@ -364,4 +364,17 @@ public class AccessController {
 
     }
 
+    @RequestMapping(value = "/documents/count", method = RequestMethod.GET)
+    public
+    @ResponseBody
+    int
+    getTest() {
+
+        return mongoExporter.getDocumentCount();
+
+    }
+
+
+
+
 }

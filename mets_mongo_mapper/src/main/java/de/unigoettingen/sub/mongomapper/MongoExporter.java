@@ -227,4 +227,7 @@ public class MongoExporter extends DocService {
         return null;
     }
 
+    public int getDocumentCount() {
+        return docRepo.findAllDocs().size();
+    }
 }
