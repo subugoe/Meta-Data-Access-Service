@@ -205,6 +205,13 @@ public class AccessController {
         return mongoExporter.getSearchResults(docid, query);
 
     }
+    @RequestMapping(value="/documents/{docid}/images")
+    public @ResponseBody String getImages(@PathVariable String docid, HttpServletRequest request){
+
+        Doc doc = mongoExporter.getDocument(docid, null, request);
+        System.out.println(doc);
+        return "todo";
+    }
 
     /**
      * Searchterm based search over all documents in the db.
@@ -226,7 +233,6 @@ public class AccessController {
 
         return mongoExporter.getSearchResults(query);
     }
-
     /**
      * Accepts OAI2 metadate requests. Metadata is extracted from the object metadata
      * Info is extracted http://www.openarchives.org/OAI/openarchivesprotocol.html#ProtocolMessages
