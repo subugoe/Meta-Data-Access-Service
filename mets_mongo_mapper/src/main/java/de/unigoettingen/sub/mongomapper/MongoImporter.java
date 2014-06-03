@@ -125,6 +125,10 @@ public class MongoImporter extends DocService {
     private void removeReferencedModsDocuments(String docid) {
 
         Mets mets = metsRepo.findOneMets(docid);
+        if (mets == null){
+            // if the db was dropped before, mets will be emtpy.
+            return;
+        }
         List<MdSecType> dmdSecs = mets.getDmdSecs();
         for (MdSecType mdSec : dmdSecs) {
             List<Mods> modsList = mdSec.getMdWrap().getXmlData().getMods();

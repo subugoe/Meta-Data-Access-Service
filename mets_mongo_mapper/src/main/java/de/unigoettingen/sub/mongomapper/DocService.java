@@ -113,8 +113,16 @@ public class DocService {
         return null;
     }
 
+    /**
+     * Creates a basic Doc object
+     * @param mets
+     * @param primaryId
+     * @param request
+     * @return
+     */
     protected Doc retrieveBasicDocInfo(Mets mets, String primaryId, HttpServletRequest request) {
-
+        // why does this function need the mets and the primaryID?
+        // is the request required?
         int pagenumber = 0;
         String metsId = mets.getID();
 
@@ -264,7 +272,13 @@ public class DocService {
         return doc;
     }
 
-
+    /**
+     * Retrieves a basic Doc objects from the database and adds the value for the content field.
+     * @param mets
+     * @param primaryId
+     * @param request
+     * @return
+     */
     protected Doc retrieveFullDocInfo(Mets mets, String primaryId, HttpServletRequest request) {
 
         Doc doc = retrieveBasicDocInfo(mets, primaryId, request);
@@ -274,6 +288,11 @@ public class DocService {
         return doc;
     }
 
+    /**
+     * From the METS the LOGICAL struct map is retrieved and the stored information is stored in a list of Content objects.
+     * @param mets  The METS to parse
+     * @return
+     */
     protected List<Doc.Content> retrieveDocContents(Mets mets) {
 
         List<Doc.Content> contents = new ArrayList<>();
@@ -299,6 +318,11 @@ public class DocService {
         return contents;
     }
 
+    /**
+     * A part (div) from the METS is parsed and the information is copied into a content object. With this content object a list is started, with is afterwards filled with optional sub divs.
+     * @param div
+     * @return A list of Content objects representing the given div and its sub divs.
+     */
     protected List<Doc.Content> evaluateDiv(DivType div) {
 
         List<Doc.Content> contents = new ArrayList<>();

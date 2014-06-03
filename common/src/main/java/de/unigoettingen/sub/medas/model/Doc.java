@@ -1,6 +1,5 @@
 package de.unigoettingen.sub.medas.model;
 
-import de.unigoettingen.sub.medas.metsmods.jaxb.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.util.DigestUtils;
 
@@ -76,6 +75,15 @@ public class Doc {
 //    @XmlElement
 //    private String fulltext;
 
+
+    public String getPPN(){
+        for (RecordIdentifier ri : getRecordIdentifier()){
+            if ("PPN".equalsIgnoreCase(ri.getSource()) || "gbv-ppn".equalsIgnoreCase(ri.getSource())){
+                return ri.getValue();
+            }
+        }
+        return null;
+    }
 
     /**
      * The PPN of the parent item. E. g. the journal a volume belongs to. If
@@ -359,9 +367,19 @@ public class Doc {
         return ids;
     }
 
+    public String toString(){
+        if (getSubTitle() != null){
+            return getTitle() +": "+ getSubTitle();
+        }
+        return getTitle();
+    }
 
     /**
      * Created by jpanzer on 17.03.14.
+     */
+
+    /**
+     *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {

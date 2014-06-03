@@ -14,8 +14,8 @@ import javax.ws.rs.core.MediaType;
  */
 public class MeDASClient {
     private Client client;
-//    private final String BASE_URI = "http://10.0.2.206:8080/";
-    private final String BASE_URI = "http://localhost:8080/";
+    private final String BASE_URI = "http://10.0.2.206:8080/";
+//    private final String BASE_URI = "http://localhost:8080/";
 
     public MeDASClient(){
         client = Client.create();

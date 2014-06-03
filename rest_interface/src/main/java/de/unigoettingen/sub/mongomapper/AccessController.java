@@ -218,9 +218,9 @@ public class AccessController {
      * <p/>
      * request: /documents/search?query=...
      *
-     * @param query The searchterm. The requst will be forwarded to mongoDB to search
+     * @param query The search term. The request will be forwarded to mongoDB to search
      *              within the metadata elements.
-     * @param model The Spring-Model objekt, required for transmission of parameters within the request scope.
+     * @param model The Spring-Model object, required for transmission of parameters within the request scope.
      * @return A list of documents which match the query.
      */
     @RequestMapping(value = "/documents/search", method = RequestMethod.GET)
