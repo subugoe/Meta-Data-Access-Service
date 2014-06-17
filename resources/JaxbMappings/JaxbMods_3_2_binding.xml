@@ -1,0 +1,40 @@
+<jxb:bindings
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        jxb:extensionBindingPrefixes="xjc"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xml="http://www.w3.org/XML/1998/namespace"
+        version="2.1">
+
+    <jxb:globalBindings>
+        <xjc:simple/>
+    </jxb:globalBindings>
+
+    <jxb:bindings schemaLocation="/Users/jpanzer/Documents/projects/dev/meta_data_access_service/resources/MODS_Schemas/mods-3-2.xsd ">
+
+<!--
+        <jxb:bindings node="//xsd:attributeGroup[@name='language']/xsd:attribute[@ref='xml:lang']">
+            <jxb:property name="xmlLang"/>
+        </jxb:bindings>
+    -->
+
+
+        <jxb:bindings schemaLocation="http://www.w3.org/2001/xml.xsd"
+                      node="//xsd:attribute[@name='lang']">
+            <jxb:property name="xmlLang"/>
+        </jxb:bindings>
+
+
+
+
+        <jxb:bindings schemaLocation="http://www.loc.gov/standards/xlink.xsd"
+                      node="//xsd:attributeGroup[@name='simpleLink']/xsd:attribute[@name='type']">
+            <jxb:property name="xlinkType"/>
+        </jxb:bindings>
+
+
+    </jxb:bindings>
+
+</jxb:bindings>
+

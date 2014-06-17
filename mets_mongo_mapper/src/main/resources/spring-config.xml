@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+    <aop:config proxy-target-class="true"/>
+
+
+    <cache:annotation-driven/>
+
+
+    <context:property-placeholder location="classpath*:mapper.properties,classpath*:redis.properties"/>
+    <context:annotation-config/>
+    <context:component-scan base-package="de.unigoettingen.sub"/>
+
+
+    <mongo:repositories base-package="de.unigoettingen.sub.mongomapper.springdata"/>
+    <mongo:db-factory id="mongoDbFactory" dbname="${mongo.dbName}"/>
+
+    <!--
+    <mongo:mapping-converter id="mongoConverter" base-package="de.unigoettingen.sub">
+        <mongo:custom-converters base-package="de.unigoettingen.sub" />
+    </mongo:mapping-converter>
+    -->
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongoDbFactory"/>
+        <!-- <constructor-arg ref="mongoConverter" /> -->
+        <property name="writeConcern" value="SAFE"/>
+    </bean>
+
+
+    <!-- Redis -->
+
+    <bean id="jedisConnFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:hostName="${redis.host.name}"
+          p:port="${redis.port}"
+          p:usePool="true"
+            />
+
+    <!-- template definition -->
+    <bean id="redisTemplate"
+          class="org.springframework.data.redis.core.RedisTemplate"
+          p:connectionFactory-ref="jedisConnFactory"/>
+
+    <!-- declare Redis Cache Manager -->
+    <bean
+            id="cacheManager"
+            class="org.springframework.data.redis.cache.RedisCacheManager"
+            c:template-ref="redisTemplate"/>
+
+
+</beans>

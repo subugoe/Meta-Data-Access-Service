@@ -464,6 +464,12 @@ public class DocService {
     }
 
 
+    /**
+     *
+     *
+     * @param request
+     * @return
+     */
     protected String getUrlString(HttpServletRequest request) {
 
         String schema = request.getScheme();

@@ -1,0 +1,42 @@
+<jxb:bindings
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        jxb:extensionBindingPrefixes="xjc"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xml="http://www.w3.org/XML/1998/namespace"
+        version="2.1">
+
+    <jxb:globalBindings>
+        <xjc:simple/>
+    </jxb:globalBindings>
+
+    <jxb:bindings schemaLocation="../METS_Schemas/mets_1.6.xsd">
+
+        <!-- /xsd:schema/xsd:complexType/xsd:all/xsd:element/xsd:complexType/xsd:choice/xsd:element/xsd:complexType/xsd:sequence/xsd:any -->
+
+        <jxb:bindings
+                node="/xsd:schema/xsd:complexType/xsd:all/xsd:element/xsd:complexType/xsd:choice/xsd:element[@name='xmlData']/xsd:complexType/xsd:sequence/xsd:any">
+            <jxb:property name="mods">
+                <jxb:baseType name="de.unigoettingen.sub.jaxb.mods.Mods"/>
+            </jxb:property>
+
+        </jxb:bindings>
+
+        <!--
+            <jxb:bindings node="/xsd:schema/xsd:complexType/xsd:attribute[@ref='xlink:label']">
+                <jxb:property name="xlinkLabel"/>
+            </jxb:bindings>
+        -->
+
+
+        <jxb:bindings schemaLocation="http://www.loc.gov/standards/mets/xlink.xsd"
+                      node="//xsd:attribute[@name='label']">
+            <jxb:property  name="xlinkLabel"/>
+        </jxb:bindings>
+
+
+    </jxb:bindings>
+
+
+</jxb:bindings>
