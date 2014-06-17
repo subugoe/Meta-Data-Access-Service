@@ -137,7 +137,7 @@ mptr and area elements for mapping MPEG21 DII Identifier values
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<!--<xsd:import namespace="http://www.w3.org/1999/xlink" schemaLocation="http://www.loc.gov/standards/mets/xlink.xsd"/>-->
 	<xsd:import namespace="http://www.w3.org/1999/xlink" schemaLocation="http://www.loc.gov/standards/xlink.xsd"/>
-	<xsd:import namespace="http://www.loc.gov/mods/v3" schemaLocation="./mods-3-2.xsd"/>
+	<xsd:import namespace="http://www.loc.gov/mods/v3" schemaLocation="mods-3-2.xsd"/>
 	
 	<xsd:element name="mets">
 		<xsd:annotation>
