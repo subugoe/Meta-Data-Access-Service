@@ -16,6 +16,8 @@ import java.util.Set;
 @XmlRootElement(name = "docs")
 public class Docs {
 
+    private List<Doc> docs = null;
+
     /**
      * Initializes an empty collection of {@Doc} objects. The default constructor is needed for JAXB etc.
      */
