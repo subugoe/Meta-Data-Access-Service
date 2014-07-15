@@ -15,3 +15,6 @@ atlassian-ide-plugin.xml
 common/target/
 client/target/
 tmp/
+models/*.vpp.*
+models/*.vpp~*
+
