@@ -20,7 +20,7 @@ Die Vision von MeDAS (Meta Data Access System) ist ein Datenmanagement auf der B
 
 ## User Stories
 
-* Die Nutzer-Anwendung kann eine **Liste gespeicherter Bereiche** mit Identifizierer und Kurzbeschreibung abfragen (Zeitschriften, eLearning Objekte, Digital Born Objekte, Museums und Archiv Objekte, etc.) um dem Benutzer einen Überblick über die im Repositorium gespeicherten Bereichen zu machen.
+* Die Nutzer-Anwendung kann eine **Liste gespeicherter Bereiche** mit Identifizierer und Kurzbeschreibung abfragen (Zeitschriften, Bücher, Vorlesungsmitschriften, eLearning Objekte, Digital Born Objekte, Museums und Archiv Objekte, etc.) um dem Benutzer einen Überblick über die im Repositorium gespeicherten Bereichen zu machen.
 * Die Nutzer-Anwendung kann **zu einem Bereich eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien wie z.B. Publikationsdatum, -ort, Sprache oder Kategorie, um darüber Anfragen einzuschränken.
 * Die Nutzer-Anwendung kann zu einem Bereich **Objekte** mit Identifizierer und Basisinformationen abfragen (z.B. alle Zeitschriften). Die Abfrage kann ggf. anhand von Facetten gefiltert werden.
 * Die Nutzer-Anwendung kann **zu einem Objekt eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien bzgl. verbundener Objekte (z.B. Zeitschriften, Bände, Artikel, Host, etc.).
