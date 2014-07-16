@@ -4,9 +4,7 @@
 
 ## Vision Statement
 
-Die Vision von MeDAS (Meta Data Access System) ist ein Datenmanagement auf der Basis von Objektbeschreibungen (z.B. aus dem Bibliotheksbereich METS/MODS und TEI), d.h. die Entwicklung eines generischen Metadaten Servers, welcher CRUD-Operationen für digitale Objekten auf Basis Ihrer Objektbeschreibungen realisiert: Bereitstellung einer einheitlichen Manipulationsschnittstelle für unterschiedliche Objekttypen, Suche über Metadaten, Abbildung von Beziehungen und Navigation über diese, oder das Mapping unterschiedlicher Beschreibungselemente (z.B. METS <-> TEI). Wesentlich ist, dass die Schnittstelle einfacher und komfortabler zu benutzen ist als die Originalbeschreibungen, und die Komplexität der zugrundeliegenden Beschreibung zugleich verbirgt. Für spezifische Anforderungen bleibt der Zugriff über die Originalbeschreibung erhalten. 
-
-
+Die Vision von MeDAS (Meta Data Access System) ist ein Datenmanagement für Objektbeschreibungen (z.B. aus dem Bibliotheksbereich METS/MODS und TEI), d.h. die Entwicklung eines generischen Metadaten Servers, welcher CRUD-Operationen für digitale Objekten auf Basis Ihrer Objektbeschreibungen realisiert: Bereitstellung einer einheitlichen Manipulationsschnittstelle für unterschiedliche Objekttypen, Suche über Metadaten, Abbildung von Beziehungen und Navigation über diese, oder das Mapping unterschiedlicher Beschreibungselemente (z.B. METS <-> TEI). Die Schnittstelle soll einfacher und komfortabler zu benutzen sein als die Originalbeschreibungen, und die Komplexität der Beschreibung zugleich verbergen. Für spezifische Anforderungen bleibt der Zugriff über die Originalbeschreibung erhalten. 
 
 ## Personas, nutzende Dienste
 * ROPEN
