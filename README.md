@@ -4,22 +4,34 @@
 
 ## Vision Statement
 
-Die Vision von MeDAS (Meta Data Access System) ist ein Datenmanagement auf der Basis von Objektbeschreibungen (z.B. aus dem Bibliotheksbereich METS/MODS und TEI), d.h. die Entwicklung eines generischen Metadaten Servers, welcher CRUD-Operationen für digitale Objekten auf Basis Ihrer Objektbeschreibungen realisiert: Bereitstellung einer einheitlichen Manipulationsschnittstelle für unterschiedliche Objekttypen, Suche über Metadaten, Abbildung von Beziehungen und Navigation über diese, oder das Mapping unterschiedlicher Beschreibungselemente (z.B. METS <-> TEI). Wesentlich ist, das die Schnittstelle einfacher und komfortabler zu benutzen ist als die Originalbeschreibungen, und die Komplexität der zugrundeliegenden Beschreibung zugleich verbirgt. Für spezifische Anforderungen bleibt der Zugriff über die Originalbeschreibung erhalten. 
+Die Vision von MeDAS (Meta Data Access System) ist ein Datenmanagement auf der Basis von Objektbeschreibungen (z.B. aus dem Bibliotheksbereich METS/MODS und TEI), d.h. die Entwicklung eines generischen Metadaten Servers, welcher CRUD-Operationen für digitale Objekten auf Basis Ihrer Objektbeschreibungen realisiert: Bereitstellung einer einheitlichen Manipulationsschnittstelle für unterschiedliche Objekttypen, Suche über Metadaten, Abbildung von Beziehungen und Navigation über diese, oder das Mapping unterschiedlicher Beschreibungselemente (z.B. METS <-> TEI). Wesentlich ist, dass die Schnittstelle einfacher und komfortabler zu benutzen ist als die Originalbeschreibungen, und die Komplexität der zugrundeliegenden Beschreibung zugleich verbirgt. Für spezifische Anforderungen bleibt der Zugriff über die Originalbeschreibung erhalten. 
 
-## Personas
+
+
+## Personas, nutzende Dienste
+* ROPEN
+* Repository-Systeme
+* ggf. Portale, wie DigiZeit
+
+
 
 ## Fragen
 
 
 ## User Stories
 
-* Als Online-Nutzer kann ich eine **Liste gespeicherter Bereiche** mit Identifizierer und Kurzbeschreibung abfragen (Zeitschriften, eLearning Objekte, Digital Born Objekte, Museums und Archiv Objekte, etc.) um mir einen Überblick über die im Repositorium gespeicherten Bereichen zu machen.
-* Als Online-Nutzer kann ich **zu einem Bereich eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien wie z.B. Publikationsdatum, -ort, Sprache oder Kategorie, um darüber Anfragen einzuschränken.
-* Als Online-Nutzer kann ich zu einem Bereich **Objekte** mit Identifizierer und Basisinformationen abfragen (z.B. alle Zeitschriften). Die Abfrage kann ggf. anhand von Facetten gefiltert werden.
-* Als Online-Nutzer kann ich **zu einem Objekt eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien bzgl. verbundener Objekte (z.B. Zeitschriften, Bände, Artikel, Host, etc.).
-* Als Online-Nutzer kann ich zu einem Objekt eine **Liste in Beziehung stehender Objekte** abfragen. Die Abfrage kann anhand von Facetten gefiltert werden.
-* Als Online-Nutzer kann ich zu einem Objekt **den Scan** oder **den Volltext** abfragen.
-
+* Die Nutzer-Anwendung kann eine **Liste gespeicherter Bereiche** mit Identifizierer und Kurzbeschreibung abfragen (Zeitschriften, eLearning Objekte, Digital Born Objekte, Museums und Archiv Objekte, etc.) um dem Benutzer einen Überblick über die im Repositorium gespeicherten Bereichen zu machen.
+* Die Nutzer-Anwendung kann **zu einem Bereich eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien wie z.B. Publikationsdatum, -ort, Sprache oder Kategorie, um darüber Anfragen einzuschränken.
+* Die Nutzer-Anwendung kann zu einem Bereich **Objekte** mit Identifizierer und Basisinformationen abfragen (z.B. alle Zeitschriften). Die Abfrage kann ggf. anhand von Facetten gefiltert werden.
+* Die Nutzer-Anwendung kann **zu einem Objekt eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien bzgl. verbundener Objekte (z.B. Zeitschriften, Bände, Artikel, Host, etc.).
+* Die Nutzer-Anwendung kann zu einem Objekt eine **Liste in Beziehung stehender Objekte** abfragen. Die Abfrage kann anhand von Facetten gefiltert werden.
+* Die Nutzer-Anwendung kann zu einem Objekt **den Scan** oder **den Volltext** abfragen.
+* Ein Benutzer kann über die Nutzer-Anwendung Vorlesungsmitschriften lesen. Er sucht zunächst die Vorlesung. Aus der Vorlesung wählt er die Mitschrift aus. Zur Mitschrift können Metadaten, Scans und Volltext abgerufen werden. Der Abruf kann seitenweise oder für das gesamte Dokument erfolgen und die Rückgabe von Scans kann in einem Bild-Format oder als PDF erfolgen. 
+* Die Nutzer-Anwendung kann zu einem Objekt die *Elternobjekte* abrufen (z.B. Zeitschrift eines Band) .
+* Die Nutzer-Anwendung kann zu einem Objekt die *Kindobjekte* abrufen (z.B. Artikel eines Band).
+* Die Nutzer-Anwendung kann ein digitales Objekt per Id abfragen.
+* Die Nutzer-Anwendung kann digitale Objekte per Type (z.B. Zeitschrift, Band, Artikel, Paragraph, Scan, Fulltext) und weiteren einschränkenden Parametern abfragen (z.B. isHostOf, isPrecedingOf, inResolution).
+* Die Nutzer-Anwendung kann die mit einem digitalen Objekt in Beziehung stehenden Objekte abrufen. Die zurückgegebenen Objekte könnten zudem per Type (z.B. Zeitschrift, Band, Artikel, Paragraph, Scan, Fulltext) oder durch weitere einschränkende Parametern eingeschränkt werden (z.B. isHostOf, isPrecedingOf, inResolution).
 
 ## Entwicklungsumgebung
 ### Konfiguration
