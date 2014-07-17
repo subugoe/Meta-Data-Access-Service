@@ -10,6 +10,12 @@ Die Vision von MeDAS (Meta Data Access System) ist ein Datenmanagement für Obje
 * Anwendungen rufen Beschreibungen derzeit aus über eine HTTP Schnittstelle ab und parsen die Beschreibung selbst. Über MeDAS können bestehende Anwendungen wie gehabt weiterarbeiten, d.h. sie können direkt auf Beschreibungen arbeiten. Es ist aber auch möglich, die Prozessierung MeDAS zu überlassen und über dessen Schnittstelle auf Elemente zuzugreifen.
 * MeDAS ist nicht eingeschränkt auf eine Domäne, sondern bietet eine generische Standardschnittstelle für unterschiedliche Beschreibungsformate.
 
+## Konzeption, Architektur
+* Server
+	* todo
+* Client (-Bibliothek) 
+	* todo
+
 ## Personas, nutzende Dienste
 * ROPEN
 * Repository-Systeme
