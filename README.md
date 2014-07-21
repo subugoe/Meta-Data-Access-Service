@@ -4,13 +4,27 @@
 
 ## Vision Statement
 
-Die Vision von MeDAS (Meta Data Access System) ist ein Datenmanagement für Objektbeschreibungen (z.B. aus dem Bibliotheksbereich METS/MODS und TEI), d.h. die Entwicklung eines generischen Metadaten Servers, welcher CRUD-Operationen für digitale Objekten auf Basis Ihrer Objektbeschreibungen realisiert: Bereitstellung einer einheitlichen Manipulationsschnittstelle für unterschiedliche Objekttypen, Suche über Metadaten, Abbildung von Beziehungen und Navigation über diese, oder das Mapping unterschiedlicher Beschreibungselemente (z.B. METS <-> TEI). Die Schnittstelle soll einfacher und komfortabler zu benutzen sein als die Originalbeschreibungen, und die Komplexität der Beschreibung zugleich verbergen. Für spezifische Anforderungen bleibt der Zugriff über die Originalbeschreibung erhalten. 
+Die Vision von MeDAS (Meta Data Access System) ist ein Datenmanagement für Objektbeschreibungen (z.B. aus dem Bibliotheksbereich METS/MODS und TEI), d.h. die Entwicklung eines generischen Metadaten Servers, welcher CRUD-Operationen für digitale Objekten auf Basis Ihrer Objektbeschreibungen realisiert, z.B.
+
+* die Bereitstellung einer einheitlichen Manipulationsschnittstelle für unterschiedliche Objekttypen,
+* Suche über Metadaten,
+* die Abbildung von Beziehungen und Navigation über diese, 
+* das Mapping unterschiedlicher Beschreibungselemente (z.B. METS <-> TEI), oder
+* eine Standardkonforme (Bulk) Import/Export Schnittstelle. 
+
+Die Schnittstelle soll einfacher und komfortabler zu benutzen sein als die Originalbeschreibungen, d.h. die Komplexität der Beschreibung verbergen und *wesentliche* Nutzeranforderungen erfüllen, was als wesentlich gilt, muss von den potentiellen Nutzern festgelegt werden - derzeit DigiZeit oder ROPEN. Für spezifische Anforderungen bleibt der Zugriff über die Originalbeschreibung erhalten. 
 
 ## Unterschied zwischen aktuellem und anvisiertem Zustand
-* Anwendungen rufen Beschreibungen derzeit aus über eine HTTP Schnittstelle ab und parsen die Beschreibung selbst. Über MeDAS können bestehende Anwendungen wie gehabt weiterarbeiten, d.h. sie können direkt auf Beschreibungen arbeiten. Es ist aber auch möglich, die Prozessierung MeDAS zu überlassen und über dessen Schnittstelle auf Elemente zuzugreifen.
-* MeDAS ist nicht eingeschränkt auf eine Domäne, sondern bietet eine generische Standardschnittstelle für unterschiedliche Beschreibungsformate.
+### Aktuell
+* Anwendungen rufen Beschreibungen über eine HTTP Schnittstelle ab und parsen diese selbst. 
+
+### Ziel
+* Über MeDAS können bestehende Anwendungen wie gehabt weiterarbeiten, d.h. sie können direkt auf Beschreibungen arbeiten. Es ist aber auch möglich, die Prozessierung MeDAS zu überlassen und über dessen Schnittstelle auf Elemente zuzugreifen.
+* MeDAS ist nicht eingeschränkt auf eine Domäne, sondern bietet eine generische Standardschnittstelle für unterschiedliche Beschreibungsformate (Zeitschriften, Bücher, Multimedia, etc.).
 
 ## Konzeption, Architektur
+Konzeptionell teilt sich MeDAS in eine Serverkomponente und eine Client-Bibliothek. Die Serverkomponente behandelt das Datenmanagement und die Client-Bibliothek stellt Anwendungen Funktionen zur Interaktion mit dem Server bereit, wobei von Aspekte wie Netzwerkkommunikation, Verteilung, Persistenzmodell, etc. abstrahiert wird. Der Server bildet Domänenobjekte auf das Datenmodell des Backendsystems ab und transformiert anfragen. 
+
 * Server
 	* todo
 * Client (-Bibliothek) 
