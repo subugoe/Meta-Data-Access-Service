@@ -43,12 +43,11 @@ Konzeptionell teilt sich MeDAS in eine Serverkomponente und eine Client-Biblioth
 
 ## User Stories
 
-* Die Nutzer-Anwendung kann eine **Liste gespeicherter Bereiche** mit Identifizierer und Kurzbeschreibung abfragen (Zeitschriften, Bücher, Vorlesungsmitschriften, eLearning Objekte, Digital Born Objekte, Museums und Archiv Objekte, etc.) um dem Benutzer einen Überblick über die im Repositorium gespeicherten Bereichen zu machen.
+* Die Nutzer-Anwendung kann eine **Liste gespeicherter Bereiche** mit Identifizierer und Kurzbeschreibung abfragen (Zeitschriften, Bücher, Vorlesungsmitschriften, eLearning Objekte, Digital Born Objekte, Museums und Archiv Objekte, etc.) um dem Benutzer einen Überblick über die im Repositorium gespeicherten Bereichen zu geben.
 * Die Nutzer-Anwendung kann **zu einem Bereich eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien wie z.B. Publikationsdatum, -ort, Sprache oder Kategorie, um darüber Anfragen einzuschränken.
-* Die Nutzer-Anwendung kann zu einem Bereich **Objekte** mit Identifizierer und Basisinformationen abfragen (z.B. alle Zeitschriften). Die Abfrage kann ggf. anhand von Facetten gefiltert werden.
-* Die Nutzer-Anwendung kann **zu einem Objekt eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien bzgl. verbundener Objekte (z.B. Zeitschriften, Bände, Artikel, Host, etc.).
+* Die Nutzer-Anwendung kann zu einem Bereich **Liste gespeicherter Objekte** mit Identifizierer und Basisinformationen abfragen.
+* Die Nutzer-Anwendung kann **zu einem Objekt eine Liste von Facetten** abfragen, d.h. einschränkende Kriterien bzgl. verbundener Objekte (z.B. Zeitschriften, Bände, Artikel, Host, Scan, Volltext, etc.).
 * Die Nutzer-Anwendung kann zu einem Objekt eine **Liste in Beziehung stehender Objekte** abfragen. Die Abfrage kann anhand von Facetten gefiltert werden.
-* Die Nutzer-Anwendung kann zu einem Objekt **den Scan** oder **den Volltext** abfragen.
 * Ein Benutzer kann über die Nutzer-Anwendung Vorlesungsmitschriften lesen. Er sucht zunächst die Vorlesung. Aus der Vorlesung wählt er die Mitschrift aus. Zur Mitschrift können Metadaten, Scans und Volltext abgerufen werden. Der Abruf kann seitenweise oder für das gesamte Dokument erfolgen und die Rückgabe von Scans kann in einem Bild-Format oder als PDF erfolgen. 
 * Die Nutzer-Anwendung kann zu einem Objekt die *Elternobjekte* abrufen (z.B. Zeitschrift eines Band) .
 * Die Nutzer-Anwendung kann zu einem Objekt die *Kindobjekte* abrufen (z.B. Artikel eines Band).
