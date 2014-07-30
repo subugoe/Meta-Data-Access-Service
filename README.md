@@ -24,7 +24,7 @@ Die Schnittstelle soll einfacher und komfortabler zu benutzen sein als die Origi
 * MeDAS ist nicht eingeschränkt auf eine Domäne, sondern bietet eine generische Standardschnittstelle für unterschiedliche Beschreibungsformate (Zeitschriften, Vorlesungsmitschriften, Bücher, Multimedia, etc.).
 
 ## Konzeption, Architektur
-Konzeptionell teilt sich MeDAS in eine Serverkomponente und eine Client-Bibliothek. Die Serverkomponente behandelt das Datenmanagement, bildet Domänenobjekte auf das Datenmodell des Backendsystems ab und transformiert anfragen. Die Client-Bibliothek stellt Anwendungen Funktionen zur Interaktion mit dem Server bereit, wobei von Aspekte wie Netzwerkkommunikation, Verteilung, Persistenzmodell, etc. abstrahiert wird. Zudem behandelt die Client-Biliothe domänen-spezifische Anforderungen, d.h. es ist für eine neue Domäne ggf. eine spezifische Bibliothek erforderlich. 
+Konzeptionell teilt sich MeDAS in eine Serverkomponente und eine Client-Bibliothek. Die **Serverkomponente** behandelt das Datenmanagement, bildet Domänenobjekte auf das Datenmodell des Backendsystems ab und transformiert Anfragen. Die **Client-Bibliothek** stellt Anwendungen Funktionen zur Interaktion mit dem Server bereit, wobei von Aspekte wie Netzwerkkommunikation, Verteilung, Persistenzmodell, etc. abstrahiert wird. Zudem behandelt die Client-Biliothe domänen-spezifische Anforderungen, d.h. es ist für eine neue Domäne ggf. eine spezifische Bibliothek erforderlich. 
 
 ## Personas, nutzende Dienste
 * ROPEN (Topic Maps)
@@ -35,7 +35,7 @@ Konzeptionell teilt sich MeDAS in eine Serverkomponente und eine Client-Biblioth
 * In welchem Maß ist ein Benutzer-/Rechtemanagement erforderlich?
 	* Open-Access? 
 * Welche/Wieviele Daten werden abgelegt? Wo findet die Prozessierung statt?
-	* Bspw. kann zu einer Volltextbeschreibung (TEI) oder dessen Teilelemente je ein KML, Cloud, Tags oder XHTML Dokument generuiert werden.   
+	* Bspw. kann zu einer Volltextbeschreibung (TEI) oder dessen Teilelemente je ein KML, Cloud, Tags oder XHTML Dokument generiert werden.   
 
 		1. Sollen diese Dokumente extern generiert, an das System übergeben und dort gespeichert werden?  
 		2. Soll eine Schnittstelle implementiert werden, die eine Id und ein Skript zur Transformation entgegennimmt und die Transformation on-the-fly auf dem referenzierten Volltexten durchführt?
@@ -43,7 +43,7 @@ Konzeptionell teilt sich MeDAS in eine Serverkomponente und eine Client-Biblioth
 		4. Soll eine skriptbasierte Transformation bei Ingest oder on-the-fly erfolgen?
 		5. Sollen Clients die Volltexte laden und die Transformation bei Bedarf durchführen?
 
-	* Gegen die Transformation im Server spricht, das es handelt sich um Anwendungslogik handelt. 
+	* Gegen die Transformation im Server spricht, das es sich um Anwendungslogik handelt. 
 	* Für das Mapping zwischen Beschreibungs- bzw. Strukturelement, Volltext, Bild und anderen Präsentationsvarianten muss der Server die Abbildungsregeln kennen, also über entsprechende Skripte verfügen oder feste Vorgaben für die Struktur aller Formate machen. 
 
 ## User Stories
